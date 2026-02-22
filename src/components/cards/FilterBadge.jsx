@@ -10,9 +10,9 @@ export const FilterBadge = ({ filters, isDark, theme }) => {
   };
 
   return (
-    <div className={`flex flex-wrap items-center gap-2 mt-4 text-[9px] font-mono ${theme.textMuted} ${theme.card} p-2 rounded border ${theme.border} inline-flex`}>
-      <Filter className={`w-3 h-3 ${theme.accent2}`} />
-      <span>FILTRI:</span>
+    <div className={`flex flex-wrap items-center gap-3 mt-4 text-[10px] font-bold ${theme.textMuted} ${theme.card} p-4 rounded border ${theme.border} inline-flex`}>
+      <Filter className={`w-4 h-4 ${theme.accent2}`} />
+      <span className="font-bold">FILTRI:</span>
       <span className={`${theme.panel} px-1.5 py-0.5 rounded border ${theme.borderLight}`}>DIR: <b className={theme.accent1}>{dir.toUpperCase()}</b></span>
       <span className={`${theme.panel} px-1.5 py-0.5 rounded border ${theme.borderLight}`}>TIPO: <b className={theme.accent1}>{tradeType.toUpperCase()}</b></span>
       <span className={`${theme.panel} px-1.5 py-0.5 rounded border ${theme.borderLight}`}>SYM: <b className={theme.accent1}>{formatArr(symbols, 'TUTTI')}</b></span>

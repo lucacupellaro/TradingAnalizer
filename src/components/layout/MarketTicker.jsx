@@ -1,9 +1,9 @@
 import React from 'react';
 
-export const MarketTicker = ({ marketQuotes, isDark }) => {
+export const MarketTicker = ({ marketQuotes, isDark, theme }) => {
   return (
-    <div className={`w-full ${isDark ? 'bg-[#050505] border-[#222]' : 'bg-slate-900 border-slate-800'} border-b overflow-hidden py-1.5 relative z-50`}>
-      <div className="animate-marquee whitespace-nowrap flex items-center gap-12 font-mono text-xs font-bold">
+    <div className={`w-full ${isDark ? 'bg-[#050505] border-[#222]' : 'bg-slate-900 border-slate-800'} border-b overflow-hidden py-3 relative z-50`}>
+      <div className="animate-marquee whitespace-nowrap flex items-center gap-16 font-mono text-sm font-bold">
         {marketQuotes.length > 0 ? (
           marketQuotes.map((q, i) => (
             <div key={i} className="flex items-center gap-2 inline-block">

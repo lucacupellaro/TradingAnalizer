@@ -21,19 +21,19 @@ export const Navbar = ({
             <Menu className="w-6 h-6" />
           </button>
           <BarChart2 className={`w-6 h-6 ${theme.accent2}`} />
-          <h1 className={`text-lg font-black ${theme.textBold} uppercase tracking-tighter hidden sm:block`}>
+          <h1 className={`text-xl font-black ${theme.textBold} uppercase tracking-widest hidden sm:block`}>
             Quant Terminal
           </h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => setIsDark(!isDark)}
-            className={`p-2 rounded-full border ${theme.border} ${theme.card} ${theme.textMuted}`}
+            className={`p-3 rounded-full border ${theme.border} ${theme.card} ${theme.textMuted} hover:scale-110 transition-transform`}
           >
-            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {isDark ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
           </button>
           <label
-            className={`flex items-center gap-2 px-4 py-2 rounded font-black transition-all cursor-pointer uppercase text-xs ${
+            className={`flex items-center gap-2 px-6 py-3 rounded font-black transition-all cursor-pointer uppercase text-sm ${
               isLoading ? 'bg-gray-400' : theme.btnPrimary
             }`}
           >

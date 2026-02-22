@@ -3,10 +3,10 @@ import { Info } from 'lucide-react';
 
 export const KPICard = ({ label, value, valueClass, subValue, icon: Icon, infoDesc, infoFormula, isDark, theme }) => {
   return (
-    <div className={`${theme.card} p-3 rounded border ${theme.borderLight} flex flex-col justify-center relative group`}>
+    <div className={`${theme.card} p-4 rounded border ${theme.borderLight} flex flex-col justify-center relative group`}>
       <div className="flex justify-between items-start w-full">
-        <div className={`${theme.textMuted} text-[9px] uppercase font-bold mb-1 flex items-center gap-1`}>
-          {Icon && <Icon className="w-3 h-3" />} {label}
+        <div className={`${theme.textMuted} text-[10px] uppercase font-bold mb-2 flex items-center gap-2`}>
+          {Icon && <Icon className="w-4 h-4" />} {label}
         </div>
         {(infoDesc || infoFormula) && (
           <div className={`${theme.textFaint} hover:${theme.accent1} cursor-help transition-colors z-10 relative`}>

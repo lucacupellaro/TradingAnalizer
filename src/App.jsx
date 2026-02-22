@@ -380,7 +380,7 @@ export default function App() {
   const dynLineColors = getLineColors(isDark);
 
   return (
-    <div className={`min-h-screen ${theme.bg} ${theme.text} font-sans pb-20 transition-colors duration-300 overflow-x-hidden`}>
+    <div className={`min-h-screen ${theme.bg} ${theme.text} font-sans pb-32 transition-colors duration-300 overflow-x-hidden`}>
       <style>{marqueeStyle}</style>
 
       {/* Analysis Loader */}
@@ -390,7 +390,7 @@ export default function App() {
       {!authState.isAuthenticated && <LoginModal {...authState} theme={theme} />}
 
       {/* Market Ticker */}
-      <MarketTicker marketQuotes={marketQuotes} isDark={isDark} />
+      <MarketTicker marketQuotes={marketQuotes} isDark={isDark} theme={theme} />
 
       {/* Sidebar */}
       <Sidebar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} activeTab={activeTab} setActiveTab={setActiveTab} theme={theme} />
@@ -399,10 +399,10 @@ export default function App() {
       <Navbar isDark={isDark} setIsDark={setIsDark} isLoading={isLoading} isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} onFileUpload={handleFileUpload} theme={theme} />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto space-y-6 p-4 md:p-8">
+      <div className="max-w-6xl mx-auto space-y-20 p-8 md:p-16 lg:p-20">
         {/* Filter & Table Section */}
         {parsedTrades.length > 0 && activeTab === 'analyzer' && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-6 shadow-xl`}>
+          <div className={`${theme.panel} rounded-xl border ${theme.border} p-10 lg:p-12 shadow-xl`}>
             <div className="flex justify-between items-center cursor-pointer" onClick={() => setShowTable(!showTable)}>
               <h3 className={`text-lg font-bold ${theme.textBold} flex items-center gap-2`}>
                 <TableIcon className={`w-5 h-5 ${theme.accent2}`} /> Controlli e Registro Deal ({filteredTableTrades.length})
@@ -413,8 +413,8 @@ export default function App() {
             </div>
 
             {showTable && (
-              <div className="mt-6 space-y-4">
-                <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-3 ${theme.card} p-4 rounded border ${theme.borderLight}`}>
+              <div className="mt-10 space-y-8">
+                <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-6 ${theme.card} p-8 rounded border ${theme.borderLight}`}>
                   <div className="col-span-1">
                     <label className={`block text-[10px] uppercase font-bold ${theme.textMuted} mb-1`}>Dir.</label>
                     <select
@@ -526,56 +526,58 @@ export default function App() {
                 <FilterBadge filters={appliedFilters} isDark={isDark} theme={theme} />
 
                 {/* Trades Table */}
-                <div className={`overflow-x-auto max-h-[400px] border ${theme.border} rounded shadow-inner ${theme.panel}`}>
-                  <table className="w-full text-left text-[10px] font-mono whitespace-nowrap">
-                    <thead className={`sticky top-0 ${theme.card} shadow-md z-10`}>
-                      <tr>
-                        <th className={`p-3 border-b ${theme.border} ${theme.textMuted}`}>Open Time</th>
-                        <th className={`p-3 border-b ${theme.border} ${theme.textMuted}`}>Dir</th>
-                        <th className={`p-3 border-b ${theme.border} ${theme.textMuted}`}>Type</th>
-                        <th className={`p-3 border-b ${theme.border} ${theme.textMuted}`}>Symbol</th>
-                        <th className={`p-3 border-b ${theme.border} ${theme.textMuted}`}>Strategy / ID</th>
-                        <th className={`p-3 border-b ${theme.border} text-right ${theme.textMuted}`}>Gross Profit</th>
-                        <th className={`p-3 border-b ${theme.border} text-right ${theme.textMuted}`}>Swap</th>
-                        <th className={`p-3 border-b ${theme.border} text-right ${theme.textMuted}`}>Commissioni</th>
-                        <th className={`p-3 border-b ${theme.border} text-right ${theme.textMuted}`}>Net PNL</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTableTrades.map((t, idx) => {
-                        const swap = t.Swap + t.inSwap;
-                        const comms = t.Commission + t.Fee + t.inComm + t.inFee;
-                        const netto = t.Profit + swap + comms;
-                        return (
-                          <tr key={idx} className={`border-b ${theme.borderLight} ${theme.cardHover}`}>
-                            <td className={`p-2 border-r ${theme.borderLight}`}>
-                              {t.OpenTimeMs ? new Date(t.OpenTimeMs).toLocaleString() : '-'}
-                            </td>
-                            <td className={`p-2 border-r ${theme.borderLight}`}>
-                              <span className={`px-1.5 py-0.5 rounded ${t.Direction === 'in' ? 'bg-blue-500/20 text-blue-500' : 'bg-rose-500/20 text-rose-500'}`}>
-                                {t.Direction.toUpperCase()}
-                              </span>
-                            </td>
-                            <td className={`p-2 border-r ${theme.borderLight}`}>
-                              <span className={`px-1.5 py-0.5 rounded ${t.Type === 'buy' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-orange-500/20 text-orange-500'}`}>
-                                {t.Type.toUpperCase()}
-                              </span>
-                            </td>
-                            <td className={`p-2 border-r ${theme.borderLight} font-bold`}>{t.Symbol}</td>
-                            <td className={`p-2 border-r ${theme.borderLight}`}>{t.Id}</td>
-                            <td className={`p-2 border-r ${theme.borderLight} text-right ${t.Profit >= 0 ? theme.success : theme.danger}`}>
-                              {t.Profit.toFixed(2)}
-                            </td>
-                            <td className={`p-2 border-r ${theme.borderLight} text-right text-amber-500`}>{swap.toFixed(2)}</td>
-                            <td className={`p-2 border-r ${theme.borderLight} text-right text-rose-500`}>{comms.toFixed(2)}</td>
-                            <td className={`p-2 text-right font-black ${netto >= 0 ? theme.success : theme.danger}`}>
-                              {netto.toFixed(2)}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                <div className={`overflow-x-hidden border ${theme.border} rounded shadow-inner ${theme.panel} mt-8`}>
+                  <div className={`overflow-y-auto max-h-[500px]`}>
+                    <table className="w-full text-left text-[11px] font-mono">
+                      <thead className={`sticky top-0 ${theme.card} shadow-md z-10`}>
+                        <tr>
+                          <th className={`px-4 py-3 border-b ${theme.border} ${theme.textMuted} font-semibold tracking-wider`}>Open Time</th>
+                          <th className={`px-4 py-3 border-b ${theme.border} ${theme.textMuted} font-semibold tracking-wider`}>Dir</th>
+                          <th className={`px-4 py-3 border-b ${theme.border} ${theme.textMuted} font-semibold tracking-wider`}>Type</th>
+                          <th className={`px-4 py-3 border-b ${theme.border} ${theme.textMuted} font-semibold tracking-wider`}>Symbol</th>
+                          <th className={`px-4 py-3 border-b ${theme.border} ${theme.textMuted} font-semibold tracking-wider`}>Strategy / ID</th>
+                          <th className={`px-4 py-3 border-b ${theme.border} text-right ${theme.textMuted} font-semibold tracking-wider`}>Gross Profit</th>
+                          <th className={`px-4 py-3 border-b ${theme.border} text-right ${theme.textMuted} font-semibold tracking-wider`}>Swap</th>
+                          <th className={`px-4 py-3 border-b ${theme.border} text-right ${theme.textMuted} font-semibold tracking-wider`}>Commissioni</th>
+                          <th className={`px-4 py-3 border-b ${theme.border} text-right ${theme.textMuted} font-semibold tracking-wider`}>Net PNL</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredTableTrades.map((t, idx) => {
+                          const swap = t.Swap + t.inSwap;
+                          const comms = t.Commission + t.Fee + t.inComm + t.inFee;
+                          const netto = t.Profit + swap + comms;
+                          return (
+                            <tr key={idx} className={`border-b ${theme.borderLight} hover:${theme.card} transition-colors duration-150 cursor-pointer`}>
+                              <td className={`px-4 py-3 border-r ${theme.borderLight}`}>
+                                {t.OpenTimeMs ? new Date(t.OpenTimeMs).toLocaleString() : '-'}
+                              </td>
+                              <td className={`px-4 py-3 border-r ${theme.borderLight}`}>
+                                <span className={`px-2 py-1 rounded text-xs font-bold ${t.Direction === 'in' ? 'bg-blue-500/20 text-blue-400' : 'bg-rose-500/20 text-rose-400'}`}>
+                                  {t.Direction.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className={`px-4 py-3 border-r ${theme.borderLight}`}>
+                                <span className={`px-2 py-1 rounded text-xs font-bold ${t.Type === 'buy' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-orange-500/20 text-orange-400'}`}>
+                                  {t.Type.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className={`px-4 py-3 border-r ${theme.borderLight} font-bold`}>{t.Symbol}</td>
+                              <td className={`px-4 py-3 border-r ${theme.borderLight}`}>{t.Id}</td>
+                              <td className={`px-4 py-3 border-r ${theme.borderLight} text-right ${t.Profit >= 0 ? theme.success : theme.danger}`}>
+                                {t.Profit.toFixed(2)}
+                              </td>
+                              <td className={`px-4 py-3 border-r ${theme.borderLight} text-right text-amber-500`}>{swap.toFixed(2)}</td>
+                              <td className={`px-4 py-3 border-r ${theme.borderLight} text-right text-rose-500`}>{comms.toFixed(2)}</td>
+                              <td className={`px-4 py-3 text-right font-black ${netto >= 0 ? theme.success : theme.danger}`}>
+                                {netto.toFixed(2)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
@@ -584,10 +586,10 @@ export default function App() {
 
         {/* Global Statistics */}
         {globalStats && activeTab === 'analyzer' && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-6 shadow-2xl relative`}>
-            <h3 className={`text-xl font-bold ${theme.textBold} mb-6 uppercase tracking-wider`}>Recap Statistico Globale</h3>
+          <div className={`${theme.panel} rounded-xl border ${theme.border} p-10 lg:p-12 shadow-2xl relative mt-20`}>
+            <h3 className={`text-xl font-bold ${theme.textBold} mb-10 uppercase tracking-wider`}>Recap Statistico Globale</h3>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6 mb-10">
               <KPICard isDark={isDark} theme={theme} label="Net Profit" value={globalStats.netProfit.toFixed(2)} valueClass={globalStats.netProfit >= 0 ? theme.success : theme.danger} infoDesc="Profitto finale post costi" infoFormula="Net = Gross + Swap + Commissioni" />
               <KPICard isDark={isDark} theme={theme} label="Gross Profit" value={`+${globalStats.grossP.toFixed(2)}`} valueClass={theme.success} infoDesc="Somma dei trade vinti" infoFormula="Σ Profitti (>0)" />
               <KPICard isDark={isDark} theme={theme} label="Gross Loss" value={globalStats.grossL.toFixed(2)} valueClass={theme.danger} infoDesc="Somma dei trade persi" infoFormula="Σ Perdite (<0)" />
@@ -655,7 +657,7 @@ export default function App() {
         {/* Strategy Details */}
         {activeTab === 'analyzer' &&
           strategyStats.map((s, i) => (
-            <div key={i} className={`${theme.panel} rounded-xl border ${theme.border} mb-12 overflow-hidden shadow-lg`}>
+            <div key={i} className={`${theme.panel} rounded-xl border ${theme.border} mb-16 mt-16 overflow-hidden shadow-lg`}>
               <div className={`${theme.card} p-5 border-b ${theme.border} flex justify-between items-center`}>
                 <h4 className="font-bold text-lg">{s.name}</h4>
                 <span className={`text-xl font-mono font-black ${s.netProfit >= 0 ? theme.success : theme.danger}`}>
@@ -708,7 +710,7 @@ export default function App() {
 
         {/* Correlation Matrix */}
         {activeTab === 'analyzer' && analyzedTrades.length > 0 && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-6 shadow-2xl mt-8`}>
+          <div className={`${theme.panel} rounded-xl border ${theme.border} p-10 lg:p-12 shadow-2xl mt-20`}>
             <div className="flex justify-between items-center mb-6">
               <h3 className={`text-xl font-bold ${theme.textBold} flex items-center gap-2`}>
                 <Grid className={`w-6 h-6 ${theme.accent1}`} /> Matrice Correlazioni Pearson
@@ -723,7 +725,7 @@ export default function App() {
 
         {/* Monte Carlo Simulator */}
         {activeTab === 'analyzer' && monteCarloData && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-6 shadow-2xl mt-8`}>
+          <div className={`${theme.panel} rounded-xl border ${theme.border} p-10 lg:p-12 shadow-2xl mt-20`}>
             <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
               <h3 className={`text-xl font-bold ${theme.textBold} flex items-center gap-2`}>
                 <Shuffle className={`w-6 h-6 ${theme.accent1}`} /> Simulazione Monte Carlo (Markov Chain)
