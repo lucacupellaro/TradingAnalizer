@@ -45,8 +45,8 @@ export const LoginModal = ({
               value={loginName}
               onChange={(e) => setLoginName(e.target.value)}
               disabled={isSendingEmail}
-              className="w-80 bg-[#111] border border-[#333] text-white px-6 rounded outline-none focus:border-white font-mono text-center text-lg font-bold"
-              style={{ marginBottom: "0.75rem", padding: '0.65rem 1.25rem', minHeight: '72px' }}
+              className="w-80 bg-[#111] border border-[#333] text-white px-6 rounded-2xl outline-none focus:border-white font-mono text-center text-lg font-bold"
+              style={{ marginBottom: "0.75rem", padding: '0.75rem 1.35rem', minHeight: '72px' }}
             />
             <input
               type="email"
@@ -55,14 +55,14 @@ export const LoginModal = ({
               value={loginEmail}
               onChange={(e) => setLoginEmail(e.target.value)}
               disabled={isSendingEmail}
-              className="w-80 bg-[#111] border border-[#333] text-white px-6 rounded outline-none focus:border-white font-mono text-center text-lg font-bold"
+              className="w-80 bg-[#111] border border-[#333] text-white px-6 rounded-2xl outline-none focus:border-white font-mono text-center text-lg font-bold"
               style={{ marginBottom: "1rem", padding: '0.8rem 1.25rem', minHeight: '72px' }}
             />
             <button
               type="submit"
               disabled={isSendingEmail}
-              className={`w-80 font-black py-6 rounded uppercase text-lg ${theme.accentBg} flex justify-center items-center gap-3`}
-              style={{ marginTop: "0.rem", marginBottom: '0.75rem' }}
+              className={`w-80 font-black h-12  rounded-2xl  uppercase text-lg ${theme.accentBg} flex justify-center items-center gap-3`}
+              style={{ marginTop: "0.7rem", marginBottom: '0.75rem' }}
             >
               {isSendingEmail ? (
                 <>
