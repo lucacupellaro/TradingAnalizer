@@ -398,11 +398,13 @@ export default function App() {
       {/* Navbar */}
       <Navbar isDark={isDark} setIsDark={setIsDark} isLoading={isLoading} isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} onFileUpload={handleFileUpload} theme={theme} />
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto space-y-20 p-8 md:p-16 lg:p-20">
+      {/* ── MAIN CONTENT ─────────────────────────────────────────────────────── */}
+      {/* FIX: padding simmetrico + max-width allineato con Navbar (max-w-7xl)   */}
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
         {/* Filter & Table Section */}
         {parsedTrades.length > 0 && activeTab === 'analyzer' && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-10 lg:p-12 shadow-xl`}>
+          <div className={`${theme.panel} rounded-xl border ${theme.border} p-6 lg:p-8 shadow-xl`}>
             <div className="flex justify-between items-center cursor-pointer" onClick={() => setShowTable(!showTable)}>
               <h3 className={`text-lg font-bold ${theme.textBold} flex items-center gap-2`}>
                 <TableIcon className={`w-5 h-5 ${theme.accent2}`} /> Controlli e Registro Deal ({filteredTableTrades.length})
@@ -413,8 +415,8 @@ export default function App() {
             </div>
 
             {showTable && (
-              <div className="mt-10 space-y-8">
-                <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-6 ${theme.card} p-8 rounded border ${theme.borderLight}`}>
+              <div className="mt-8 space-y-6">
+                <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-4 ${theme.card} p-6 rounded border ${theme.borderLight}`}>
                   <div className="col-span-1">
                     <label className={`block text-[10px] uppercase font-bold ${theme.textMuted} mb-1`}>Dir.</label>
                     <select
@@ -526,7 +528,7 @@ export default function App() {
                 <FilterBadge filters={appliedFilters} isDark={isDark} theme={theme} />
 
                 {/* Trades Table */}
-                <div className={`overflow-x-hidden border ${theme.border} rounded shadow-inner ${theme.panel} mt-8`}>
+                <div className={`overflow-x-auto border ${theme.border} rounded shadow-inner ${theme.panel} mt-6`}>
                   <div className={`overflow-y-auto max-h-[500px]`}>
                     <table className="w-full text-left text-[11px] font-mono">
                       <thead className={`sticky top-0 ${theme.card} shadow-md z-10`}>
@@ -586,10 +588,10 @@ export default function App() {
 
         {/* Global Statistics */}
         {globalStats && activeTab === 'analyzer' && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-10 lg:p-12 shadow-2xl relative mt-20`}>
-            <h3 className={`text-xl font-bold ${theme.textBold} mb-10 uppercase tracking-wider`}>Recap Statistico Globale</h3>
+          <div className={`${theme.panel} rounded-xl border ${theme.border} p-6 lg:p-8 shadow-2xl`}>
+            <h3 className={`text-xl font-bold ${theme.textBold} mb-8 uppercase tracking-wider`}>Recap Statistico Globale</h3>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6 mb-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
               <KPICard isDark={isDark} theme={theme} label="Net Profit" value={globalStats.netProfit.toFixed(2)} valueClass={globalStats.netProfit >= 0 ? theme.success : theme.danger} infoDesc="Profitto finale post costi" infoFormula="Net = Gross + Swap + Commissioni" />
               <KPICard isDark={isDark} theme={theme} label="Gross Profit" value={`+${globalStats.grossP.toFixed(2)}`} valueClass={theme.success} infoDesc="Somma dei trade vinti" infoFormula="Σ Profitti (>0)" />
               <KPICard isDark={isDark} theme={theme} label="Gross Loss" value={globalStats.grossL.toFixed(2)} valueClass={theme.danger} infoDesc="Somma dei trade persi" infoFormula="Σ Perdite (<0)" />
@@ -632,7 +634,7 @@ export default function App() {
               <DistributionChart data={globalStats.tradeProfits} title="Distribuzione (Solo Loss)" type="loss" isDark={isDark} theme={theme} />
             </div>
 
-            <div className="flex justify-between items-center mb-4 mt-12 border-b pb-4 border-slate-800">
+            <div className="flex justify-between items-center mb-4 mt-10 border-b pb-4 border-slate-800">
               <h2 className={`text-xl font-black uppercase tracking-widest ${theme.textBold}`}>Performance Dettagliate</h2>
               <div className={`flex bg-[#111] border border-[#333] rounded-lg p-1`}>
                 <button
@@ -657,7 +659,7 @@ export default function App() {
         {/* Strategy Details */}
         {activeTab === 'analyzer' &&
           strategyStats.map((s, i) => (
-            <div key={i} className={`${theme.panel} rounded-xl border ${theme.border} mb-16 mt-16 overflow-hidden shadow-lg`}>
+            <div key={i} className={`${theme.panel} rounded-xl border ${theme.border} overflow-hidden shadow-lg`}>
               <div className={`${theme.card} p-5 border-b ${theme.border} flex justify-between items-center`}>
                 <h4 className="font-bold text-lg">{s.name}</h4>
                 <span className={`text-xl font-mono font-black ${s.netProfit >= 0 ? theme.success : theme.danger}`}>
@@ -710,7 +712,7 @@ export default function App() {
 
         {/* Correlation Matrix */}
         {activeTab === 'analyzer' && analyzedTrades.length > 0 && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-10 lg:p-12 shadow-2xl mt-20`}>
+          <div className={`${theme.panel} rounded-xl border ${theme.border} p-6 lg:p-8 shadow-2xl`}>
             <div className="flex justify-between items-center mb-6">
               <h3 className={`text-xl font-bold ${theme.textBold} flex items-center gap-2`}>
                 <Grid className={`w-6 h-6 ${theme.accent1}`} /> Matrice Correlazioni Pearson
@@ -725,7 +727,7 @@ export default function App() {
 
         {/* Monte Carlo Simulator */}
         {activeTab === 'analyzer' && monteCarloData && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-10 lg:p-12 shadow-2xl mt-20`}>
+          <div className={`${theme.panel} rounded-xl border ${theme.border} p-6 lg:p-8 shadow-2xl`}>
             <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
               <h3 className={`text-xl font-bold ${theme.textBold} flex items-center gap-2`}>
                 <Shuffle className={`w-6 h-6 ${theme.accent1}`} /> Simulazione Monte Carlo (Markov Chain)
@@ -818,6 +820,7 @@ export default function App() {
             <p className={`${theme.textMuted} max-w-2xl mx-auto`}>Modulo notizie macroeconomiche in costruzione.</p>
           </div>
         )}
+
       </div>
     </div>
   );
