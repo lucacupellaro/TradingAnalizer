@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 * {
   margin: 0;
@@ -9,14 +9,15 @@
 }
 
 body {
-  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #000000;
 }
 
 .font-mono {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-weight: 600;
 }
 
@@ -31,55 +32,118 @@ html, body, #root {
   overflow-x: hidden;
 }
 
-/* MAIN LAYOUT FIXES */
-main {
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-  padding: 2rem 3rem !important;
+/* Bloomberg-style scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-/* Force max-width and center */
-div[class*="max-w-6xl"] {
-  max-width: 1200px !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  padding: 2rem 3rem !important;
+::-webkit-scrollbar-track {
+  background: #000000;
 }
 
-/* Sections spacing */
-.grid {
-  gap: 2rem !important;
+::-webkit-scrollbar-thumb {
+  background: #1e2a3a;
+  border-radius: 3px;
 }
 
-/* Panel padding */
-div[class*="rounded-xl"] {
-  padding: 2.5rem !important;
-  margin-bottom: 3rem !important;
-  margin-top: 3rem !important;
+::-webkit-scrollbar-thumb:hover {
+  background: #ff8c0060;
 }
 
-/* KPI Cards */
-div[class*="grid-cols"] {
-  gap: 1.5rem !important;
-  margin-bottom: 2.5rem !important;
+/* Scanline overlay effect */
+.bloomberg-scanline::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
 }
 
-/* Table improvements */
-table {
-  margin-top: 2rem !important;
+/* Glow effect for panels */
+.glow-panel {
+  box-shadow:
+    0 0 0 1px rgba(255, 140, 0, 0.06),
+    0 4px 24px -4px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
-th {
-  padding: 1rem !important;
+.glow-panel:hover {
+  box-shadow:
+    0 0 0 1px rgba(255, 140, 0, 0.12),
+    0 8px 32px -4px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-td {
-  padding: 1rem !important;
+/* Orange accent glow */
+.glow-orange {
+  text-shadow: 0 0 10px rgba(255, 140, 0, 0.4);
 }
 
-/* Filter section spacing */
-div[class*="grid-cols-1"] {
-  gap: 1.5rem !important;
+/* Green P&L glow */
+.glow-green {
+  text-shadow: 0 0 8px rgba(0, 230, 118, 0.3);
 }
 
+/* Red P&L glow */
+.glow-red {
+  text-shadow: 0 0 8px rgba(255, 23, 68, 0.3);
+}
 
+/* Pulse animation for live data */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.pulse-live {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Fade in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+/* Stagger delay for cards */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+
+/* Corner accent line (Bloomberg style) */
+.corner-accent {
+  position: relative;
+}
+
+.corner-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 24px;
+  background: #ff8c00;
+  border-radius: 0 0 2px 0;
+}

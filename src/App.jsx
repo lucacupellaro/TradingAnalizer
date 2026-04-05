@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { getTheme } from './config/themes';
 import {
   useAuth,
@@ -30,15 +30,17 @@ import {
   calculateDayStats,
   getAvgTimeStr
 } from './utils';
-import { Info, Globe, TableIcon, ChevronUp, ChevronDown, Grid, Shuffle, Clock } from 'lucide-react';
+import { Info, Globe, TableIcon, ChevronUp, ChevronDown, Grid, Shuffle, Clock, Upload, BarChart2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function App() {
   const [isDark, setIsDark] = useState(true);
   const [activeTab, setActiveTab] = useState('analyzer');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [pendingRows, setPendingRows] = useState(null);   // rawRows in attesa del modal
+  const [confirmedRows, setConfirmedRows] = useState([]); // rawRows confermati → passati all'analisi
 
-  const theme = getTheme(isDark);
+  const theme = useMemo(() => getTheme(isDark), [isDark]);
 
   // Auth
   const authState = useAuth();
@@ -46,7 +48,12 @@ export default function App() {
   // File Upload
   const { rawRows, headers, colConfig, isLoading, error, handleFileUpload } = useFileUpload();
 
-  // Analysis & Data
+  // Quando arrivano nuovi dati dal file, mostra il modal row-range prima di analizzare
+  useEffect(() => {
+    if (rawRows.length > 0) setPendingRows(rawRows);
+  }, [rawRows]);
+
+  // Analysis & Data — riceve confirmedRows (vuoto finché l'utente non conferma il range)
   const {
     parsedTrades,
     uniqueSymbols,
@@ -66,7 +73,15 @@ export default function App() {
     mcIterations,
     setMcIterations,
     triggerAnalysis
-  } = useAnalysis(rawRows, colConfig);
+  } = useAnalysis(confirmedRows, colConfig);
+
+  // Conferma range righe → aggiorna filtri e sblocca l'analisi
+  const handleRowConfirm = (start, end) => {
+    setTableFilters(prev => ({ ...prev, rowStart: start, rowEnd: end }));
+    setAppliedFilters(prev => ({ ...prev, rowStart: start, rowEnd: end }));
+    setConfirmedRows(pendingRows);
+    setPendingRows(null);
+  };
 
   // Market Data
   const { spxData, marketQuotes } = useMarketData();
@@ -77,6 +92,7 @@ export default function App() {
 
     let netProfit = 0, pkEq = 0, mxDD = 0, sumSqDD = 0, grossP = 0, grossL = 0, totCosti = 0, totSwap = 0;
     let curEq = 0, wonBuy = 0, wonSell = 0;
+    let maxConsecLoss = 0, curConsecLoss = 0;
     const tDets = [], pDly = {}, opT = [], clT = [], eqSeq = [];
 
     analyzedTrades.forEach((t, i) => {
@@ -98,6 +114,13 @@ export default function App() {
         totSwap += swap;
         netProfit += net;
         tDets.push({ net, TimeMs: t.TimeMs });
+
+        if (net < 0) {
+          curConsecLoss++;
+          if (curConsecLoss > maxConsecLoss) maxConsecLoss = curConsecLoss;
+        } else {
+          curConsecLoss = 0;
+        }
 
         if (t.OpenTimeMs) opT.push(t.OpenTimeMs);
         if (t.CloseTimeMs) clT.push(t.CloseTimeMs);
@@ -171,7 +194,8 @@ export default function App() {
       beta,
       corr,
       avgOpen: getAvgTimeStr(opT),
-      avgClose: getAvgTimeStr(clT)
+      avgClose: getAvgTimeStr(clT),
+      maxConsecLoss,
     };
   }, [analyzedTrades, spxData]);
 
@@ -189,7 +213,7 @@ export default function App() {
     return Object.keys(grp).map(name => {
       const deals = grp[name].sort((a, b) => a.TimeMs - b.TimeMs);
       let curEq = 0, pkEq = 0, mxDD = 0, sumSqDD = 0, netProfit = 0, grossP = 0, grossL = 0, sC = 0, sSwap = 0;
-      let wonBuy = 0, wonSell = 0;
+      let wonBuy = 0, wonSell = 0, maxConsecLoss = 0, curConsecLoss = 0;
       const eqSeq = [], tDets = [], opTs = [], clTs = [], pDly = {};
 
       deals.forEach((d, idx) => {
@@ -209,6 +233,13 @@ export default function App() {
         netProfit += net;
         curEq += net;
         tDets.push({ net, TimeMs: d.TimeMs });
+
+        if (net < 0) {
+          curConsecLoss++;
+          if (curConsecLoss > maxConsecLoss) maxConsecLoss = curConsecLoss;
+        } else {
+          curConsecLoss = 0;
+        }
 
         if (d.OpenTimeMs) opTs.push(d.OpenTimeMs);
         if (d.CloseTimeMs) clTs.push(d.CloseTimeMs);
@@ -275,7 +306,8 @@ export default function App() {
         equitySequence: eqSeq,
         dayStats: calculateDayStats(tDets),
         avgOpen: getAvgTimeStr(opTs),
-        avgClose: getAvgTimeStr(clTs)
+        avgClose: getAvgTimeStr(clTs),
+        maxConsecLoss,
       };
     }).sort((a, b) => b.netProfit - a.netProfit);
   }, [analyzedTrades, groupBy, spxData]);
@@ -380,207 +412,298 @@ export default function App() {
   const dynLineColors = getLineColors(isDark);
 
   return (
-    <div className={`min-h-screen ${theme.bg} ${theme.text} font-sans pb-32 transition-colors duration-300 overflow-x-hidden`}>
+    <div className={`w-full min-h-screen ${theme.bg} ${theme.text} font-sans bloomberg-scanline`}>
       <style>{marqueeStyle}</style>
 
-      {/* Analysis Loader */}
-      <AnalysisLoader isAnalyzing={isAnalyzing} formulaIdx={formulaIdx} isDark={isDark} theme={theme} />
-
-      {/* Login Modal */}
+      {/* Overlay / fixed elements */}
+      <AnalysisLoader isAnalyzing={isAnalyzing} formulaIdx={formulaIdx} isDark={isDark} theme={theme} rowStart={tableFilters.rowStart} rowEnd={tableFilters.rowEnd} />
       {!authState.isAuthenticated && <LoginModal {...authState} theme={theme} />}
 
-      {/* Market Ticker */}
-      <MarketTicker marketQuotes={marketQuotes} isDark={isDark} theme={theme} />
+      {/* ── Row Range Modal ─────────────────────────────────────── */}
+      {pendingRows && <RowRangeModal totalRows={pendingRows.length} onConfirm={handleRowConfirm} />}
 
-      {/* Sidebar */}
-      <Sidebar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} activeTab={activeTab} setActiveTab={setActiveTab} theme={theme} />
+      {/* Sidebar drawer (position:fixed, no layout impact) */}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onLogout={() => authState.setIsAuthenticated(false)}
+      />
 
-      {/* Navbar */}
-      <Navbar isDark={isDark} setIsDark={setIsDark} isLoading={isLoading} isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} onFileUpload={handleFileUpload} theme={theme} />
+      {/* Sticky top bars */}
+      <div className="sticky top-0 z-[100]">
+        <MarketTicker marketQuotes={marketQuotes} isDark={isDark} theme={theme} />
+        <Navbar isDark={isDark} setIsDark={setIsDark} isLoading={isLoading} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} onFileUpload={handleFileUpload} />
+      </div>
 
-      {/* ── MAIN CONTENT ─────────────────────────────────────────────────────── */}
-      {/* FIX: padding simmetrico + max-width allineato con Navbar (max-w-7xl)   */}
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+      {/* Full-width content */}
+      <main className="w-full">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-6 space-y-6 pb-16">
+
+        {/* Empty state */}
+        {parsedTrades.length === 0 && activeTab === 'analyzer' && (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-6 animate-fade-in">
+            <BarChart2 className="w-20 h-20 text-[#ff8c00] opacity-20" />
+            <div>
+              <h2 className="text-3xl font-black mb-2 text-[#e2e8f0] font-mono tracking-tight">Nessun Report Caricato</h2>
+              <p className="text-[#4a5568] text-sm max-w-md mx-auto font-mono">
+                Importa un report MetaTrader 5 in formato <span className="text-[#ff8c00]">.xlsx</span>, <span className="text-[#ff8c00]">.xls</span>, <span className="text-[#ff8c00]">.html</span> o <span className="text-[#ff8c00]">.csv</span> per iniziare l'analisi.
+              </p>
+            </div>
+            <label className="flex items-center gap-2 px-6 py-3 rounded font-bold text-xs cursor-pointer uppercase tracking-widest bg-[#ff8c00] text-black hover:bg-[#ff9f1c] transition-all shadow-lg shadow-[#ff8c00]/20 font-mono">
+              <Upload className="w-4 h-4" />
+              IMPORT REPORT MT5
+              <input type="file" accept=".xlsx,.xls,.html,.htm,.csv" onChange={handleFileUpload} className="hidden" />
+            </label>
+          </div>
+        )}
 
         {/* Filter & Table Section */}
         {parsedTrades.length > 0 && activeTab === 'analyzer' && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-6 lg:p-8 shadow-xl`}>
-            <div className="flex justify-between items-center cursor-pointer" onClick={() => setShowTable(!showTable)}>
-              <h3 className={`text-lg font-bold ${theme.textBold} flex items-center gap-2`}>
-                <TableIcon className={`w-5 h-5 ${theme.accent2}`} /> Controlli e Registro Deal ({filteredTableTrades.length})
-              </h3>
-              <button className={`p-2 ${theme.card} rounded ${theme.textMuted}`}>
-                {showTable ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          <div className="rounded-lg border border-[#1a2332] bg-[#0d1117] overflow-hidden glow-panel animate-fade-in">
+
+            {/* Section header */}
+            <div
+              className="flex items-center justify-between px-6 py-3.5 border-b border-[#1a2332] cursor-pointer select-none hover:bg-[#111824]/50 transition-colors"
+              onClick={() => setShowTable(!showTable)}
+            >
+              <div className="flex items-center gap-3">
+                <TableIcon className="w-4 h-4 text-[#ff8c00]" />
+                <span className="text-xs font-bold text-[#ff8c00] tracking-widest font-mono uppercase glow-orange">DEAL BOOK</span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#ff8c00]/10 text-[#ff8c00] border border-[#ff8c00]/20 font-mono">
+                  {filteredTableTrades.length}
+                </span>
+              </div>
+              <button className="p-1.5 rounded text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/5 transition-all">
+                {showTable ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
             </div>
 
             {showTable && (
-              <div className="mt-8 space-y-6">
-                <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-4 ${theme.card} p-6 rounded border ${theme.borderLight}`}>
-                  <div className="col-span-1">
-                    <label className={`block text-[10px] uppercase font-bold ${theme.textMuted} mb-1`}>Dir.</label>
-                    <select
-                      className={`w-full p-1.5 rounded text-xs border ${theme.input}`}
-                      value={tableFilters.dir}
-                      onChange={e => setTableFilters({ ...tableFilters, dir: e.target.value })}
-                    >
-                      <option value="all">TUTTE</option>
-                      <option value="in">IN</option>
-                      <option value="out">OUT</option>
-                    </select>
+              <div className="p-6 space-y-5">
+
+                {/* ── Filter grid ─────────────────────────── */}
+                <div className="space-y-4">
+
+                  {/* Row 1: quick selects + date range + row range */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {[
+                      {
+                        label: 'Direzione',
+                        node: (
+                          <select
+                            className="w-full h-9 px-3 rounded text-xs border border-[#1a2332] bg-[#000000] text-[#8b9dc3] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
+                            value={tableFilters.dir}
+                            onChange={e => setTableFilters({ ...tableFilters, dir: e.target.value })}
+                          >
+                            <option value="all">Tutte</option>
+                            <option value="in">IN</option>
+                            <option value="out">OUT</option>
+                          </select>
+                        )
+                      },
+                      {
+                        label: 'Tipo',
+                        node: (
+                          <select
+                            className="w-full h-9 px-3 rounded text-xs border border-[#1a2332] bg-[#000000] text-[#8b9dc3] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
+                            value={tableFilters.tradeType}
+                            onChange={e => setTableFilters({ ...tableFilters, tradeType: e.target.value })}
+                          >
+                            <option value="all">Tutti</option>
+                            <option value="buy">BUY</option>
+                            <option value="sell">SELL</option>
+                          </select>
+                        )
+                      },
+                      {
+                        label: 'Da data',
+                        node: (
+                          <input
+                            type="date"
+                            className="w-full h-9 px-3 rounded text-xs border border-[#1a2332] bg-[#000000] text-[#8b9dc3] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
+                            value={tableFilters.dateStart}
+                            onChange={e => setTableFilters({ ...tableFilters, dateStart: e.target.value })}
+                          />
+                        )
+                      },
+                      {
+                        label: 'A data',
+                        node: (
+                          <input
+                            type="date"
+                            className="w-full h-9 px-3 rounded text-xs border border-[#1a2332] bg-[#000000] text-[#8b9dc3] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
+                            value={tableFilters.dateEnd}
+                            onChange={e => setTableFilters({ ...tableFilters, dateEnd: e.target.value })}
+                          />
+                        )
+                      },
+                      {
+                        label: 'Da riga',
+                        node: (
+                          <input
+                            type="number" min="1"
+                            className="w-full h-9 px-3 rounded text-xs border border-[#1a2332] bg-[#000000] text-[#8b9dc3] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
+                            value={tableFilters.rowStart || ''}
+                            onChange={e => setTableFilters({ ...tableFilters, rowStart: e.target.value || '' })}
+                          />
+                        )
+                      },
+                      {
+                        label: 'A riga',
+                        node: (
+                          <input
+                            type="number" min="1"
+                            className="w-full h-9 px-3 rounded text-xs border border-[#1a2332] bg-[#000000] text-[#8b9dc3] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
+                            value={tableFilters.rowEnd || ''}
+                            onChange={e => setTableFilters({ ...tableFilters, rowEnd: e.target.value || '' })}
+                          />
+                        )
+                      },
+                    ].map(({ label, node }) => (
+                      <div key={label}>
+                        <label className="block text-[9px] uppercase tracking-[0.15em] font-semibold text-[#4a5568] mb-1.5 font-mono">{label}</label>
+                        {node}
+                      </div>
+                    ))}
                   </div>
-                  <div className="col-span-1">
-                    <label className={`block text-[10px] uppercase font-bold ${theme.textMuted} mb-1`}>Tipo</label>
-                    <select
-                      className={`w-full p-1.5 rounded text-xs border ${theme.input}`}
-                      value={tableFilters.tradeType}
-                      onChange={e => setTableFilters({ ...tableFilters, tradeType: e.target.value })}
-                    >
-                      <option value="all">TUTTI</option>
-                      <option value="buy">BUY</option>
-                      <option value="sell">SELL</option>
-                    </select>
+
+                  {/* Row 2: symbol + strategy chips */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                    {[
+                      {
+                        label: 'Simboli',
+                        items: uniqueSymbols,
+                        selected: tableFilters.symbols,
+                        onToggle: (s) => setTableFilters({
+                          ...tableFilters,
+                          symbols: tableFilters.symbols.includes(s)
+                            ? tableFilters.symbols.filter(x => x !== s)
+                            : [...tableFilters.symbols, s]
+                        }),
+                        onClear: () => setTableFilters({ ...tableFilters, symbols: [] }),
+                      },
+                      {
+                        label: 'Strategie',
+                        items: uniqueStrategies,
+                        selected: tableFilters.strategies,
+                        onToggle: (s) => setTableFilters({
+                          ...tableFilters,
+                          strategies: tableFilters.strategies.includes(s)
+                            ? tableFilters.strategies.filter(x => x !== s)
+                            : [...tableFilters.strategies, s]
+                        }),
+                        onClear: () => setTableFilters({ ...tableFilters, strategies: [] }),
+                      },
+                    ].map(({ label, items, selected, onToggle, onClear }) => (
+                      <div key={label}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="text-[10px] uppercase tracking-widest font-semibold text-gray-600">{label}</label>
+                          <button
+                            onClick={onClear}
+                            className="text-[10px] text-gray-600 hover:text-gray-300 transition-colors"
+                          >
+                            Azzera
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 p-3 rounded border border-[#1a2332] bg-[#000000]/60 min-h-[44px] max-h-28 overflow-y-auto">
+                          {items.map(s => (
+                            <button
+                              key={s}
+                              onClick={() => onToggle(s)}
+                              className={`px-2.5 py-1 rounded text-[10px] font-mono font-semibold transition-all border ${
+                                selected.includes(s)
+                                  ? 'bg-[#ff8c00]/15 text-[#ff8c00] border-[#ff8c00]/30'
+                                  : 'bg-transparent text-[#4a5568] border-[#1a2332] hover:text-[#8b9dc3] hover:border-[#2d3a4a]'
+                              }`}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="col-span-1">
-                    <label className={`block text-[10px] uppercase font-bold ${theme.textMuted} mb-1`}>Da Data</label>
-                    <input
-                      type="date"
-                      className={`w-full p-1.5 rounded text-xs border ${theme.input}`}
-                      value={tableFilters.dateStart}
-                      onChange={e => setTableFilters({ ...tableFilters, dateStart: e.target.value })}
-                    />
-                  </div>
-                  <div className="col-span-1">
-                    <label className={`block text-[10px] uppercase font-bold ${theme.textMuted} mb-1`}>A Data</label>
-                    <input
-                      type="date"
-                      className={`w-full p-1.5 rounded text-xs border ${theme.input}`}
-                      value={tableFilters.dateEnd}
-                      onChange={e => setTableFilters({ ...tableFilters, dateEnd: e.target.value })}
-                    />
-                  </div>
-                  <div className="lg:col-span-2">
-                    <label className={`block text-[10px] uppercase font-bold ${theme.textMuted} mb-1 flex justify-between`}>
-                      Simboli{' '}
-                      <span
-                        className="lowercase font-normal opacity-70 cursor-pointer hover:underline"
-                        onClick={() => setTableFilters({ ...tableFilters, symbols: [] })}
-                      >
-                        Azzera
-                      </span>
-                    </label>
-                    <div className={`flex flex-wrap gap-1 overflow-y-auto max-h-24 p-2 rounded border ${theme.input}`}>
-                      {uniqueSymbols.map(s => (
-                        <button
-                          key={s}
-                          onClick={() =>
-                            setTableFilters({
-                              ...tableFilters,
-                              symbols: tableFilters.symbols.includes(s) ? tableFilters.symbols.filter(x => x !== s) : [...tableFilters.symbols, s]
-                            })
-                          }
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono transition-colors ${
-                            tableFilters.symbols.includes(s) ? theme.accentBg : theme.panel
-                          }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="lg:col-span-2">
-                    <label className={`block text-[10px] uppercase font-bold ${theme.textMuted} mb-1 flex justify-between`}>
-                      Strategie{' '}
-                      <span
-                        className="lowercase font-normal opacity-70 cursor-pointer hover:underline"
-                        onClick={() => setTableFilters({ ...tableFilters, strategies: [] })}
-                      >
-                        Azzera
-                      </span>
-                    </label>
-                    <div className={`flex flex-wrap gap-1 overflow-y-auto max-h-24 p-2 rounded border ${theme.input}`}>
-                      {uniqueStrategies.map(s => (
-                        <button
-                          key={s}
-                          onClick={() =>
-                            setTableFilters({
-                              ...tableFilters,
-                              strategies: tableFilters.strategies.includes(s) ? tableFilters.strategies.filter(x => x !== s) : [...tableFilters.strategies, s]
-                            })
-                          }
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono transition-colors ${
-                            tableFilters.strategies.includes(s) ? theme.accentBg : theme.panel
-                          }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+
+                  {/* Apply button */}
                   <button
                     onClick={triggerAnalysis}
-                    className={`w-full lg:col-span-8 font-black py-3 rounded uppercase text-xs mt-2 ${theme.accentBg}`}
+                    className="w-full py-3 rounded text-[10px] font-bold uppercase tracking-[0.2em] bg-[#ff8c00] hover:bg-[#ff9f1c] text-black transition-all border border-[#ff8c00]/60 shadow-lg shadow-[#ff8c00]/15 font-mono"
                   >
-                    Applica Filtri e Aggiorna Analisi
+                    APPLICA FILTRI &amp; AGGIORNA ANALISI
                   </button>
                 </div>
 
                 <FilterBadge filters={appliedFilters} isDark={isDark} theme={theme} />
 
-                {/* Trades Table */}
-                <div className={`overflow-x-auto border ${theme.border} rounded shadow-inner ${theme.panel} mt-6`}>
-                  <div className={`overflow-y-auto max-h-[500px]`}>
-                    <table className="w-full text-left text-[11px] font-mono">
-                      <thead className={`sticky top-0 ${theme.card} shadow-md z-10`}>
-                        <tr>
-                          <th className={`px-4 py-3 border-b ${theme.border} ${theme.textMuted} font-semibold tracking-wider`}>Open Time</th>
-                          <th className={`px-4 py-3 border-b ${theme.border} ${theme.textMuted} font-semibold tracking-wider`}>Dir</th>
-                          <th className={`px-4 py-3 border-b ${theme.border} ${theme.textMuted} font-semibold tracking-wider`}>Type</th>
-                          <th className={`px-4 py-3 border-b ${theme.border} ${theme.textMuted} font-semibold tracking-wider`}>Symbol</th>
-                          <th className={`px-4 py-3 border-b ${theme.border} ${theme.textMuted} font-semibold tracking-wider`}>Strategy / ID</th>
-                          <th className={`px-4 py-3 border-b ${theme.border} text-right ${theme.textMuted} font-semibold tracking-wider`}>Gross Profit</th>
-                          <th className={`px-4 py-3 border-b ${theme.border} text-right ${theme.textMuted} font-semibold tracking-wider`}>Swap</th>
-                          <th className={`px-4 py-3 border-b ${theme.border} text-right ${theme.textMuted} font-semibold tracking-wider`}>Commissioni</th>
-                          <th className={`px-4 py-3 border-b ${theme.border} text-right ${theme.textMuted} font-semibold tracking-wider`}>Net PNL</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredTableTrades.map((t, idx) => {
-                          const swap = t.Swap + t.inSwap;
-                          const comms = t.Commission + t.Fee + t.inComm + t.inFee;
-                          const netto = t.Profit + swap + comms;
-                          return (
-                            <tr key={idx} className={`border-b ${theme.borderLight} hover:${theme.card} transition-colors duration-150 cursor-pointer`}>
-                              <td className={`px-4 py-3 border-r ${theme.borderLight}`}>
-                                {t.OpenTimeMs ? new Date(t.OpenTimeMs).toLocaleString() : '-'}
-                              </td>
-                              <td className={`px-4 py-3 border-r ${theme.borderLight}`}>
-                                <span className={`px-2 py-1 rounded text-xs font-bold ${t.Direction === 'in' ? 'bg-blue-500/20 text-blue-400' : 'bg-rose-500/20 text-rose-400'}`}>
-                                  {t.Direction.toUpperCase()}
-                                </span>
-                              </td>
-                              <td className={`px-4 py-3 border-r ${theme.borderLight}`}>
-                                <span className={`px-2 py-1 rounded text-xs font-bold ${t.Type === 'buy' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-orange-500/20 text-orange-400'}`}>
-                                  {t.Type.toUpperCase()}
-                                </span>
-                              </td>
-                              <td className={`px-4 py-3 border-r ${theme.borderLight} font-bold`}>{t.Symbol}</td>
-                              <td className={`px-4 py-3 border-r ${theme.borderLight}`}>{t.Id}</td>
-                              <td className={`px-4 py-3 border-r ${theme.borderLight} text-right ${t.Profit >= 0 ? theme.success : theme.danger}`}>
-                                {t.Profit.toFixed(2)}
-                              </td>
-                              <td className={`px-4 py-3 border-r ${theme.borderLight} text-right text-amber-500`}>{swap.toFixed(2)}</td>
-                              <td className={`px-4 py-3 border-r ${theme.borderLight} text-right text-rose-500`}>{comms.toFixed(2)}</td>
-                              <td className={`px-4 py-3 text-right font-black ${netto >= 0 ? theme.success : theme.danger}`}>
-                                {netto.toFixed(2)}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                {/* ── Trades Table ─────────────────────────── */}
+                <div className="rounded-lg border border-[#1a2332] overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <div className="overflow-y-auto max-h-[480px]">
+                      <table className="w-full text-left text-[11px] font-mono">
+                        <thead className="sticky top-0 z-10 bg-[#111824]">
+                          <tr>
+                            {['Open Time','Dir','Type','Symbol','Strategy / ID','Gross Profit','Swap','Commissioni','Net PNL'].map((h, i) => (
+                              <th
+                                key={h}
+                                className={`px-4 py-2.5 text-[9px] uppercase tracking-[0.15em] font-semibold text-[#4a5568] border-b border-[#1a2332] whitespace-nowrap ${i >= 5 ? 'text-right' : ''}`}
+                              >
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#111824]">
+                          {filteredTableTrades.map((t, idx) => {
+                            const swap  = t.Swap + t.inSwap;
+                            const comms = t.Commission + t.Fee + t.inComm + t.inFee;
+                            const netto = t.Profit + swap + comms;
+                            return (
+                              <tr
+                                key={idx}
+                                className="hover:bg-[#111824]/60 transition-colors duration-100 group"
+                              >
+                                <td className="px-4 py-2 text-[#4a5568] whitespace-nowrap">
+                                  {t.OpenTimeMs ? new Date(t.OpenTimeMs).toLocaleString() : '—'}
+                                </td>
+                                <td className="px-4 py-2">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold tracking-wider ${
+                                    t.Direction === 'in'
+                                      ? 'bg-[#64b5f6]/10 text-[#64b5f6] border border-[#64b5f6]/20'
+                                      : 'bg-[#ff1744]/10 text-[#ff1744] border border-[#ff1744]/20'
+                                  }`}>
+                                    {t.Direction.toUpperCase()}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold tracking-wider ${
+                                    t.Type === 'buy'
+                                      ? 'bg-[#00e676]/10 text-[#00e676] border border-[#00e676]/20'
+                                      : 'bg-[#ff8c00]/10 text-[#ff8c00] border border-[#ff8c00]/20'
+                                  }`}>
+                                    {t.Type.toUpperCase()}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2 font-bold text-[#e2e8f0]">{t.Symbol}</td>
+                                <td className="px-4 py-2 text-[#4a5568] max-w-[160px] truncate">{t.Id}</td>
+                                <td className={`px-4 py-2 text-right font-semibold ${t.Profit >= 0 ? 'text-[#00e676]' : 'text-[#ff1744]'}`}>
+                                  {t.Profit.toFixed(2)}
+                                </td>
+                                <td className="px-4 py-2 text-right text-[#ffa726]/70">{swap.toFixed(2)}</td>
+                                <td className="px-4 py-2 text-right text-[#ff1744]/60">{comms.toFixed(2)}</td>
+                                <td className={`px-4 py-2 text-right font-bold ${netto >= 0 ? 'text-[#00e676] glow-green' : 'text-[#ff1744] glow-red'}`}>
+                                  {netto.toFixed(2)}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
+
               </div>
             )}
           </div>
@@ -588,10 +711,13 @@ export default function App() {
 
         {/* Global Statistics */}
         {globalStats && activeTab === 'analyzer' && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-6 lg:p-8 shadow-2xl`}>
-            <h3 className={`text-xl font-bold ${theme.textBold} mb-8 uppercase tracking-wider`}>Recap Statistico Globale</h3>
+          <div className={`${theme.panel} rounded-lg border ${theme.border} p-6 lg:p-8 glow-panel animate-fade-in`}>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-1 h-6 bg-[#ff8c00] rounded-full" />
+              <h3 className="text-sm font-bold text-[#ff8c00] uppercase tracking-[0.2em] font-mono glow-orange">GLOBAL STATISTICS</h3>
+            </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 mb-8">
               <KPICard isDark={isDark} theme={theme} label="Net Profit" value={globalStats.netProfit.toFixed(2)} valueClass={globalStats.netProfit >= 0 ? theme.success : theme.danger} infoDesc="Profitto finale post costi" infoFormula="Net = Gross + Swap + Commissioni" />
               <KPICard isDark={isDark} theme={theme} label="Gross Profit" value={`+${globalStats.grossP.toFixed(2)}`} valueClass={theme.success} infoDesc="Somma dei trade vinti" infoFormula="Σ Profitti (>0)" />
               <KPICard isDark={isDark} theme={theme} label="Gross Loss" value={globalStats.grossL.toFixed(2)} valueClass={theme.danger} infoDesc="Somma dei trade persi" infoFormula="Σ Perdite (<0)" />
@@ -618,38 +744,42 @@ export default function App() {
               <KPICard isDark={isDark} theme={theme} label="Corr. S&P500" value={globalStats.corr.toFixed(2)} infoDesc="Direzionalità rispetto al mercato" />
               <KPICard isDark={isDark} theme={theme} label="Jarque-Bera" value={globalStats.jbTest.jb.toFixed(1)} subValue={globalStats.jbTest.isNormal ? 'Normale' : 'Non Normale'} infoDesc="Test di Normalità asintotica (Chi-Square)" infoFormula="JB = (N/6)*(S² + K²/4)" />
               <KPICard isDark={isDark} theme={theme} label="And-Darling" value={globalStats.andDar.a2.toFixed(2)} subValue={globalStats.andDar.isNormal ? 'Normale' : 'Non Normale'} infoDesc="Test Normalità sulle code" />
+              <KPICard isDark={isDark} theme={theme} label="Max Consec. Loss" value={globalStats.maxConsecLoss} valueClass={theme.danger} infoDesc="Numero massimo di perdite consecutive" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="flex flex-col gap-6 mb-6">
               <EquityChart data={globalStats.equitySequence} isDark={isDark} title="Equity Globale" theme={theme} />
               <DrawdownChart data={globalStats.equitySequence} isDark={isDark} title="Drawdown Globale" theme={theme} />
             </div>
 
             <DayStatsCharts dayStats={globalStats.dayStats} isDark={isDark} theme={theme} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <div className="flex flex-col gap-6 mt-6">
               <CullenFreyPlot skew={globalStats.skew} kurt={globalStats.kurt} name="Globale" isDark={isDark} theme={theme} />
               <DistributionChart data={globalStats.tradeProfits} title="Distribuzione Totale" type="all" isDark={isDark} theme={theme} />
               <DistributionChart data={globalStats.tradeProfits} title="Distribuzione (Solo Win)" type="win" isDark={isDark} theme={theme} />
               <DistributionChart data={globalStats.tradeProfits} title="Distribuzione (Solo Loss)" type="loss" isDark={isDark} theme={theme} />
             </div>
 
-            <div className="flex justify-between items-center mb-4 mt-10 border-b pb-4 border-slate-800">
-              <h2 className={`text-xl font-black uppercase tracking-widest ${theme.textBold}`}>Performance Dettagliate</h2>
-              <div className={`flex bg-[#111] border border-[#333] rounded-lg p-1`}>
+            <div className="flex justify-between items-center mb-4 mt-10 border-b pb-4 border-[#1a2332]">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-5 bg-[#ff8c00] rounded-full" />
+                <h2 className="text-xs font-bold text-[#ff8c00] uppercase tracking-[0.2em] font-mono glow-orange">PERFORMANCE BREAKDOWN</h2>
+              </div>
+              <div className="flex bg-[#000000] border border-[#1a2332] rounded p-0.5">
                 <button
                   onClick={() => setGroupBy('Strategy')}
-                  className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${
-                    groupBy === 'Strategy' ? theme.accentBg : 'text-[#888] hover:text-white'
+                  className={`px-4 py-1.5 rounded text-[10px] font-bold font-mono uppercase tracking-wider transition-all ${
+                    groupBy === 'Strategy' ? 'bg-[#ff8c00] text-black' : 'text-[#4a5568] hover:text-[#ff8c00]'
                   }`}
                 >
-                  Per Strategia
+                  Strategy
                 </button>
                 <button
                   onClick={() => setGroupBy('Asset')}
-                  className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${groupBy === 'Asset' ? theme.accentBg : 'text-[#888] hover:text-white'}`}
+                  className={`px-4 py-1.5 rounded text-[10px] font-bold font-mono uppercase tracking-wider transition-all ${groupBy === 'Asset' ? 'bg-[#ff8c00] text-black' : 'text-[#4a5568] hover:text-[#ff8c00]'}`}
                 >
-                  Per Asset
+                  Asset
                 </button>
               </div>
             </div>
@@ -659,15 +789,18 @@ export default function App() {
         {/* Strategy Details */}
         {activeTab === 'analyzer' &&
           strategyStats.map((s, i) => (
-            <div key={i} className={`${theme.panel} rounded-xl border ${theme.border} overflow-hidden shadow-lg`}>
-              <div className={`${theme.card} p-5 border-b ${theme.border} flex justify-between items-center`}>
-                <h4 className="font-bold text-lg">{s.name}</h4>
-                <span className={`text-xl font-mono font-black ${s.netProfit >= 0 ? theme.success : theme.danger}`}>
+            <div key={i} className={`${theme.panel} rounded-lg border ${theme.border} overflow-hidden glow-panel animate-fade-in`}>
+              <div className="bg-[#111824] px-6 py-4 border-b border-[#1a2332] flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-0.5 h-5 bg-[#ff8c00] rounded-full" />
+                  <h4 className="font-bold text-sm text-[#e2e8f0] font-mono uppercase tracking-wider">{s.name}</h4>
+                </div>
+                <span className={`text-lg font-mono font-black ${s.netProfit >= 0 ? 'text-[#00e676] glow-green' : 'text-[#ff1744] glow-red'}`}>
                   {s.netProfit.toFixed(2)}
                 </span>
               </div>
               <div className="p-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 mb-6">
                   <KPICard isDark={isDark} theme={theme} label="Net Profit" value={s.netProfit.toFixed(2)} valueClass={s.netProfit >= 0 ? theme.success : theme.danger} />
                   <KPICard isDark={isDark} theme={theme} label="Gross Profit" value={`+${s.grossP.toFixed(2)}`} valueClass={theme.success} />
                   <KPICard isDark={isDark} theme={theme} label="Gross Loss" value={s.grossL.toFixed(2)} valueClass={theme.danger} />
@@ -691,16 +824,17 @@ export default function App() {
                   <KPICard isDark={isDark} theme={theme} label="Avg Close" value={s.avgClose} icon={Clock} />
                   <KPICard isDark={isDark} theme={theme} label="Jarque-Bera" value={s.jbTest.jb.toFixed(1)} subValue={s.jbTest.isNormal ? 'Norm.' : 'Anomalo'} />
                   <KPICard isDark={isDark} theme={theme} label="And-Darling" value={s.andDar.a2.toFixed(2)} subValue={s.andDar.isNormal ? 'Norm.' : 'Anomalo'} />
+                  <KPICard isDark={isDark} theme={theme} label="Max Consec. Loss" value={s.maxConsecLoss} valueClass={theme.danger} infoDesc="Perdite consecutive massime" />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div className="flex flex-col gap-6 mb-6">
                   <EquityChart data={s.equitySequence} isDark={isDark} title={`Equity Line (${s.name})`} theme={theme} />
                   <DrawdownChart data={s.equitySequence} isDark={isDark} title={`Drawdown (${s.name})`} theme={theme} />
                 </div>
 
                 <DayStatsCharts dayStats={s.dayStats} isDark={isDark} theme={theme} />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                <div className="flex flex-col gap-6 mt-6">
                   <CullenFreyPlot skew={s.skew} kurt={s.kurt} name={s.name} isDark={isDark} theme={theme} />
                   <DistributionChart data={s.tradeProfits} title={`Distribuzione Totale (${s.name})`} type="all" isDark={isDark} theme={theme} />
                   <DistributionChart data={s.tradeProfits} title={`Distribuzione Solo Win (${s.name})`} type="win" isDark={isDark} theme={theme} />
@@ -712,14 +846,14 @@ export default function App() {
 
         {/* Correlation Matrix */}
         {activeTab === 'analyzer' && analyzedTrades.length > 0 && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-6 lg:p-8 shadow-2xl`}>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className={`text-xl font-bold ${theme.textBold} flex items-center gap-2`}>
-                <Grid className={`w-6 h-6 ${theme.accent1}`} /> Matrice Correlazioni Pearson
-              </h3>
+          <div className={`${theme.panel} rounded-lg border ${theme.border} p-6 lg:p-8 glow-panel animate-fade-in`}>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-1 h-6 bg-[#ff8c00] rounded-full" />
+              <Grid className="w-5 h-5 text-[#ff8c00]" />
+              <h3 className="text-xs font-bold text-[#ff8c00] uppercase tracking-[0.2em] font-mono glow-orange">CORRELATION MATRIX</h3>
             </div>
-            <p className={`${theme.textMuted} text-xs mb-6 font-mono`}>
-              Correlazione calcolata sui rendimenti netti giornalieri. Indica le divergenze matematiche tra le entità raggruppate attualmente selezionate.
+            <p className="text-[#4a5568] text-[10px] mb-6 font-mono tracking-wide">
+              Pearson correlation on daily net returns. Shows mathematical divergences between grouped entities.
             </p>
             <CorrelationHeatmap data={correlationData} isDark={isDark} theme={theme} />
           </div>
@@ -727,11 +861,13 @@ export default function App() {
 
         {/* Monte Carlo Simulator */}
         {activeTab === 'analyzer' && monteCarloData && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-6 lg:p-8 shadow-2xl`}>
-            <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
-              <h3 className={`text-xl font-bold ${theme.textBold} flex items-center gap-2`}>
-                <Shuffle className={`w-6 h-6 ${theme.accent1}`} /> Simulazione Monte Carlo (Markov Chain)
-              </h3>
+          <div className={`${theme.panel} rounded-lg border ${theme.border} p-6 lg:p-8 glow-panel animate-fade-in`}>
+            <div className="flex justify-between items-center mb-6 border-b border-[#1a2332] pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-6 bg-[#ff8c00] rounded-full" />
+                <Shuffle className="w-5 h-5 text-[#ff8c00]" />
+                <h3 className="text-xs font-bold text-[#ff8c00] uppercase tracking-[0.2em] font-mono glow-orange">MONTE CARLO SIMULATION</h3>
+              </div>
               <div className="flex items-center gap-2">
                 <span className={`text-[10px] uppercase font-bold ${theme.textMuted}`}>Iterazioni:</span>
                 <select
@@ -781,7 +917,7 @@ export default function App() {
                   <YAxis stroke={theme.chart.axis} />
                   <Tooltip contentStyle={{ backgroundColor: theme.chart.tooltipBg, color: theme.chart.tooltipText, border: `1px solid ${theme.chart.tooltipBorder}` }} labelFormatter={() => ''} />
 
-                  {Array.from({ length: monteCarloData.iterations }).map((_, i) => (
+                  {Array.from({ length: Math.min(monteCarloData.iterations, 30) }).map((_, i) => (
                     <Line key={i} type="monotone" dataKey={`run${i}`} stroke={dynLineColors[i % dynLineColors.length]} strokeWidth={1} dot={false} opacity={0.15} isAnimationActive={false} />
                   ))}
 
@@ -803,23 +939,116 @@ export default function App() {
 
         {/* Info Tab */}
         {activeTab === 'descrizione' && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-8 text-center`}>
-            <Info className={`w-12 h-12 mx-auto mb-4 ${theme.accent1}`} />
-            <h2 className="text-2xl font-black mb-4">Informazioni Sistema</h2>
-            <p className={`${theme.textMuted} max-w-2xl mx-auto`}>
-              Piattaforma di analisi quantitativa sviluppata per il parsing nativo dei report MetaTrader 5.
+          <div className={`${theme.panel} rounded-lg border ${theme.border} p-8 text-center glow-panel animate-fade-in`}>
+            <Info className="w-12 h-12 mx-auto mb-4 text-[#ff8c00]" />
+            <h2 className="text-xl font-black mb-4 text-[#e2e8f0] font-mono uppercase tracking-wider">System Info</h2>
+            <p className="text-[#4a5568] max-w-2xl mx-auto font-mono text-sm">
+              Quantitative analysis platform built for native MetaTrader 5 report parsing.
             </p>
           </div>
         )}
 
         {/* News Tab */}
         {activeTab === 'news' && (
-          <div className={`${theme.panel} rounded-xl border ${theme.border} p-8 text-center`}>
-            <Globe className={`w-12 h-12 mx-auto mb-4 ${theme.accent2}`} />
-            <h2 className="text-2xl font-black mb-4">Feed News Finanziarie</h2>
-            <p className={`${theme.textMuted} max-w-2xl mx-auto`}>Modulo notizie macroeconomiche in costruzione.</p>
+          <div className={`${theme.panel} rounded-lg border ${theme.border} p-8 text-center glow-panel animate-fade-in`}>
+            <Globe className="w-12 h-12 mx-auto mb-4 text-[#ff8c00]" />
+            <h2 className="text-xl font-black mb-4 text-[#e2e8f0] font-mono uppercase tracking-wider">Market News Feed</h2>
+            <p className="text-[#4a5568] max-w-2xl mx-auto font-mono text-sm">Module under construction.</p>
           </div>
         )}
+
+        </div>
+      </main>
+    </div>
+  );
+}
+
+/* ── Row Range Modal ──────────────────────────────────────────────── */
+function RowRangeModal({ totalRows, onConfirm }) {
+  const [start, setStart] = React.useState('');
+  const [end,   setEnd]   = React.useState('');
+
+  const dataRows = Math.max(0, totalRows - 10); // stima righe dati (escludi header)
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onConfirm(start || '', end || '');
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-[#0d1117] border border-[#1a2332] rounded-lg shadow-2xl overflow-hidden glow-panel">
+
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-[#1a2332]">
+          <div className="flex items-center gap-2 mb-1">
+            <TableIcon className="w-4 h-4 text-[#ff8c00]" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#ff8c00] font-mono glow-orange">ROW SELECTION</span>
+          </div>
+          <h2 className="text-sm font-bold text-[#e2e8f0] font-mono mt-2">Select analysis range</h2>
+          <p className="text-[10px] text-[#4a5568] mt-1 font-mono">
+            Loaded file — <span className="text-[#ff8c00]">{dataRows}</span> data rows available
+          </p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[9px] uppercase tracking-[0.15em] font-semibold text-[#4a5568] mb-1.5 font-mono">
+                From row
+              </label>
+              <input
+                type="number"
+                min="1"
+                placeholder="Start (e.g. 1)"
+                value={start}
+                onChange={e => setStart(e.target.value)}
+                className="w-full h-10 px-3 rounded text-sm border border-[#1a2332] bg-[#000000] text-[#e2e8f0]
+                  focus:border-[#ff8c00]/40 focus:outline-none transition-colors font-mono
+                  placeholder:text-[#2d3a4a]"
+              />
+            </div>
+            <div>
+              <label className="block text-[9px] uppercase tracking-[0.15em] font-semibold text-[#4a5568] mb-1.5 font-mono">
+                To row
+              </label>
+              <input
+                type="number"
+                min="1"
+                placeholder={`End (e.g. ${dataRows || '...'})`}
+                value={end}
+                onChange={e => setEnd(e.target.value)}
+                className="w-full h-10 px-3 rounded text-sm border border-[#1a2332] bg-[#000000] text-[#e2e8f0]
+                  focus:border-[#ff8c00]/40 focus:outline-none transition-colors font-mono
+                  placeholder:text-[#2d3a4a]"
+              />
+            </div>
+          </div>
+
+          <p className="text-[10px] text-[#4a5568] font-mono">
+            Leave empty to include all available rows.
+          </p>
+
+          <div className="flex gap-2 pt-1">
+            <button
+              type="submit"
+              className="flex-1 py-2.5 rounded text-[10px] font-bold uppercase tracking-[0.15em] bg-[#ff8c00] hover:bg-[#ff9f1c]
+                text-black border border-[#ff8c00]/60 transition-all font-mono shadow-lg shadow-[#ff8c00]/15"
+            >
+              CONFIRM &amp; ANALYZE
+            </button>
+            <button
+              type="button"
+              onClick={() => onConfirm('', '')}
+              className="px-4 py-2.5 rounded text-[10px] font-bold font-mono uppercase tracking-wider text-[#4a5568]
+                hover:text-[#ff8c00] border border-[#1a2332] hover:border-[#ff8c00]/20
+                bg-transparent transition-all"
+            >
+              ALL
+            </button>
+          </div>
+        </form>
 
       </div>
     </div>

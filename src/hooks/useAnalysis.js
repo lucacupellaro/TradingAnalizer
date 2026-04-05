@@ -11,10 +11,12 @@ export const useAnalysis = (rawRows, colConfig) => {
   const [formulaIdx, setFormulaIdx] = useState(0);
   const [mcIterations, setMcIterations] = useState(50);
 
-  // Parse all trades
+  // Parse trades with row range from applied filters (only after user clicks "Applica")
   const parsedTrades = useMemo(() => {
-    return parseTrades(rawRows, colConfig);
-  }, [rawRows, colConfig]);
+    const rs = appliedFilters.rowStart ? parseInt(appliedFilters.rowStart, 10) : null;
+    const re = appliedFilters.rowEnd ? parseInt(appliedFilters.rowEnd, 10) : null;
+    return parseTrades(rawRows, colConfig, rs, re);
+  }, [rawRows, colConfig, appliedFilters.rowStart, appliedFilters.rowEnd]);
 
   // Get unique symbols and strategies
   const uniqueSymbols = useMemo(

@@ -26,15 +26,21 @@ export const findHeaderRowIndex = (rows) => {
   return hIdx;
 };
 
-// Parse trades from raw data
-export const parseTrades = (rawRows, colConfig) => {
+// Parse trades from raw data with optional row range filter
+export const parseTrades = (rawRows, colConfig, rowStart = null, rowEnd = null) => {
   if (!rawRows.length || colConfig.headerRowIdx === -1) return [];
 
   const trades = [];
   const { headerRowIdx, profitIdx, idIdx, typeIdx, dirIdx, posIdx, symIdx, commIdx, feeIdx, swapIdx, balanceIdx } = colConfig;
   const q = {};
 
-  for (let i = headerRowIdx + 1; i < rawRows.length; i++) {
+  // Row range is 1-based from CSV (row 1 = first data row after header)
+  const csvStartRow = rowStart ? rowStart : 1;
+  const csvEndRow = rowEnd ? rowEnd : rawRows.length;
+  const actualStartIdx = headerRowIdx + csvStartRow;
+  const actualEndIdx = headerRowIdx + csvEndRow;
+
+  for (let i = actualStartIdx; i <= actualEndIdx && i < rawRows.length; i++) {
     const row = rawRows[i];
     if (!row || !row[0]) break;
 

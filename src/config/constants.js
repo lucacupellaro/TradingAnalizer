@@ -13,7 +13,9 @@ export const INITIAL_FILTERS = {
   symbols: [],
   strategies: [],
   dateStart: '',
-  dateEnd: ''
+  dateEnd: '',
+  rowStart: '',
+  rowEnd: ''
 };
 
 // Formulas for Analysis Display

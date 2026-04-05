@@ -1,13 +1,13 @@
 export const marqueeStyle = `
-  @keyframes marquee { 
-    0% { transform: translateX(100%); } 
-    100% { transform: translateX(-100%); } 
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
   }
-  .animate-marquee { 
-    display: inline-flex; 
-    animation: marquee 25s linear infinite; 
+  .animate-marquee {
+    display: inline-flex;
+    animation: marquee 30s linear infinite;
   }
-  .animate-marquee:hover { 
-    animation-play-state: paused; 
+  .animate-marquee:hover {
+    animation-play-state: paused;
   }
 `;
