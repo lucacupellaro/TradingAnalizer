@@ -1,3 +1,4 @@
+import React from 'react';
 import { Info } from 'lucide-react';
 
 export const KPICard = ({
@@ -9,64 +10,100 @@ export const KPICard = ({
   infoDesc,
   infoFormula,
   isDark,
-  theme,
+  theme
 }) => {
   return (
-    <div className={`
-      relative group flex flex-col justify-between gap-1.5 p-3.5 min-h-[80px] rounded-lg
-      overflow-hidden transition-all duration-200 glow-panel corner-accent
-      ${isDark
-        ? 'bg-[#0d1117] border border-[#1a2332] hover:border-[#ff8c00]/20'
-        : 'bg-white border border-[#e5e7eb] hover:border-[#d1d5db] shadow-sm'
-      }
-    `}>
-
-      {/* Top: label + info */}
-      <div className="flex items-start justify-between gap-1">
-        <div className={`flex items-center gap-1.5 text-[9px] uppercase tracking-[0.15em] font-semibold leading-none ${isDark ? 'text-[#4a5568]' : theme.textFaint}`}>
-          {Icon && <Icon className="w-3 h-3 flex-shrink-0" />}
-          <span>{label}</span>
+    <div
+      className={`
+        ${theme.card}
+        px-5 py-5
+        rounded border ${theme.borderLight}
+        flex flex-col justify-center
+        relative group
+        min-h-[104px]
+        overflow-visible
+      `}
+    >
+      <div className="flex justify-between items-start w-full gap-2 mb-3">
+        <div
+          className={`
+            ${theme.textMuted}
+            text-[10px] uppercase font-bold
+            flex items-center gap-2
+            leading-[1.35]
+            tracking-wide
+            pr-2
+          `}
+        >
+          {Icon && <Icon className="w-4 h-4 shrink-0" />}
+          <span className="break-words">{label}</span>
         </div>
 
         {(infoDesc || infoFormula) && (
-          <div className="relative flex-shrink-0">
-            <div className={`${isDark ? 'text-[#2d3a4a]' : theme.textFaint} hover:text-[#ff8c00] cursor-help transition-colors`}>
-              <Info className="w-3 h-3" />
-            </div>
-            <div className={`
-              absolute opacity-0 group-hover:opacity-100 pointer-events-none
-              transition-opacity duration-150 bottom-full right-0 mb-2 z-[999]
-              w-56 p-3 rounded-lg shadow-2xl
-              ${isDark
-                ? 'bg-[#111824] border border-[#1a2332]'
-                : 'bg-white border border-[#e5e7eb] shadow-lg'
-              }
-            `}>
+          <div
+            className={`
+              ${theme.textFaint}
+              cursor-help transition-colors
+              z-10 relative shrink-0 mt-[1px]
+            `}
+          >
+            <Info className="w-3.5 h-3.5" />
+
+            <div
+              className={`
+                absolute opacity-0 group-hover:opacity-100 transition-opacity
+                bottom-full right-0 mb-2
+                w-56 md:w-64 p-3
+                ${theme.panel} border ${theme.border}
+                rounded shadow-2xl z-[999]
+                pointer-events-none
+              `}
+            >
               {infoDesc && (
-                <p className={`text-xs leading-snug mb-1.5 ${theme.textBold}`}>{infoDesc}</p>
+                <div className={`text-[10px] ${theme.textBold} mb-2 leading-[1.4] font-sans`}>
+                  {infoDesc}
+                </div>
               )}
+
               {infoFormula && (
-                <code className={`block text-[10px] font-mono text-center px-2 py-1.5 rounded break-words
-                  ${isDark ? 'bg-[#000000] text-[#ff8c00] border border-[#1a2332]' : 'bg-gray-50 text-blue-600 border border-gray-200'}
-                `}>
+                <div
+                  className={`
+                    text-[9px] font-mono ${theme.accent1}
+                    ${theme.card} p-2 rounded border ${theme.borderLight}
+                    text-center font-bold tracking-wide break-words
+                    leading-[1.4]
+                  `}
+                >
                   {infoFormula}
-                </code>
+                </div>
               )}
             </div>
           </div>
         )}
       </div>
 
-      {/* Value */}
-      <div>
-        <div className={`text-lg font-bold font-mono tracking-tight break-words leading-tight ${valueClass || theme.textBold}`}>
-          {value}
-        </div>
-        {subValue && (
-          <div className={`text-[9px] mt-0.5 break-words font-mono ${isDark ? 'text-[#4a5568]' : theme.textFaint}`}>{subValue}</div>
-        )}
+      <div
+        className={`
+          text-lg font-mono font-bold
+          break-all leading-[1.35]
+          pb-[2px]
+          ${valueClass || theme.textBold}
+        `}
+      >
+        {value}
       </div>
 
+      {subValue && (
+        <div
+          className={`
+            text-[10px] ${theme.textFaint}
+            font-mono mt-2 leading-[1.35]
+            pb-[1px]
+          `}
+        >
+          {subValue}
+        </div>
+      )}
     </div>
   );
 };
