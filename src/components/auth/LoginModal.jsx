@@ -23,8 +23,8 @@ export const LoginModal = ({
         <h1 className="text-3xl font-black text-white uppercase tracking-widest mb-2 w-full">
           {loginStep === 'input' ? 'Benvenuto' : 'Verifica'}
         </h1>
-        <h2 className="text-4xl font-black text-[#ffcc00] uppercase tracking-widest mb-6 w-full">
-          TRADERS
+        <h2 className="text-4xl font-black text-[#8B0000] uppercase tracking-widest mb-6 w-full">
+          SNIPERS
         </h2>
         <p className="text-[#888] font-mono text-[11px] uppercase mb-8 tracking-widest h-8">
           {loginStep === 'input' ? 'Quant Terminal' : `Codice inviato a:\n${loginEmail}`}
