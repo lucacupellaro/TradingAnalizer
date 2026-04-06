@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, EMAILJS_PUBLIC_KEY } from '../config/constants';
+import {
+  EMAILJS_SERVICE_ID,
+  EMAILJS_TEMPLATE_ID,
+  EMAILJS_PUBLIC_KEY,
+} from '../config/constants';
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -11,62 +15,122 @@ export const useAuth = () => {
   const [loginError, setLoginError] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
 
+  const initEmailJS = () => {
+    if (!window.emailjs) {
+      throw new Error('Servizio EmailJS non disponibile o non ancora caricato.');
+    }
+
+    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
+      throw new Error('Configurazione EmailJS incompleta.');
+    }
+
+    if (!window.__emailjs_initialized__) {
+      window.emailjs.init(EMAILJS_PUBLIC_KEY);
+      window.__emailjs_initialized__ = true;
+    }
+  };
+
+  const buildEmailErrorMessage = (err) => {
+    if (!err) return 'Errore sconosciuto';
+
+    if (err.status === 412) {
+      return 'Invio rifiutato da EmailJS (412). Controlla Public Key, Service ID, Template ID, dominio autorizzato o rate limit.';
+    }
+
+    return (
+      err.text ||
+      err.message ||
+      (err.status ? `Errore HTTP ${err.status}` : null) ||
+      'Errore sconosciuto'
+    );
+  };
+
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setLoginError('');
-    if (!loginName.trim() || !loginEmail.trim()) return;
 
-    const userEmailKey = loginEmail.toLowerCase().trim();
+    const cleanName = loginName.trim();
+    const cleanEmail = loginEmail.toLowerCase().trim();
 
-    // Admin bypass
-    if (userEmailKey === 'admin@admin.com' || userEmailKey === 'admin') {
+    if (!cleanName || !cleanEmail) {
+      setLoginError('Inserisci nome ed email.');
+      return;
+    }
+
+    if (cleanEmail === 'admin@admin.com' || cleanEmail === 'admin') {
       setIsAuthenticated(true);
       return;
     }
 
-    // Check if already verified
-    if (localStorage.getItem(`verified_${userEmailKey}`)) {
+    const verifiedKey = `verified_${cleanEmail}`;
+    const alreadyVerified = localStorage.getItem(verifiedKey);
+
+    if (alreadyVerified) {
       setIsAuthenticated(true);
-    } else {
-      // Send verification code via EmailJS
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedCode(code);
-      setIsSendingEmail(true);
+      return;
+    }
 
-      try {
-        if (!window.emailjs) throw new Error("Servizio di invio in caricamento...");
-        window.emailjs.init(EMAILJS_PUBLIC_KEY);
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedCode(code);
+    setIsSendingEmail(true);
 
-        const res = await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-          to_name: loginName.trim(),
-          to_email: loginEmail.trim(),
-          user_email: loginEmail.trim(),
-          email: loginEmail.trim(),
-          otp_code: code
-        });
+    try {
+      initEmailJS();
 
-        if (res.status === 200) {
-          setLoginStep('verify');
-        } else {
-          throw new Error(`Risposta server non valida: ${res.status}`);
-        }
-      } catch (err) {
-        setLoginError(`ERRORE INVIO: ${err.message || "Sconosciuto"}`);
-      } finally {
-        setIsSendingEmail(false);
+      const templateParams = {
+        to_name: cleanName,
+        to_email: cleanEmail,
+        user_email: cleanEmail,
+        email: cleanEmail,
+        otp_code: code,
+      };
+
+      console.log('EmailJS send config:', {
+        serviceId: EMAILJS_SERVICE_ID,
+        templateId: EMAILJS_TEMPLATE_ID,
+        publicKeyLoaded: !!EMAILJS_PUBLIC_KEY,
+        templateParams,
+      });
+
+      const response = await window.emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams
+      );
+
+      console.log('EmailJS response:', response);
+
+      if (response?.status === 200) {
+        setLoginStep('verify');
+      } else {
+        throw new Error(`Risposta server non valida: ${response?.status ?? 'sconosciuta'}`);
       }
+    } catch (err) {
+      console.error('EmailJS full error:', err);
+      setLoginError(`ERRORE INVIO: ${buildEmailErrorMessage(err)}`);
+    } finally {
+      setIsSendingEmail(false);
     }
   };
 
   const handleVerifySubmit = (e) => {
     e.preventDefault();
-    if (verificationCode === generatedCode) {
-      localStorage.setItem(`verified_${loginEmail.toLowerCase().trim()}`, 'true');
-      setIsAuthenticated(true);
-      setLoginError('');
-    } else {
-      setLoginError('OTP non corretto.');
+    setLoginError('');
+
+    const cleanEmail = loginEmail.toLowerCase().trim();
+
+    if (!verificationCode.trim()) {
+      setLoginError('Inserisci il codice OTP.');
+      return;
     }
+
+    if (verificationCode.trim() === generatedCode) {
+      localStorage.setItem(`verified_${cleanEmail}`, 'true');
+      setIsAuthenticated(true);
+      return;
+    }
+
+    setLoginError('OTP non corretto.');
   };
 
   return {
@@ -84,6 +148,6 @@ export const useAuth = () => {
     setLoginError,
     isSendingEmail,
     handleLoginSubmit,
-    handleVerifySubmit
+    handleVerifySubmit,
   };
 };

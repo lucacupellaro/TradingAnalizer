@@ -1,4 +1,4 @@
-import { BarChart2, Info, Globe, X, LogOut, Activity } from 'lucide-react';
+import { BarChart2, Info, Globe, X, LogOut } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'analyzer',    Icon: BarChart2, label: 'Analyzer' },
@@ -28,16 +28,16 @@ export const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, onLogout }
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 h-12 border-b border-[#1a2332] flex-shrink-0">
+        <div className="flex items-center justify-between px-5 h-14 border-b border-[#1a2332] flex-shrink-0">
           <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-[#ff8c00]" />
-            <span className="font-bold text-xs tracking-widest text-[#ff8c00] font-mono glow-orange">SNIPERFOREX TERMINAL</span>
+            <img src="/Logo.jpg" alt="SniperForex" className="w-7 h-7 rounded-full object-cover" />
+            <span className="font-bold text-xs tracking-widest text-[#ff8c00] font-mono glow-orange">SNIPERFOREX</span>
           </div>
           <button
             onClick={close}
-            className="p-1.5 rounded text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/5 transition-all"
+            className="p-2 rounded text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/5 transition-all"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -51,7 +51,7 @@ export const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, onLogout }
                   key={id}
                   onClick={() => { setActiveTab(id); close(); }}
                   className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded text-xs font-mono font-semibold
+                    flex items-center gap-3 px-4 py-3 rounded text-sm font-mono font-semibold
                     transition-all duration-150 border text-left w-full uppercase tracking-wider
                     ${active
                       ? 'bg-[#ff8c00]/10 text-[#ff8c00] border-[#ff8c00]/20'
@@ -59,7 +59,7 @@ export const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, onLogout }
                     }
                   `}
                 >
-                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  <Icon className="w-5 h-5 flex-shrink-0" />
                   <span>{label}</span>
                 </button>
               );
@@ -69,11 +69,11 @@ export const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, onLogout }
           {onLogout && (
             <button
               onClick={() => { onLogout(); close(); }}
-              className="flex items-center gap-3 px-3 py-2.5 rounded text-xs font-mono font-semibold w-full
+              className="flex items-center gap-3 px-4 py-3 rounded text-sm font-mono font-semibold w-full
                 text-[#4a5568] hover:text-[#ff1744] hover:bg-[#ff1744]/5 border border-transparent
                 hover:border-[#ff1744]/20 transition-all duration-150 mt-4 uppercase tracking-wider"
             >
-              <LogOut className="w-4 h-4 flex-shrink-0" />
+              <LogOut className="w-5 h-5 flex-shrink-0" />
               <span>Esci</span>
             </button>
           )}

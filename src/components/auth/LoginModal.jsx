@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart2, Activity } from 'lucide-react';
+import { Activity } from 'lucide-react';
 
 export const LoginModal = ({
   loginStep,
@@ -19,7 +19,7 @@ export const LoginModal = ({
     <div className="fixed inset-0 z-[20000] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-[#0a0a0a] border border-[#333] p-12 rounded-2xl shadow-2xl max-w-sm w-full relative overflow-hidden transition-all duration-500 flex flex-col items-center text-center" style={{ paddingBottom: '2.5rem' }}>
         <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1.5 ${loginStep === 'input' ? 'bg-white' : 'bg-[#ffcc00]'} blur-[10px]`}></div>
-        <BarChart2 className={`w-16 h-16 mx-auto mb-6 ${loginStep === 'input' ? 'text-white' : 'text-[#ffcc00]'}`} />
+        <img src="/Logo.jpg" alt="SniperForex" className="w-20 h-20 rounded-full object-cover mx-auto mb-6" />
         <h1 className="text-3xl font-black text-white uppercase tracking-widest mb-2 w-full">
           {loginStep === 'input' ? 'Benvenuto' : 'Verifica'}
         </h1>

@@ -470,11 +470,16 @@ export default function App() {
                   Importa un report MetaTrader 5 in formato <span className="text-[#ff8c00]">.xlsx</span>, <span className="text-[#ff8c00]">.xls</span>, <span className="text-[#ff8c00]">.html</span> o <span className="text-[#ff8c00]">.csv</span> per iniziare l'analisi.
                 </p>
               </div>
-              <label className="flex items-center gap-2 px-6 py-3.5 rounded font-bold text-xs cursor-pointer uppercase tracking-widest bg-[#ff8c00] text-black hover:bg-[#ff9f1c] transition-all shadow-lg shadow-[#ff8c00]/20 font-mono">
-                <Upload className="w-4 h-4" />
-                IMPORT REPORT MT5
-                <input type="file" accept=".xlsx,.xls,.html,.htm,.csv" onChange={handleFileUpload} className="hidden" />
-              </label>
+              <label className="flex items-center gap-4 px-8 py-4 rounded-xl font-bold text-sm cursor-pointer uppercase tracking-[0.2em] bg-[#ff8c00] text-black hover:bg-[#ff9f1c] transition-all shadow-xl shadow-[#ff8c00]/30 hover:scale-105 hover:shadow-[#ff8c00]/50 font-mono h-14">
+  <Upload className="w-6 h-6 flex-shrink-0" />
+  IMPORT REPORT MT5
+  <input
+    type="file"
+    accept=".xlsx,.xls,.html,.htm,.csv"
+    onChange={handleFileUpload}
+    className="hidden"
+  />
+</label>
             </div>
           )}
 
@@ -512,8 +517,8 @@ export default function App() {
                     {filteredTableTrades.length}
                   </span>
                 </div>
-                <button className="p-1.5 rounded text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/5 transition-all">
-                  {showTable ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                <button className="p-2.5 rounded text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/5 transition-all">
+                  {showTable ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </button>
               </div>
 
@@ -640,7 +645,7 @@ export default function App() {
                             </label>
                             <button
                               onClick={onClear}
-                              className="text-[10px] text-gray-600 hover:text-gray-300 transition-colors"
+                              className="text-xs text-gray-600 hover:text-gray-300 transition-colors"
                             >
                               Azzera
                             </button>
@@ -650,7 +655,7 @@ export default function App() {
                               <button
                                 key={s}
                                 onClick={() => onToggle(s)}
-                                className={`px-2.5 py-1.5 rounded text-[10px] font-mono font-semibold transition-all border ${
+                                className={`px-3 py-2 rounded text-xs font-mono font-semibold transition-all border ${
                                   selected.includes(s)
                                     ? 'bg-[#ff8c00]/15 text-[#ff8c00] border-[#ff8c00]/30'
                                     : 'bg-transparent text-[#4a5568] border-[#1a2332] hover:text-[#8b9dc3] hover:border-[#2d3a4a]'
@@ -666,7 +671,7 @@ export default function App() {
 
                     <button
                       onClick={triggerAnalysis}
-                      className="w-full py-3.5 rounded text-[10px] font-bold uppercase tracking-[0.2em] bg-[#ff8c00] hover:bg-[#ff9f1c] text-black transition-all border border-[#ff8c00]/60 shadow-lg shadow-[#ff8c00]/15 font-mono"
+                      className="w-full py-4 rounded text-sm font-bold uppercase tracking-[0.2em] bg-[#ff8c00] hover:bg-[#ff9f1c] text-black transition-all border border-[#ff8c00]/60 shadow-lg shadow-[#ff8c00]/15 font-mono"
                     >
                       APPLICA FILTRI &amp; AGGIORNA ANALISI
                     </button>
@@ -809,24 +814,29 @@ export default function App() {
                     PERFORMANCE BREAKDOWN
                   </h2>
                 </div>
-                <div className="flex bg-[#000000] border border-[#1a2332] rounded p-1">
-                  <button
-                    onClick={() => setGroupBy('Strategy')}
-                    className={`px-4 py-2 rounded text-[10px] font-bold font-mono uppercase tracking-wider transition-all ${
-                      groupBy === 'Strategy' ? 'bg-[#ff8c00] text-black' : 'text-[#4a5568] hover:text-[#ff8c00]'
-                    }`}
-                  >
-                    Strategy
-                  </button>
-                  <button
-                    onClick={() => setGroupBy('Asset')}
-                    className={`px-4 py-2 rounded text-[10px] font-bold font-mono uppercase tracking-wider transition-all ${
-                      groupBy === 'Asset' ? 'bg-[#ff8c00] text-black' : 'text-[#4a5568] hover:text-[#ff8c00]'
-                    }`}
-                  >
-                    Asset
-                  </button>
-                </div>
+               <div className="flex bg-[#000000] border border-[#1a2332] rounded-xl p-2 gap-3">
+  <button
+    onClick={() => setGroupBy('Strategy')}
+    className={`flex items-center justify-center px-7 h-12 rounded-lg text-sm font-bold font-mono uppercase tracking-[0.15em] transition-all ${
+      groupBy === 'Strategy'
+        ? 'bg-[#ff8c00] text-black shadow-lg shadow-[#ff8c00]/40 scale-105'
+        : 'text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/10'
+    }`}
+  >
+    Strategy
+  </button>
+
+  <button
+    onClick={() => setGroupBy('Asset')}
+    className={`flex items-center justify-center px-7 h-12 rounded-lg text-sm font-bold font-mono uppercase tracking-[0.15em] transition-all ${
+      groupBy === 'Asset'
+        ? 'bg-[#ff8c00] text-black shadow-lg shadow-[#ff8c00]/40 scale-105'
+        : 'text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/10'
+    }`}
+  >
+    Asset
+  </button>
+</div>
               </div>
             </div>
           )}
@@ -1091,14 +1101,14 @@ function RowRangeModal({ totalRows, onConfirm }) {
           <div className="flex gap-3 pt-2">
             <button
               type="submit"
-              className="flex-1 py-3 rounded text-[10px] font-bold uppercase tracking-[0.15em] bg-[#ff8c00] hover:bg-[#ff9f1c] text-black border border-[#ff8c00]/60 transition-all font-mono shadow-lg shadow-[#ff8c00]/15"
+              className="flex-1 py-3.5 rounded text-xs font-bold uppercase tracking-[0.15em] bg-[#ff8c00] hover:bg-[#ff9f1c] text-black border border-[#ff8c00]/60 transition-all font-mono shadow-lg shadow-[#ff8c00]/15"
             >
               CONFIRM &amp; ANALYZE
             </button>
             <button
               type="button"
               onClick={() => onConfirm('', '')}
-              className="px-4 py-3 rounded text-[10px] font-bold font-mono uppercase tracking-wider text-[#4a5568] hover:text-[#ff8c00] border border-[#1a2332] hover:border-[#ff8c00]/20 bg-transparent transition-all"
+              className="px-5 py-3.5 rounded text-xs font-bold font-mono uppercase tracking-wider text-[#4a5568] hover:text-[#ff8c00] border border-[#1a2332] hover:border-[#ff8c00]/20 bg-transparent transition-all"
             >
               ALL
             </button>

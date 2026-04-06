@@ -1,5 +1,26 @@
 import { useState, useEffect } from 'react';
-import { SCRIPT_URLS, MARKET_URLS, TICKER_NAMES } from '../config/constants';
+import { SCRIPT_URLS, MARKET_URLS, TICKER_SYMBOLS } from '../config/constants';
+
+const PROXY = 'https://api.allorigins.win/raw?url=';
+
+const fetchTickerChart = async ({ symbol, name }) => {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=5d`;
+  const res = await fetch(`${PROXY}${encodeURIComponent(url)}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  const result = json.chart.result?.[0];
+  if (!result) throw new Error('No result');
+
+  const closes = result.indicators.quote[0].close.filter(v => v != null);
+  if (closes.length < 2) throw new Error('Not enough data');
+
+  const current = closes[closes.length - 1];
+  const previous = closes[closes.length - 2];
+  const change = current - previous;
+  const changePercent = (change / previous) * 100;
+
+  return { name, price: current, change, changePercent };
+};
 
 export const useMarketData = () => {
   const [spxData, setSpxData] = useState(null);
@@ -17,11 +38,11 @@ export const useMarketData = () => {
     emailScript.async = true;
     document.body.appendChild(emailScript);
 
-    // Fetch SPX data
+    // Fetch SPX data (10y for correlation analysis)
     const fetchSpx = async () => {
       try {
         const res = await fetch(
-          `https://api.allorigins.win/raw?url=${encodeURIComponent(MARKET_URLS.spx)}`
+          `${PROXY}${encodeURIComponent(MARKET_URLS.spx)}`
         );
         if (!res.ok) return;
         const data = await res.json();
@@ -35,27 +56,22 @@ export const useMarketData = () => {
         }
         setSpxData(rets);
       } catch (err) {
-        console.warn("SPX fetch failed: Using fallback", err);
+        console.warn("SPX fetch failed:", err);
       }
     };
 
-    // Fetch ticker quotes
+    // Fetch ticker quotes individually via chart API
     const fetchTickerQuotes = async () => {
-      try {
-        const res = await fetch(
-          `https://api.allorigins.win/raw?url=${encodeURIComponent(MARKET_URLS.tickers)}`
-        );
-        if (!res.ok) throw new Error();
-        const json = await res.json();
-        setMarketQuotes(
-          json.quoteResponse.result.map(r => ({
-            name: TICKER_NAMES[r.symbol] || r.symbol,
-            price: r.regularMarketPrice,
-            change: r.regularMarketChange,
-            changePercent: r.regularMarketChangePercent
-          }))
-        );
-      } catch (e) {
+      const results = await Promise.allSettled(
+        TICKER_SYMBOLS.map(t => fetchTickerChart(t))
+      );
+      const quotes = results
+        .filter(r => r.status === 'fulfilled')
+        .map(r => r.value);
+
+      if (quotes.length > 0) {
+        setMarketQuotes(quotes);
+      } else {
         setMarketQuotes([{ name: "MERCATO", price: 0, change: 0, changePercent: 0 }]);
       }
     };
@@ -63,8 +79,14 @@ export const useMarketData = () => {
     fetchSpx();
     fetchTickerQuotes();
 
+    // Refresh ticker every 60 seconds
+    const interval = setInterval(() => {
+      fetchTickerQuotes();
+    }, 60000);
+
     // Cleanup
     return () => {
+      clearInterval(interval);
       if (document.body.contains(script)) document.body.removeChild(script);
       if (document.body.contains(emailScript)) document.body.removeChild(emailScript);
     };

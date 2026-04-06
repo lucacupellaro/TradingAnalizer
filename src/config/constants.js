@@ -52,17 +52,19 @@ export const AD_CRITICAL_VALUE = 0.752;
 // Market Data URLs
 export const MARKET_URLS = {
   spx: 'https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d&range=10y',
-  tickers: 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=^GSPC,GC=F,^GDAXI,^FCHI,BTC-USD'
 };
 
-// Ticker Names Mapping
-export const TICKER_NAMES = {
-  '^GSPC': 'S&P 500',
-  'GC=F': 'GOLD',
-  '^GDAXI': 'GER 40',
-  '^FCHI': 'CAC 40',
-  'BTC-USD': 'BTC'
-};
+// Ticker symbols and display names for the market ticker
+export const TICKER_SYMBOLS = [
+  { symbol: '^GSPC',   name: 'S&P 500' },
+  { symbol: '^IXIC',   name: 'NASDAQ' },
+  { symbol: '^GDAXI',  name: 'GER 40' },
+  { symbol: '^FCHI',   name: 'CAC 40' },
+  { symbol: 'GC=F',    name: 'GOLD' },
+  { symbol: 'CL=F',    name: 'CRUDE OIL' },
+  { symbol: 'BTC-USD', name: 'BTC' },
+  { symbol: 'EURUSD=X',name: 'EUR/USD' },
+];
 
 // Script URLs
 export const SCRIPT_URLS = {
