@@ -2,8 +2,8 @@ import { BarChart2, Info, Globe, X, LogOut, Activity } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'analyzer',    Icon: BarChart2, label: 'Analyzer' },
-  { id: 'descrizione', Icon: Info,      label: 'System Info' },
-  { id: 'news',        Icon: Globe,     label: 'Market News' },
+  { id: 'descrizione', Icon: Info,      label: 'Chi sono?' },
+  { id: 'news',        Icon: Globe,     label: 'Come funziona?' },
 ];
 
 export const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, onLogout }) => {
@@ -31,7 +31,7 @@ export const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, onLogout }
         <div className="flex items-center justify-between px-5 h-12 border-b border-[#1a2332] flex-shrink-0">
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-[#ff8c00]" />
-            <span className="font-bold text-xs tracking-widest text-[#ff8c00] font-mono glow-orange">MT5 CORE</span>
+            <span className="font-bold text-xs tracking-widest text-[#ff8c00] font-mono glow-orange">SNIPERFOREX TERMINAL</span>
           </div>
           <button
             onClick={close}

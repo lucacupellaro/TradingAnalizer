@@ -26,7 +26,7 @@ export const Navbar = ({
             <div className="flex items-center gap-2 shrink-0">
               <Activity className="w-4 h-4 text-[#ff8c00]" />
               <span className="font-bold text-sm text-[#ff8c00] tracking-widest font-mono glow-orange whitespace-nowrap">
-                MT5 CORE
+                SNIPERFOREX TERMINAL
               </span>
             </div>
 

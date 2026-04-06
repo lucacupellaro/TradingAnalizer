@@ -32,7 +32,7 @@ import {
 } from './utils';
 import { Info, Globe, TableIcon, ChevronUp, ChevronDown, Grid, Shuffle, Clock, Upload, BarChart2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import ChiSono from './pages/AboutMePage';
+import ChiSono from './pages/ChiSono';
 
 export default function App() {
   const [isDark, setIsDark] = useState(true);
@@ -1004,8 +1004,8 @@ export default function App() {
           )}
 
           {activeTab === 'descrizione' && (
-  <ChiSono theme={theme} />
-)}
+            <ChiSono theme={theme} />
+          )}
 
           {activeTab === 'news' && (
             <div className={`${theme.panel} rounded-lg border ${theme.border} p-10 text-center glow-panel animate-fade-in`}>
