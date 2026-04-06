@@ -32,6 +32,7 @@ import {
 } from './utils';
 import { Info, Globe, TableIcon, ChevronUp, ChevronDown, Grid, Shuffle, Clock, Upload, BarChart2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import ChiSono from './pages/AboutMePage';
 
 export default function App() {
   const [isDark, setIsDark] = useState(true);
@@ -1003,16 +1004,8 @@ export default function App() {
           )}
 
           {activeTab === 'descrizione' && (
-            <div className={`${theme.panel} rounded-lg border ${theme.border} p-10 text-center glow-panel animate-fade-in`}>
-              <Info className="w-12 h-12 mx-auto mb-5 text-[#ff8c00]" />
-              <h2 className="text-xl font-black mb-5 text-[#e2e8f0] font-mono uppercase tracking-wider">
-                System Info
-              </h2>
-              <p className="text-[#4a5568] max-w-2xl mx-auto font-mono text-sm leading-6">
-                Quantitative analysis platform built for native MetaTrader 5 report parsing.
-              </p>
-            </div>
-          )}
+  <ChiSono theme={theme} />
+)}
 
           {activeTab === 'news' && (
             <div className={`${theme.panel} rounded-lg border ${theme.border} p-10 text-center glow-panel animate-fade-in`}>
