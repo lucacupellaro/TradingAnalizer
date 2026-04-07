@@ -1,7 +1,7 @@
-import React from 'react';
+import { memo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
-export const DistributionChart = ({ data, title, isDark, type, theme }) => {
+const DistributionChartComponent = ({ data, title, isDark, type, theme }) => {
   if (!data || data.length === 0) return null;
 
   const maxAbs = Math.max(...data.map(Math.abs)) || 1;
@@ -56,3 +56,5 @@ export const DistributionChart = ({ data, title, isDark, type, theme }) => {
     </div>
   );
 };
+
+export const DistributionChart = memo(DistributionChartComponent);

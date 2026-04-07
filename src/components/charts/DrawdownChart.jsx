@@ -1,8 +1,9 @@
+import { memo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingDown } from 'lucide-react';
 import { formatXAxisDate } from '../../utils/formatting';
 
-export const DrawdownChart = ({ data, title, theme }) => {
+const DrawdownChartComponent = ({ data, title, theme }) => {
   if (!data || data.length === 0) return null;
   return (
     <div className={`${theme.panel} border ${theme.borderLight} rounded-lg p-4 h-[300px] glow-panel`}>
@@ -29,3 +30,5 @@ export const DrawdownChart = ({ data, title, theme }) => {
     </div>
   );
 };
+
+export const DrawdownChart = memo(DrawdownChartComponent);

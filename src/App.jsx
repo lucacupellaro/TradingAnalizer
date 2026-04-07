@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import MonteCarloWorker from './workers/monteCarlo.worker.js?worker';
 import { getTheme } from './config/themes';
 import {
   useAuth,
@@ -33,6 +34,46 @@ import {
 import { Info, Globe, TableIcon, ChevronUp, ChevronDown, Grid, Shuffle, Clock, Upload, BarChart2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import ChiSono from './pages/ChiSono';
+
+// Tooltip Monte Carlo: mostra SOLO la linea attualmente hover-ata (non tutte le 50)
+const MonteCarloTooltip = ({ active, payload, label, theme, hoveredKey }) => {
+  if (!active || !payload || !payload.length) return null;
+
+  const targetKey = hoveredKey || 'average';
+  const hovered = payload.find(p => p && p.dataKey === targetKey);
+  if (!hovered || hovered.value == null) return null;
+
+  const isAverage = hovered.dataKey === 'average';
+  const niceName = isAverage ? 'MEDIA (Valore Atteso)' : `Run #${String(hovered.dataKey).replace('run', '')}`;
+
+  return (
+    <div
+      style={{
+        backgroundColor: theme.chart.tooltipBg,
+        color: theme.chart.tooltipText,
+        border: `1px solid ${theme.chart.tooltipBorder}`,
+        padding: '8px 10px',
+        fontSize: 11,
+        fontFamily: 'monospace',
+      }}
+    >
+      <div style={{ opacity: 0.6, fontSize: 10, marginBottom: 4 }}>Trade #{label}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{
+          display: 'inline-block',
+          width: 10,
+          height: 10,
+          backgroundColor: hovered.color || hovered.stroke,
+          borderRadius: 2,
+        }} />
+        <span style={{ fontWeight: 'bold' }}>{niceName}</span>
+        <span style={{ marginLeft: 12, fontWeight: 'bold' }}>
+          {Number(hovered.value).toFixed(2)}
+        </span>
+      </div>
+    </div>
+  );
+};
 
 export default function App() {
   const [isDark, setIsDark] = useState(true);
@@ -129,6 +170,7 @@ export default function App() {
           mxDD = Math.max(mxDD, pkEq - curEq);
           sumSqDD += Math.pow(pkEq - curEq, 2);
         }
+
         eqSeq.push({
           tradeNum: i + 1,
           date: t.TimeMs ? new Date(t.TimeMs).toISOString().split('T')[0] : '',
@@ -149,7 +191,9 @@ export default function App() {
     const pf = Math.abs(grossL) > 0 ? grossP / Math.abs(grossL) : 999;
 
     const lssOnly = lss.map(t => t.net);
-    const downDev = Math.sqrt(lssOnly.length > 0 ? lssOnly.reduce((a, b) => a + Math.pow(b, 2), 0) / lssOnly.length : 0);
+    const downDev = Math.sqrt(
+      lssOnly.length > 0 ? lssOnly.reduce((a, b) => a + Math.pow(b, 2), 0) / lssOnly.length : 0
+    );
     const sortino = downDev > 0 ? avgP / downDev : avgP > 0 ? 999 : 0;
 
     const { beta, corr } = calcBetaCorr(pDly, spxData);
@@ -194,114 +238,124 @@ export default function App() {
 
   const strategyStats = useMemo(() => {
     if (!analyzedTrades.length) return [];
-    const grp = analyzedTrades.filter(t => t.IsMergedOut).reduce((acc, t) => {
-      const k = groupBy === 'Asset' ? t.Symbol : t.Id;
-      if (groupBy === 'Strategy' && k === 'Senza Commento') return acc;
-      if (!acc[k]) acc[k] = [];
-      acc[k].push(t);
-      return acc;
-    }, {});
 
-    return Object.keys(grp).map(name => {
-      const deals = grp[name].sort((a, b) => a.TimeMs - b.TimeMs);
-      let curEq = 0, pkEq = 0, mxDD = 0, sumSqDD = 0, netProfit = 0, grossP = 0, grossL = 0, sC = 0, sSwap = 0;
-      let wonBuy = 0, wonSell = 0, maxConsecLoss = 0, curConsecLoss = 0;
-      const eqSeq = [], tDets = [], opTs = [], clTs = [], pDly = {};
+    const grp = analyzedTrades
+      .filter(t => t.IsMergedOut)
+      .reduce((acc, t) => {
+        const k = groupBy === 'Asset' ? t.Symbol : t.Id;
+        if (groupBy === 'Strategy' && k === 'Senza Commento') return acc;
+        if (!acc[k]) acc[k] = [];
+        acc[k].push(t);
+        return acc;
+      }, {});
 
-      deals.forEach((d, idx) => {
-        const swap = d.Swap + d.inSwap;
-        const costi = d.Commission + d.inComm + d.Fee + d.inFee + swap;
-        const net = d.Profit + costi;
+    return Object.keys(grp)
+      .map(name => {
+        const deals = grp[name].sort((a, b) => a.TimeMs - b.TimeMs);
+        let curEq = 0, pkEq = 0, mxDD = 0, sumSqDD = 0, netProfit = 0, grossP = 0, grossL = 0, sC = 0, sSwap = 0;
+        let wonBuy = 0, wonSell = 0, maxConsecLoss = 0, curConsecLoss = 0;
+        const eqSeq = [], tDets = [], opTs = [], clTs = [], pDly = {};
 
-        if (d.Profit > 0) grossP += d.Profit;
-        else grossL += d.Profit;
-        if (net > 0) {
-          if (d.Type === 'buy') wonBuy++;
-          else if (d.Type === 'sell') wonSell++;
-        }
+        deals.forEach((d, idx) => {
+          const swap = d.Swap + d.inSwap;
+          const costi = d.Commission + d.inComm + d.Fee + d.inFee + swap;
+          const net = d.Profit + costi;
 
-        sC += costi;
-        sSwap += swap;
-        netProfit += net;
-        curEq += net;
-        tDets.push({ net, TimeMs: d.TimeMs });
+          if (d.Profit > 0) grossP += d.Profit;
+          else grossL += d.Profit;
 
-        if (net < 0) {
-          curConsecLoss++;
-          if (curConsecLoss > maxConsecLoss) maxConsecLoss = curConsecLoss;
-        } else {
-          curConsecLoss = 0;
-        }
+          if (net > 0) {
+            if (d.Type === 'buy') wonBuy++;
+            else if (d.Type === 'sell') wonSell++;
+          }
 
-        if (d.OpenTimeMs) opTs.push(d.OpenTimeMs);
-        if (d.CloseTimeMs) clTs.push(d.CloseTimeMs);
-        if (d.TimeMs) {
-          const dKey = new Date(d.TimeMs).toISOString().split('T')[0];
-          pDly[dKey] = (pDly[dKey] || 0) + net;
-        }
+          sC += costi;
+          sSwap += swap;
+          netProfit += net;
+          curEq += net;
+          tDets.push({ net, TimeMs: d.TimeMs });
 
-        if (curEq > pkEq) {
-          pkEq = curEq;
-        } else {
-          mxDD = Math.max(mxDD, pkEq - curEq);
-          sumSqDD += Math.pow(pkEq - curEq, 2);
-        }
-        eqSeq.push({
-          tradeNum: idx + 1,
-          date: d.TimeMs ? new Date(d.TimeMs).toISOString().split('T')[0] : '',
-          equity: curEq,
-          drawdown: curEq - pkEq
+          if (net < 0) {
+            curConsecLoss++;
+            if (curConsecLoss > maxConsecLoss) maxConsecLoss = curConsecLoss;
+          } else {
+            curConsecLoss = 0;
+          }
+
+          if (d.OpenTimeMs) opTs.push(d.OpenTimeMs);
+          if (d.CloseTimeMs) clTs.push(d.CloseTimeMs);
+
+          if (d.TimeMs) {
+            const dKey = new Date(d.TimeMs).toISOString().split('T')[0];
+            pDly[dKey] = (pDly[dKey] || 0) + net;
+          }
+
+          if (curEq > pkEq) {
+            pkEq = curEq;
+          } else {
+            mxDD = Math.max(mxDD, pkEq - curEq);
+            sumSqDD += Math.pow(pkEq - curEq, 2);
+          }
+
+          eqSeq.push({
+            tradeNum: idx + 1,
+            date: d.TimeMs ? new Date(d.TimeMs).toISOString().split('T')[0] : '',
+            equity: curEq,
+            drawdown: curEq - pkEq
+          });
         });
-      });
 
-      const c = tDets.length;
-      const wns = tDets.filter(t => t.net > 0);
-      const lss = tDets.filter(t => t.net <= 0);
-      const pOnly = tDets.map(t => t.net);
-      const avgP = c > 0 ? netProfit / c : 0;
-      const std = Math.sqrt(c > 0 ? tDets.reduce((a, b) => a + Math.pow(b.net - avgP, 2), 0) / c : 0);
-      const lssOnly = lss.map(t => t.net);
-      const downDev = Math.sqrt(lssOnly.length > 0 ? lssOnly.reduce((a, b) => a + Math.pow(b, 2), 0) / lssOnly.length : 0);
-      const ulcerIndex = c > 0 ? Math.sqrt(sumSqDD / c) : 0;
-      const { beta, corr } = calcBetaCorr(pDly, spxData);
-      const { skew, kurt } = skewnessAndKurtosis(pOnly, avgP, std);
-      const jbTest = jarqueBeraTest(c, skew, kurt);
-      const andDar = adTest(pOnly, avgP, std);
+        const c = tDets.length;
+        const wns = tDets.filter(t => t.net > 0);
+        const lss = tDets.filter(t => t.net <= 0);
+        const pOnly = tDets.map(t => t.net);
+        const avgP = c > 0 ? netProfit / c : 0;
+        const std = Math.sqrt(c > 0 ? tDets.reduce((a, b) => a + Math.pow(b.net - avgP, 2), 0) / c : 0);
+        const lssOnly = lss.map(t => t.net);
+        const downDev = Math.sqrt(
+          lssOnly.length > 0 ? lssOnly.reduce((a, b) => a + Math.pow(b, 2), 0) / lssOnly.length : 0
+        );
+        const ulcerIndex = c > 0 ? Math.sqrt(sumSqDD / c) : 0;
+        const { beta, corr } = calcBetaCorr(pDly, spxData);
+        const { skew, kurt } = skewnessAndKurtosis(pOnly, avgP, std);
+        const jbTest = jarqueBeraTest(c, skew, kurt);
+        const andDar = adTest(pOnly, avgP, std);
 
-      return {
-        name,
-        count: c,
-        winRate: c > 0 ? (wns.length / c) * 100 : 0,
-        wonCount: wns.length,
-        lostCount: lss.length,
-        wonBuy,
-        wonSell,
-        sharpe: std > 0 ? avgP / std : 0,
-        sortino: downDev > 0 ? avgP / downDev : 999,
-        maxDrawdown: mxDD,
-        netProfit,
-        grossP,
-        grossL,
-        totCosti: sC,
-        totSwap: sSwap,
-        avgP,
-        std,
-        ulcerIndex,
-        beta,
-        corr,
-        skew,
-        kurt,
-        jbTest,
-        andDar,
-        tradeProfits: pOnly,
-        profitFactor: Math.abs(grossL) > 0 ? grossP / Math.abs(grossL) : 999,
-        equitySequence: eqSeq,
-        dayStats: calculateDayStats(tDets),
-        avgOpen: getAvgTimeStr(opTs),
-        avgClose: getAvgTimeStr(clTs),
-        maxConsecLoss,
-      };
-    }).sort((a, b) => b.netProfit - a.netProfit);
+        return {
+          name,
+          count: c,
+          winRate: c > 0 ? (wns.length / c) * 100 : 0,
+          wonCount: wns.length,
+          lostCount: lss.length,
+          wonBuy,
+          wonSell,
+          sharpe: std > 0 ? avgP / std : 0,
+          sortino: downDev > 0 ? avgP / downDev : 999,
+          maxDrawdown: mxDD,
+          netProfit,
+          grossP,
+          grossL,
+          totCosti: sC,
+          totSwap: sSwap,
+          avgP,
+          std,
+          ulcerIndex,
+          beta,
+          corr,
+          skew,
+          kurt,
+          jbTest,
+          andDar,
+          tradeProfits: pOnly,
+          profitFactor: Math.abs(grossL) > 0 ? grossP / Math.abs(grossL) : 999,
+          equitySequence: eqSeq,
+          dayStats: calculateDayStats(tDets),
+          avgOpen: getAvgTimeStr(opTs),
+          avgClose: getAvgTimeStr(clTs),
+          maxConsecLoss,
+        };
+      })
+      .sort((a, b) => b.netProfit - a.netProfit);
   }, [analyzedTrades, groupBy, spxData]);
 
   const correlationData = useMemo(() => {
@@ -313,12 +367,15 @@ export default function App() {
       const d = new Date(t.TimeMs).toISOString().split('T')[0];
       const k = groupBy === 'Asset' ? t.Symbol : t.Id;
       if (groupBy === 'Strategy' && k === 'Senza Commento') return;
+
       const net = t.Profit + t.Commission + t.inComm + t.Fee + t.inFee + t.Swap + t.inSwap;
       if (!dMap[d]) dMap[d] = {};
       dMap[d][k] = (dMap[d][k] || 0) + net;
     });
 
-    const entities = Array.from(new Set(trades.map(t => groupBy === 'Asset' ? t.Symbol : t.Id)))
+    const entities = Array.from(
+      new Set(trades.map(t => groupBy === 'Asset' ? t.Symbol : t.Id))
+    )
       .filter(e => !(groupBy === 'Strategy' && e === 'Senza Commento'))
       .sort();
 
@@ -326,15 +383,19 @@ export default function App() {
 
     const matrix = entities.map(e1 => {
       const row = { entity: e1 };
+
       entities.forEach(e2 => {
         if (e1 === e2) {
           row[e2] = 1;
           return;
         }
+
         let sum1 = 0, sum2 = 0, sum1Sq = 0, sum2Sq = 0, pSum = 0, n = 0;
+
         Object.values(dMap).forEach(dayData => {
           const v1 = dayData[e1] || 0;
           const v2 = dayData[e2] || 0;
+
           if (v1 !== 0 || v2 !== 0) {
             sum1 += v1;
             sum2 += v2;
@@ -344,68 +405,71 @@ export default function App() {
             n++;
           }
         });
+
         if (n === 0) {
           row[e2] = 0;
           return;
         }
+
         const num = pSum - (sum1 * sum2 / n);
         const den = Math.sqrt((sum1Sq - sum1 * sum1 / n) * (sum2Sq - sum2 * sum2 / n));
         row[e2] = den === 0 ? 0 : num / den;
       });
+
       return row;
     });
 
     return { entities, matrix };
   }, [analyzedTrades, groupBy]);
 
-  const monteCarloData = useMemo(() => {
-    if (!analyzedTrades.length) return null;
+  const [monteCarloData, setMonteCarloData] = useState(null);
+  const [isMcLoading, setIsMcLoading] = useState(false);
+  const [hoveredRunKey, setHoveredRunKey] = useState(null);
+  const mcWorkerRef = useRef(null);
+
+  useEffect(() => {
+    const worker = new MonteCarloWorker();
+    mcWorkerRef.current = worker;
+    worker.onmessage = (e) => {
+      setMonteCarloData(e.data);
+      setIsMcLoading(false);
+    };
+    return () => {
+      worker.terminate();
+      mcWorkerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mcWorkerRef.current) return;
+    if (!analyzedTrades.length) {
+      setMonteCarloData(null);
+      return;
+    }
     const trades = analyzedTrades
       .filter(t => t.IsMergedOut)
       .map(t => t.Profit + t.Commission + t.Fee + t.Swap + t.inComm + t.inFee + t.inSwap);
 
-    if (trades.length < 5) return null;
-
-    const iterations = mcIterations;
-    const numTrades = trades.length;
-    const mcData = [];
-    const endEquities = [];
-
-    for (let j = 0; j <= numTrades; j++) mcData.push({ trade: j, average: 0 });
-
-    for (let i = 0; i < iterations; i++) {
-      let eq = 0;
-      for (let j = 1; j <= numTrades; j++) {
-        eq += trades[Math.floor(Math.random() * trades.length)];
-        mcData[j][`run${i}`] = eq;
-        mcData[j].average += eq;
-        if (j === numTrades) endEquities.push(eq);
-      }
+    if (trades.length < 5) {
+      setMonteCarloData(null);
+      return;
     }
 
-    for (let j = 1; j <= numTrades; j++) {
-      mcData[j].average = mcData[j].average / iterations;
-    }
-
-    return {
-      data: mcData,
-      iterations,
-      probProfit: (endEquities.filter(e => e > 0).length / iterations) * 100,
-      avgEnd: mcData[numTrades].average
-    };
+    setIsMcLoading(true);
+    mcWorkerRef.current.postMessage({ trades, iterations: mcIterations });
   }, [analyzedTrades, mcIterations]);
 
-  const getLineColors = (isDark) => [
-    isDark ? '#00ff00' : '#16a34a',
-    isDark ? '#ffffff' : '#0ea5e9',
-    isDark ? '#ffcc00' : '#d97706',
-    isDark ? '#ff00ff' : '#c026d3',
-    isDark ? '#ff3333' : '#dc2626',
+  const getLineColors = (darkMode) => [
+    darkMode ? '#00ff00' : '#16a34a',
+    darkMode ? '#ffffff' : '#0ea5e9',
+    darkMode ? '#ffcc00' : '#d97706',
+    darkMode ? '#ff00ff' : '#c026d3',
+    darkMode ? '#ff3333' : '#dc2626',
     '#3399ff',
     '#ff9933',
     '#cc66ff',
     '#33cc99',
-    isDark ? '#00ffff' : '#0f172a',
+    darkMode ? '#00ffff' : '#0f172a',
     '#ff66b2',
     '#99ff33',
     '#00bfff',
@@ -430,7 +494,9 @@ export default function App() {
 
       {!authState.isAuthenticated && <LoginModal {...authState} theme={theme} />}
 
-      {pendingRows && <RowRangeModal totalRows={pendingRows.length} onConfirm={handleRowConfirm} />}
+      {pendingRows && (
+        <RowRangeModal totalRows={pendingRows.length} onConfirm={handleRowConfirm} />
+      )}
 
       <Sidebar
         isOpen={isSidebarOpen}
@@ -458,7 +524,6 @@ export default function App() {
 
       <main className="w-full flex justify-center py-12 pb-28">
         <div className="w-full max-w-[1400px] px-8 lg:px-16 xl:px-20 py-12 space-y-16 pb-28">
-
           {parsedTrades.length === 0 && confirmedRows.length === 0 && activeTab === 'analyzer' && (
             <div className="flex flex-col items-center justify-center min-h-[62vh] text-center gap-8 animate-fade-in">
               <BarChart2 className="w-20 h-20 text-[#ff8c00] opacity-20" />
@@ -467,19 +532,22 @@ export default function App() {
                   Nessun Report Caricato
                 </h2>
                 <p className="text-[#4a5568] text-sm max-w-md mx-auto font-mono leading-6">
-                  Importa un report MetaTrader 5 in formato <span className="text-[#ff8c00]">.xlsx</span>, <span className="text-[#ff8c00]">.xls</span>, <span className="text-[#ff8c00]">.html</span> o <span className="text-[#ff8c00]">.csv</span> per iniziare l'analisi.
+                  Importa un report MetaTrader 5 in formato <span className="text-[#ff8c00]">.xlsx</span>,{' '}
+                  <span className="text-[#ff8c00]">.xls</span>, <span className="text-[#ff8c00]">.html</span> o{' '}
+                  <span className="text-[#ff8c00]">.csv</span> per iniziare l&apos;analisi.
                 </p>
               </div>
+
               <label className="flex items-center gap-4 px-8 py-4 rounded-xl font-bold text-sm cursor-pointer uppercase tracking-[0.2em] bg-[#ff8c00] text-black hover:bg-[#ff9f1c] transition-all shadow-xl shadow-[#ff8c00]/30 hover:scale-105 hover:shadow-[#ff8c00]/50 font-mono h-14">
-  <Upload className="w-6 h-6 flex-shrink-0" />
-  IMPORT REPORT MT5
-  <input
-    type="file"
-    accept=".xlsx,.xls,.html,.htm,.csv"
-    onChange={handleFileUpload}
-    className="hidden"
-  />
-</label>
+                <Upload className="w-6 h-6 flex-shrink-0" />
+                IMPORT REPORT MT5
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.html,.htm,.csv"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
             </div>
           )}
 
@@ -494,10 +562,16 @@ export default function App() {
                   Il range selezionato non contiene trade validi. Ricarica il file e seleziona un range diverso.
                 </p>
               </div>
+
               <label className="flex items-center gap-2 px-6 py-3.5 rounded font-bold text-xs cursor-pointer uppercase tracking-widest bg-[#ff8c00] text-black hover:bg-[#ff9f1c] transition-all shadow-lg shadow-[#ff8c00]/20 font-mono">
                 <Upload className="w-4 h-4" />
                 RICARICA FILE
-                <input type="file" accept=".xlsx,.xls,.html,.htm,.csv" onChange={handleFileUpload} className="hidden" />
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.html,.htm,.csv"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
               </label>
             </div>
           )}
@@ -517,6 +591,7 @@ export default function App() {
                     {filteredTableTrades.length}
                   </span>
                 </div>
+
                 <button className="p-2.5 rounded text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/5 transition-all">
                   {showTable ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </button>
@@ -524,7 +599,7 @@ export default function App() {
 
               {showTable && (
                 <div className="p-8 space-y-7">
-                  <div className="space-y-5">
+                  <div className="space-y-8 pb-8">
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                       {[
                         {
@@ -650,6 +725,7 @@ export default function App() {
                               Azzera
                             </button>
                           </div>
+
                           <div className="flex flex-wrap gap-2 p-4 rounded border border-[#1a2332] bg-[#000000]/60 min-h-[56px] max-h-32 overflow-y-auto">
                             {items.map(s => (
                               <button
@@ -669,15 +745,17 @@ export default function App() {
                       ))}
                     </div>
 
-                    <button
-                      onClick={triggerAnalysis}
-                      className="w-full py-4 rounded text-sm font-bold uppercase tracking-[0.2em] bg-[#ff8c00] hover:bg-[#ff9f1c] text-black transition-all border border-[#ff8c00]/60 shadow-lg shadow-[#ff8c00]/15 font-mono"
-                    >
-                      APPLICA FILTRI &amp; AGGIORNA ANALISI
-                    </button>
+                    <div className="pt-5 pb-3">
+                      <button
+                        onClick={triggerAnalysis}
+                        className="w-full h-10 rounded-2xl text-sm font-bold uppercase tracking-[0.2em] bg-[#ff8c00] hover:bg-[#ff9f1c] text-black transition-all duration-200 border border-[#ff8c00]/60 shadow-lg shadow-[#ff8c00]/20 font-mono hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        APPLICA FILTRI & AGGIORNA ANALISI
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="pt-1">
+                  <div className="pt-2">
                     <FilterBadge filters={appliedFilters} isDark={isDark} theme={theme} />
                   </div>
 
@@ -687,16 +765,29 @@ export default function App() {
                         <table className="w-full text-left text-[11px] font-mono">
                           <thead className="sticky top-0 z-10 bg-[#111824]">
                             <tr>
-                              {['Open Time', 'Dir', 'Type', 'Symbol', 'Strategy / ID', 'Gross Profit', 'Swap', 'Commissioni', 'Net PNL'].map((h, i) => (
+                              {[
+                                'Open Time',
+                                'Dir',
+                                'Type',
+                                'Symbol',
+                                'Strategy / ID',
+                                'Gross Profit',
+                                'Swap',
+                                'Commissioni',
+                                'Net PNL'
+                              ].map((h, i) => (
                                 <th
                                   key={h}
-                                  className={`px-4 py-3.5 text-[9px] uppercase tracking-[0.15em] font-semibold text-[#4a5568] border-b border-[#1a2332] whitespace-nowrap ${i >= 5 ? 'text-right' : ''}`}
+                                  className={`px-4 py-3.5 text-[9px] uppercase tracking-[0.15em] font-semibold text-[#4a5568] border-b border-[#1a2332] whitespace-nowrap ${
+                                    i >= 5 ? 'text-right' : ''
+                                  }`}
                                 >
                                   {h}
                                 </th>
                               ))}
                             </tr>
                           </thead>
+
                           <tbody className="divide-y divide-[#111824]">
                             {filteredTableTrades.map((t, idx) => {
                               const swap = t.Swap + t.inSwap;
@@ -711,32 +802,50 @@ export default function App() {
                                   <td className="px-4 py-3 text-[#4a5568] whitespace-nowrap">
                                     {t.OpenTimeMs ? new Date(t.OpenTimeMs).toLocaleString() : '—'}
                                   </td>
+
                                   <td className="px-4 py-3">
-                                    <span className={`inline-flex items-center px-2 py-1 rounded text-[9px] font-bold tracking-wider ${
-                                      t.Direction === 'in'
-                                        ? 'bg-[#64b5f6]/10 text-[#64b5f6] border border-[#64b5f6]/20'
-                                        : 'bg-[#ff1744]/10 text-[#ff1744] border border-[#ff1744]/20'
-                                    }`}>
+                                    <span
+                                      className={`inline-flex items-center px-2 py-1 rounded text-[9px] font-bold tracking-wider ${
+                                        t.Direction === 'in'
+                                          ? 'bg-[#64b5f6]/10 text-[#64b5f6] border border-[#64b5f6]/20'
+                                          : 'bg-[#ff1744]/10 text-[#ff1744] border border-[#ff1744]/20'
+                                      }`}
+                                    >
                                       {t.Direction.toUpperCase()}
                                     </span>
                                   </td>
+
                                   <td className="px-4 py-3">
-                                    <span className={`inline-flex items-center px-2 py-1 rounded text-[9px] font-bold tracking-wider ${
-                                      t.Type === 'buy'
-                                        ? 'bg-[#00e676]/10 text-[#00e676] border border-[#00e676]/20'
-                                        : 'bg-[#ff8c00]/10 text-[#ff8c00] border border-[#ff8c00]/20'
-                                    }`}>
+                                    <span
+                                      className={`inline-flex items-center px-2 py-1 rounded text-[9px] font-bold tracking-wider ${
+                                        t.Type === 'buy'
+                                          ? 'bg-[#00e676]/10 text-[#00e676] border border-[#00e676]/20'
+                                          : 'bg-[#ff8c00]/10 text-[#ff8c00] border border-[#ff8c00]/20'
+                                      }`}
+                                    >
                                       {t.Type.toUpperCase()}
                                     </span>
                                   </td>
+
                                   <td className="px-4 py-3 font-bold text-[#e2e8f0]">{t.Symbol}</td>
                                   <td className="px-4 py-3 text-[#4a5568] max-w-[180px] truncate">{t.Id}</td>
-                                  <td className={`px-4 py-3 text-right font-semibold ${t.Profit >= 0 ? 'text-[#00e676]' : 'text-[#ff1744]'}`}>
+
+                                  <td
+                                    className={`px-4 py-3 text-right font-semibold ${
+                                      t.Profit >= 0 ? 'text-[#00e676]' : 'text-[#ff1744]'
+                                    }`}
+                                  >
                                     {t.Profit.toFixed(2)}
                                   </td>
+
                                   <td className="px-4 py-3 text-right text-[#ffa726]/70">{swap.toFixed(2)}</td>
                                   <td className="px-4 py-3 text-right text-[#ff1744]/60">{comms.toFixed(2)}</td>
-                                  <td className={`px-4 py-3 text-right font-bold ${netto >= 0 ? 'text-[#00e676] glow-green' : 'text-[#ff1744] glow-red'}`}>
+
+                                  <td
+                                    className={`px-4 py-3 text-right font-bold ${
+                                      netto >= 0 ? 'text-[#00e676] glow-green' : 'text-[#ff1744] glow-red'
+                                    }`}
+                                  >
                                     {netto.toFixed(2)}
                                   </td>
                                 </tr>
@@ -814,29 +923,30 @@ export default function App() {
                     PERFORMANCE BREAKDOWN
                   </h2>
                 </div>
-               <div className="flex bg-[#000000] border border-[#1a2332] rounded-xl p-2 gap-3">
-  <button
-    onClick={() => setGroupBy('Strategy')}
-    className={`flex items-center justify-center px-7 h-12 rounded-lg text-sm font-bold font-mono uppercase tracking-[0.15em] transition-all ${
-      groupBy === 'Strategy'
-        ? 'bg-[#ff8c00] text-black shadow-lg shadow-[#ff8c00]/40 scale-105'
-        : 'text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/10'
-    }`}
-  >
-    Strategy
-  </button>
 
-  <button
-    onClick={() => setGroupBy('Asset')}
-    className={`flex items-center justify-center px-7 h-12 rounded-lg text-sm font-bold font-mono uppercase tracking-[0.15em] transition-all ${
-      groupBy === 'Asset'
-        ? 'bg-[#ff8c00] text-black shadow-lg shadow-[#ff8c00]/40 scale-105'
-        : 'text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/10'
-    }`}
-  >
-    Asset
-  </button>
-</div>
+                <div className="flex bg-[#000000] border border-[#1a2332] rounded-xl p-2 gap-3">
+                  <button
+                    onClick={() => setGroupBy('Strategy')}
+                    className={`flex items-center justify-center px-7 h-12 rounded-lg text-sm font-bold font-mono uppercase tracking-[0.15em] transition-all ${
+                      groupBy === 'Strategy'
+                        ? 'bg-[#ff8c00] text-black shadow-lg shadow-[#ff8c00]/40 scale-105'
+                        : 'text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/10'
+                    }`}
+                  >
+                    Strategy
+                  </button>
+
+                  <button
+                    onClick={() => setGroupBy('Asset')}
+                    className={`flex items-center justify-center px-7 h-12 rounded-lg text-sm font-bold font-mono uppercase tracking-[0.15em] transition-all ${
+                      groupBy === 'Asset'
+                        ? 'bg-[#ff8c00] text-black shadow-lg shadow-[#ff8c00]/40 scale-105'
+                        : 'text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/10'
+                    }`}
+                  >
+                    Asset
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -910,14 +1020,16 @@ export default function App() {
                   CORRELATION MATRIX
                 </h3>
               </div>
+
               <p className="text-[#4a5568] text-[10px] mb-10 font-mono tracking-wide leading-6">
                 Pearson correlation on daily net returns. Shows mathematical divergences between grouped entities.
               </p>
+
               <CorrelationHeatmap data={correlationData} isDark={isDark} theme={theme} />
             </div>
           )}
 
-          {activeTab === 'analyzer' && monteCarloData && (
+          {activeTab === 'analyzer' && (monteCarloData || isMcLoading) && (
             <div className={`${theme.panel} rounded-lg border ${theme.border} p-10 lg:p-12 glow-panel animate-fade-in`}>
               <div className="flex justify-between items-center mb-10 border-b border-[#1a2332] pb-6">
                 <div className="flex items-center gap-3">
@@ -926,7 +1038,13 @@ export default function App() {
                   <h3 className="text-xs font-bold text-[#ff8c00] uppercase tracking-[0.2em] font-mono glow-orange">
                     MONTE CARLO SIMULATION
                   </h3>
+                  {isMcLoading && (
+                    <span className="text-[10px] font-mono text-[#ff8c00] uppercase tracking-widest animate-pulse">
+                      Computing...
+                    </span>
+                  )}
                 </div>
+
                 <div className="flex items-center gap-2">
                   <span className={`text-[10px] uppercase font-bold ${theme.textMuted}`}>Iterazioni:</span>
                   <select
@@ -935,87 +1053,93 @@ export default function App() {
                     className={`p-2 rounded text-xs font-bold border outline-none cursor-pointer transition-colors ${theme.input} hover:border-white`}
                   >
                     <option value={10}>10 Percorsi</option>
+                    <option value={25}>25 Percorsi</option>
                     <option value={50}>50 Percorsi</option>
-                    <option value={100}>100 Percorsi</option>
-                    <option value={200}>200 Percorsi</option>
-                    <option value={500}>500 Percorsi</option>
                   </select>
                 </div>
               </div>
 
-              <p className={`${theme.textMuted} text-xs mb-10 font-mono leading-6`}>
-                Questo strumento simula {monteCarloData.iterations} futuri percorsi di equity basandosi sull'estrazione casuale (con reinserimento) dei tuoi{' '}
-                {analyzedTrades.filter(t => t.IsMergedOut).length} trades storici analizzati. La linea grossa tratteggiata rappresenta la Media Matematica calcolata.
-              </p>
+              {monteCarloData && (
+                <>
+                  <p className={`${theme.textMuted} text-xs mb-10 font-mono leading-6`}>
+                    Questo strumento simula {monteCarloData.iterations} futuri percorsi di equity basandosi sull&apos;estrazione casuale
+                    (con reinserimento) dei tuoi {analyzedTrades.filter(t => t.IsMergedOut).length} trades storici analizzati.
+                    La linea grossa tratteggiata rappresenta la Media Matematica calcolata.
+                  </p>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 mb-12">
-                <KPICard isDark={isDark} theme={theme} label="Iterazioni Simulate" value={monteCarloData.iterations} />
-                <KPICard isDark={isDark} theme={theme} label="Trade per Simulazione" value={analyzedTrades.filter(t => t.IsMergedOut).length} />
-                <KPICard
-                  isDark={isDark}
-                  theme={theme}
-                  label="Prob. di Profitto"
-                  value={`${monteCarloData.probProfit.toFixed(1)}%`}
-                  valueClass={monteCarloData.probProfit > 80 ? theme.success : theme.danger}
-                  infoDesc="Percentuale di simulazioni che terminano con saldo positivo"
-                />
-                <KPICard
-                  isDark={isDark}
-                  theme={theme}
-                  label="PNL Medio Finale"
-                  value={monteCarloData.avgEnd.toFixed(2)}
-                  valueClass={monteCarloData.avgEnd >= 0 ? theme.success : theme.danger}
-                  infoDesc="Il valore di arrivo matematicamente calcolato della media di tutte le simulazioni"
-                />
-              </div>
-
-              <div className="h-[560px] mt-10">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={monteCarloData.data}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={theme.chart.grid} />
-                    <XAxis dataKey="trade" stroke={theme.chart.axis} />
-                    <YAxis stroke={theme.chart.axis} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: theme.chart.tooltipBg,
-                        color: theme.chart.tooltipText,
-                        border: `1px solid ${theme.chart.tooltipBorder}`
-                      }}
-                      labelFormatter={() => ''}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 mb-12">
+                    <KPICard isDark={isDark} theme={theme} label="Iterazioni Simulate" value={monteCarloData.iterations} />
+                    <KPICard isDark={isDark} theme={theme} label="Trade per Simulazione" value={analyzedTrades.filter(t => t.IsMergedOut).length} />
+                    <KPICard
+                      isDark={isDark}
+                      theme={theme}
+                      label="Prob. di Profitto"
+                      value={`${monteCarloData.probProfit.toFixed(1)}%`}
+                      valueClass={monteCarloData.probProfit > 80 ? theme.success : theme.danger}
+                      infoDesc="Percentuale di simulazioni che terminano con saldo positivo"
                     />
-
-                    {Array.from({ length: Math.min(monteCarloData.iterations, 30) }).map((_, i) => (
-                      <Line
-                        key={i}
-                        type="monotone"
-                        dataKey={`run${i}`}
-                        stroke={dynLineColors[i % dynLineColors.length]}
-                        strokeWidth={1}
-                        dot={false}
-                        opacity={0.15}
-                        isAnimationActive={false}
-                      />
-                    ))}
-
-                    <Line
-                      type="monotone"
-                      dataKey="average"
-                      stroke={theme.accent2}
-                      strokeWidth={5}
-                      strokeDasharray="10 5"
-                      dot={false}
-                      isAnimationActive={false}
-                      name="MEDIA (Valore Atteso)"
+                    <KPICard
+                      isDark={isDark}
+                      theme={theme}
+                      label="PNL Medio Finale"
+                      value={monteCarloData.avgEnd.toFixed(2)}
+                      valueClass={monteCarloData.avgEnd >= 0 ? theme.success : theme.danger}
+                      infoDesc="Il valore di arrivo matematicamente calcolato della media di tutte le simulazioni"
                     />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+                  </div>
+
+                  <div className="h-[560px] mt-10">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={monteCarloData.data}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={theme.chart.grid} />
+                        <XAxis dataKey="trade" stroke={theme.chart.axis} />
+                        <YAxis stroke={theme.chart.axis} />
+                        <Tooltip
+                          content={<MonteCarloTooltip theme={theme} hoveredKey={hoveredRunKey} />}
+                          cursor={{ stroke: theme.chart.axis, strokeWidth: 1 }}
+                        />
+
+                        {Array.from({ length: Math.min(monteCarloData.iterations, 50) }).map((_, i) => {
+                          const key = `run${i}`;
+                          const isHovered = hoveredRunKey === key;
+                          return (
+                            <Line
+                              key={i}
+                              type="monotone"
+                              dataKey={key}
+                              stroke={dynLineColors[i % dynLineColors.length]}
+                              strokeWidth={isHovered ? 2.5 : 1}
+                              dot={false}
+                              opacity={isHovered ? 1 : 0.15}
+                              isAnimationActive={false}
+                              activeDot={{ r: 4, strokeWidth: 0 }}
+                              onMouseEnter={() => setHoveredRunKey(key)}
+                              onMouseLeave={() => setHoveredRunKey(null)}
+                            />
+                          );
+                        })}
+
+                        <Line
+                          type="monotone"
+                          dataKey="average"
+                          stroke={theme.accent2}
+                          strokeWidth={5}
+                          strokeDasharray="10 5"
+                          dot={false}
+                          isAnimationActive={false}
+                          name="MEDIA (Valore Atteso)"
+                          onMouseEnter={() => setHoveredRunKey('average')}
+                          onMouseLeave={() => setHoveredRunKey(null)}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
-          {activeTab === 'descrizione' && (
-            <ChiSono theme={theme} />
-          )}
+          {activeTab === 'descrizione' && <ChiSono theme={theme} />}
 
           {activeTab === 'news' && (
             <div className={`${theme.panel} rounded-lg border ${theme.border} p-10 text-center glow-panel animate-fade-in`}>
@@ -1028,7 +1152,6 @@ export default function App() {
               </p>
             </div>
           )}
-
         </div>
       </main>
     </div>
@@ -1056,9 +1179,11 @@ function RowRangeModal({ totalRows, onConfirm }) {
               ROW SELECTION
             </span>
           </div>
+
           <h2 className="text-sm font-bold text-[#e2e8f0] font-mono mt-2">
             Select analysis range
           </h2>
+
           <p className="text-[10px] text-[#4a5568] mt-2 font-mono">
             Loaded file — <span className="text-[#ff8c00]">{dataRows}</span> data rows available
           </p>
@@ -1079,6 +1204,7 @@ function RowRangeModal({ totalRows, onConfirm }) {
                 className="w-full h-11 px-3 rounded text-sm border border-[#1a2332] bg-[#000000] text-[#e2e8f0] focus:border-[#ff8c00]/40 focus:outline-none transition-colors font-mono placeholder:text-[#2d3a4a]"
               />
             </div>
+
             <div>
               <label className="block text-[9px] uppercase tracking-[0.15em] font-semibold text-[#4a5568] mb-2 font-mono">
                 To row
@@ -1105,6 +1231,7 @@ function RowRangeModal({ totalRows, onConfirm }) {
             >
               CONFIRM &amp; ANALYZE
             </button>
+
             <button
               type="button"
               onClick={() => onConfirm('', '')}

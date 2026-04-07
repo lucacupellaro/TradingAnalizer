@@ -1,7 +1,7 @@
-import React from 'react';
+import { memo } from 'react';
 import { Info } from 'lucide-react';
 
-export const KPICard = ({
+const KPICardComponent = ({
   label,
   value,
   valueClass,
@@ -107,3 +107,5 @@ export const KPICard = ({
     </div>
   );
 };
+
+export const KPICard = memo(KPICardComponent);

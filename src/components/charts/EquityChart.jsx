@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { memo, useState, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 import { formatXAxisDate } from '../../utils/formatting';
@@ -22,7 +22,7 @@ function calcEMA(data, period) {
   return result;
 }
 
-export const EquityChart = ({ data, title, theme }) => {
+const EquityChartComponent = ({ data, title, theme }) => {
   const [showEma50, setShowEma50] = useState(true);
   const [showEma100, setShowEma100] = useState(true);
 
@@ -117,3 +117,5 @@ export const EquityChart = ({ data, title, theme }) => {
     </div>
   );
 };
+
+export const EquityChart = memo(EquityChartComponent);
