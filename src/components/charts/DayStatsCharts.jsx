@@ -13,8 +13,8 @@ export const DayStatsCharts = ({ dayStats, isDark, theme }) => {
         <ResponsiveContainer width="100%" height="88%">
           <BarChart data={dayStats} margin={{ top: 4, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chart.grid} />
-            <XAxis dataKey="name" tick={{ fontSize: 9, fill: theme.chart.tick, fontFamily: 'JetBrains Mono, monospace' }} axisLine={{ stroke: theme.chart.axis }} />
-            <YAxis tick={{ fontSize: 9, fill: theme.chart.tick, fontFamily: 'JetBrains Mono, monospace' }} axisLine={{ stroke: theme.chart.axis }} />
+            <XAxis dataKey="name" tick={{ fontSize: 9, fill: theme.chart.tooltipText, fontFamily: 'JetBrains Mono, monospace' }} axisLine={{ stroke: theme.chart.axis }} />
+            <YAxis tick={{ fontSize: 9, fill: theme.chart.tooltipText, fontFamily: 'JetBrains Mono, monospace' }} axisLine={{ stroke: theme.chart.axis }} />
             <Tooltip formatter={(val) => [`${Number(val).toFixed(2)}`, 'Avg']} cursor={{ fill: isDark ? '#111824' : '#f1f5f9' }} contentStyle={{ backgroundColor: theme.chart.tooltipBg, color: theme.chart.tooltipText, border: `1px solid ${theme.chart.tooltipBorder}`, fontSize: 11 }} />
             <ReferenceLine y={0} stroke={theme.chart.axis} />
             <Bar dataKey="avg" radius={[2, 2, 0, 0]}>
@@ -30,9 +30,9 @@ export const DayStatsCharts = ({ dayStats, isDark, theme }) => {
         <ResponsiveContainer width="100%" height="88%">
           <ComposedChart data={dayStats} margin={{ top: 4, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chart.grid} />
-            <XAxis xAxisId="line" dataKey="name" tick={{ fontSize: 9, fill: theme.chart.tick, fontFamily: 'JetBrains Mono, monospace' }} axisLine={{ stroke: theme.chart.axis }} />
+            <XAxis xAxisId="line" dataKey="name" tick={{ fontSize: 9, fill: theme.chart.tooltipText, fontFamily: 'JetBrains Mono, monospace' }} axisLine={{ stroke: theme.chart.axis }} />
             <XAxis xAxisId="box" dataKey="name" hide />
-            <YAxis tick={{ fontSize: 9, fill: theme.chart.tick, fontFamily: 'JetBrains Mono, monospace' }} axisLine={{ stroke: theme.chart.axis }} />
+            <YAxis tick={{ fontSize: 9, fill: theme.chart.tooltipText, fontFamily: 'JetBrains Mono, monospace' }} axisLine={{ stroke: theme.chart.axis }} />
             <Tooltip content={<CustomBoxPlotTooltip isDark={isDark} theme={theme} />} cursor={{ fill: isDark ? '#111824' : '#f1f5f9' }} />
             <ReferenceLine y={0} stroke={theme.chart.axis} strokeDasharray="3 3" xAxisId="line" />
             <Bar xAxisId="line" dataKey="minMax" fill={theme.chart.boxLine} barSize={3} radius={0} />

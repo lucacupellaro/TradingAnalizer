@@ -10,18 +10,26 @@ const KPICardComponent = ({
   infoDesc,
   infoFormula,
   isDark,
-  theme
+  theme,
+  signal, // "good" | "bad" | undefined
 }) => {
+  const borderColor = signal === 'good'
+    ? 'border-[#00e676]/50 shadow-[0_0_8px_rgba(0,230,118,0.15)]'
+    : signal === 'bad'
+    ? 'border-[#ff1744]/50 shadow-[0_0_8px_rgba(255,23,68,0.15)]'
+    : theme.borderLight;
+
   return (
     <div
       className={`
         ${theme.card}
         px-5 py-5
-        rounded border ${theme.borderLight}
+        rounded border ${borderColor}
         flex flex-col justify-center
         relative group
         min-h-[104px]
         overflow-visible
+        transition-all duration-300
       `}
     >
       <div className="flex justify-between items-start w-full gap-2 mb-3">

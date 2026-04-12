@@ -9,11 +9,11 @@ export const CullenFreyPlot = ({ skew, kurt, name, isDark, theme }) => {
       <ResponsiveContainer width="100%" height="90%">
         <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: 10 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chart.grid} />
-          <XAxis type="number" dataKey="skewSq" name="Skewness²" tick={{ fontSize: 10, fill: theme.chart.tick }} axisLine={{ stroke: theme.chart.axis }} label={{ value: 'Skewness²', position: 'bottom', fill: theme.chart.tick, fontSize: 10 }} />
-          <YAxis type="number" dataKey="kurt" name="Kurtosi" tick={{ fontSize: 10, fill: theme.chart.tick }} axisLine={{ stroke: theme.chart.axis }} reversed label={{ value: 'Kurtosis (Ecc.)', angle: -90, position: 'left', fill: theme.chart.tick, fontSize: 10 }} />
+          <XAxis type="number" dataKey="skewSq" name="Skewness²" tick={{ fontSize: 10, fill: theme.chart.tooltipText }} axisLine={{ stroke: theme.chart.axis }} label={{ value: 'Skewness²', position: 'bottom', fill: theme.chart.tooltipText, fontSize: 10 }} />
+          <YAxis type="number" dataKey="kurt" name="Kurtosi" tick={{ fontSize: 10, fill: theme.chart.tooltipText }} axisLine={{ stroke: theme.chart.axis }} reversed label={{ value: 'Kurtosis (Ecc.)', angle: -90, position: 'left', fill: theme.chart.tooltipText, fontSize: 10 }} />
           <ZAxis type="number" range={[50, 50]} />
           <Tooltip cursor={{ strokeDasharray: '3 3', stroke: theme.chart.axis }} contentStyle={{ backgroundColor: theme.chart.tooltipBg, border: `1px solid ${theme.chart.tooltipBorder}`, color: theme.chart.tooltipText }} />
-          <Legend wrapperStyle={{ fontSize: 9, paddingTop: 10 }} />
+          <Legend wrapperStyle={{ fontSize: 9, paddingTop: 10, color: theme.chart.tooltipText }} />
           <ReferenceLine x={0} stroke={theme.chart.scatterRef} />
           <ReferenceLine y={0} stroke={theme.chart.scatterRef} />
 

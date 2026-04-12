@@ -1,14 +1,31 @@
 import { useState, useEffect } from 'react';
 import { SCRIPT_URLS, MARKET_URLS, TICKER_SYMBOLS } from '../config/constants';
 
-const PROXY = 'https://api.allorigins.win/raw?url=';
+// Multiple CORS proxies — try each until one works
+const PROXIES = [
+  (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+];
+
+const fetchWithProxyFallback = async (targetUrl) => {
+  for (const makeProxy of PROXIES) {
+    try {
+      const res = await fetch(makeProxy(targetUrl));
+      if (!res.ok) continue;
+      const text = await res.text();
+      return JSON.parse(text);
+    } catch {
+      continue;
+    }
+  }
+  throw new Error('All proxies failed');
+};
 
 const fetchTickerChart = async ({ symbol, name }) => {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=5d`;
-  const res = await fetch(`${PROXY}${encodeURIComponent(url)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  const result = json.chart.result?.[0];
+  const json = await fetchWithProxyFallback(url);
+  const result = json.chart?.result?.[0];
   if (!result) throw new Error('No result');
 
   const closes = result.indicators.quote[0].close.filter(v => v != null);
@@ -41,11 +58,7 @@ export const useMarketData = () => {
     // Fetch SPX data (10y for correlation analysis)
     const fetchSpx = async () => {
       try {
-        const res = await fetch(
-          `${PROXY}${encodeURIComponent(MARKET_URLS.spx)}`
-        );
-        if (!res.ok) return;
-        const data = await res.json();
+        const data = await fetchWithProxyFallback(MARKET_URLS.spx);
         const ts = data.chart.result[0].timestamp;
         const cls = data.chart.result[0].indicators.quote[0].close;
         const rets = {};

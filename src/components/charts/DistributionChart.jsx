@@ -45,8 +45,8 @@ const DistributionChartComponent = ({ data, title, isDark, type, theme }) => {
       <ResponsiveContainer width="100%" height="90%">
         <BarChart data={bins} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chart.grid} />
-          <XAxis dataKey="pctLabel" tick={{ fontSize: 9, fill: theme.chart.tick }} axisLine={{ stroke: theme.chart.axis }} interval={4} />
-          <YAxis tick={{ fontSize: 9, fill: theme.chart.tick }} axisLine={{ stroke: theme.chart.axis }} />
+          <XAxis dataKey="pctLabel" tick={{ fontSize: 9, fill: theme.chart.tooltipText }} axisLine={{ stroke: theme.chart.axis }} interval={4} />
+          <YAxis tick={{ fontSize: 9, fill: theme.chart.tooltipText }} axisLine={{ stroke: theme.chart.axis }} />
           <Tooltip cursor={{ fill: isDark ? '#1a1a1a' : '#f1f5f9' }} contentStyle={{ backgroundColor: theme.chart.tooltipBg, color: theme.chart.tooltipText, border: `1px solid ${theme.chart.tooltipBorder}`, fontSize: '11px' }} labelFormatter={(l) => `Area: ${l}`} />
           <ReferenceLine x="0%" stroke={theme.textMuted} strokeDasharray="3 3" />
           {filtered.length > 0 && <ReferenceLine x={meanPct} stroke={theme.accent2} strokeWidth={2} label={{ position: 'top', value: 'MEDIA', fill: theme.accent2, fontSize: 10, fontWeight: 'bold' }} />}

@@ -64,11 +64,11 @@ const EquityChartComponent = ({ data, title, theme }) => {
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chart.grid} />
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 9, fill: theme.chart.tick }}
+            tick={{ fontSize: 9, fill: theme.chart.tooltipText }}
             tickFormatter={formatXAxisDate}
             stroke={theme.chart.axis}
           />
-          <YAxis tick={{ fontSize: 9, fill: theme.chart.tick }} stroke={theme.chart.axis} />
+          <YAxis tick={{ fontSize: 9, fill: theme.chart.tooltipText }} stroke={theme.chart.axis} />
           <Tooltip
             contentStyle={{
               backgroundColor: theme.chart.tooltipBg,

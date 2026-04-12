@@ -13,8 +13,8 @@ const DrawdownChartComponent = ({ data, title, theme }) => {
       <ResponsiveContainer width="100%" height="88%">
         <AreaChart data={data} margin={{ top: 4, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chart.grid} />
-          <XAxis dataKey="date" tick={{ fontSize: 9, fill: theme.chart.tick }} tickFormatter={formatXAxisDate} stroke={theme.chart.axis} />
-          <YAxis tick={{ fontSize: 9, fill: theme.chart.tick }} stroke={theme.chart.axis} />
+          <XAxis dataKey="date" tick={{ fontSize: 9, fill: theme.chart.tooltipText }} tickFormatter={formatXAxisDate} stroke={theme.chart.axis} />
+          <YAxis tick={{ fontSize: 9, fill: theme.chart.tooltipText }} stroke={theme.chart.axis} />
           <Tooltip
             contentStyle={{
               backgroundColor: theme.chart.tooltipBg,

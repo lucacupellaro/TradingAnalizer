@@ -32,7 +32,7 @@ import {
   getAvgTimeStr
 } from './utils';
 import { Info, Globe, TableIcon, ChevronUp, ChevronDown, Grid, Shuffle, Clock, Upload, BarChart2 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, BarChart, Bar, Cell, ReferenceLine, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'; // eslint-disable-line
 import ChiSono from './pages/ChiSono';
 
 // Tooltip Monte Carlo: mostra SOLO la linea attualmente hover-ata (non tutte le 50)
@@ -71,6 +71,58 @@ const MonteCarloTooltip = ({ active, payload, label, theme, hoveredKey }) => {
           {Number(hovered.value).toFixed(2)}
         </span>
       </div>
+    </div>
+  );
+};
+
+// Grafici PnL settimanale e mensile affiancati
+const PnLBarCharts = ({ weeklyPnL, monthlyPnL, theme }) => {
+  if ((!weeklyPnL || weeklyPnL.length === 0) && (!monthlyPnL || monthlyPnL.length === 0)) return null;
+
+  const renderChart = (data, dataKey, labelKey, title) => (
+    <div className={`${theme.panel} border ${theme.borderLight} rounded-lg p-4 glow-panel`}>
+      <h3 className="text-center font-bold text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 mb-3 text-[#ff8c00] font-mono">
+        {title}
+      </h3>
+      <div className="h-[300px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chart.grid} />
+            <XAxis
+              dataKey={labelKey}
+              tick={{ fontSize: 8, fill: theme.chart.tick }}
+              stroke={theme.chart.axis}
+              interval={data.length > 20 ? Math.floor(data.length / 15) : 0}
+              angle={-45}
+              textAnchor="end"
+              height={50}
+            />
+            <YAxis tick={{ fontSize: 9, fill: theme.chart.tick }} stroke={theme.chart.axis} />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: theme.chart.tooltipBg,
+                color: theme.chart.tooltipText,
+                border: `1px solid ${theme.chart.tooltipBorder}`,
+                fontSize: 11,
+              }}
+              formatter={(val) => [Number(val).toFixed(2), 'PnL']}
+            />
+            <ReferenceLine y={0} stroke={theme.chart.axis} strokeDasharray="3 3" />
+            <Bar dataKey={dataKey} radius={[3, 3, 0, 0]} isAnimationActive={false}>
+              {data.map((entry, idx) => (
+                <Cell key={idx} fill={entry[dataKey] >= 0 ? '#00e676' : '#ff1744'} fillOpacity={0.8} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-14">
+      {weeklyPnL && weeklyPnL.length > 0 && renderChart(weeklyPnL, 'pnl', 'week', 'PROFITTO SETTIMANALE')}
+      {monthlyPnL && monthlyPnL.length > 0 && renderChart(monthlyPnL, 'pnl', 'month', 'PROFITTO MENSILE')}
     </div>
   );
 };
@@ -124,7 +176,7 @@ export default function App() {
   const globalStats = useMemo(() => {
     if (!analyzedTrades.length) return null;
 
-    let netProfit = 0, pkEq = 0, mxDD = 0, sumSqDD = 0, grossP = 0, grossL = 0, totCosti = 0, totSwap = 0;
+    let netProfit = 0, pkEq = 0, mxDD = 0, sumSqDDpct = 0, grossP = 0, grossL = 0, totCosti = 0, totSwap = 0;
     let curEq = 0, wonBuy = 0, wonSell = 0;
     let maxConsecLoss = 0, curConsecLoss = 0;
     const tDets = [], pDly = {}, opT = [], clT = [], eqSeq = [];
@@ -168,7 +220,8 @@ export default function App() {
           pkEq = curEq;
         } else {
           mxDD = Math.max(mxDD, pkEq - curEq);
-          sumSqDD += Math.pow(pkEq - curEq, 2);
+          const ddPct = pkEq > 0 ? ((pkEq - curEq) / pkEq) * 100 : 0;
+          sumSqDDpct += ddPct * ddPct;
         }
 
         eqSeq.push({
@@ -194,12 +247,56 @@ export default function App() {
     const downDev = Math.sqrt(
       lssOnly.length > 0 ? lssOnly.reduce((a, b) => a + Math.pow(b, 2), 0) / lssOnly.length : 0
     );
-    const sortino = downDev > 0 ? avgP / downDev : avgP > 0 ? 999 : 0;
+
+    // Annualization factor: estimate trades per year from date range
+    const tradeDates = tDets.filter(t => t.TimeMs).map(t => t.TimeMs);
+    let annFactor = 1;
+    if (tradeDates.length >= 2) {
+      const spanMs = Math.max(...tradeDates) - Math.min(...tradeDates);
+      const spanYears = spanMs / (365.25 * 24 * 60 * 60 * 1000);
+      const tradesPerYear = spanYears > 0 ? cC / spanYears : cC;
+      annFactor = Math.sqrt(tradesPerYear);
+    }
+
+    const sharpeAnn = std > 0 ? (avgP / std) * annFactor : 0;
+    const sortinoAnn = downDev > 0 ? (avgP / downDev) * annFactor : avgP > 0 ? 999 : 0;
 
     const { beta, corr } = calcBetaCorr(pDly, spxData);
     const { skew, kurt } = skewnessAndKurtosis(pOnly, avgP, std);
     const jbTest = jarqueBeraTest(cC, skew, kurt);
     const andDar = adTest(pOnly, avgP, std);
+
+    // Weekly and monthly aggregations
+    const pWeekly = {};
+    const pMonthly = {};
+    tDets.forEach(t => {
+      if (!t.TimeMs) return;
+      const d = new Date(t.TimeMs);
+      // Week key: ISO year + week number
+      const jan4 = new Date(d.getFullYear(), 0, 4);
+      const weekNum = Math.ceil(((d - new Date(d.getFullYear(), 0, 1)) / 86400000 + jan4.getDay() + 1) / 7);
+      const wKey = `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+      pWeekly[wKey] = (pWeekly[wKey] || 0) + t.net;
+      // Month key
+      const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      pMonthly[mKey] = (pMonthly[mKey] || 0) + t.net;
+    });
+
+    const weeklyValues = Object.values(pWeekly);
+    const monthlyValues = Object.values(pMonthly);
+    const avgWeekly = weeklyValues.length > 0 ? weeklyValues.reduce((a, b) => a + b, 0) / weeklyValues.length : 0;
+    const avgMonthly = monthlyValues.length > 0 ? monthlyValues.reduce((a, b) => a + b, 0) / monthlyValues.length : 0;
+
+    // Monthly & Weekly PnL series for histograms (sorted chronologically)
+    const monthNames = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+    const monthlyPnL = Object.keys(pMonthly).sort().map(k => {
+      const [y, m] = k.split('-');
+      return { month: `${monthNames[parseInt(m, 10) - 1]} ${y.slice(2)}`, pnl: pMonthly[k] };
+    });
+    const weeklyPnL = Object.keys(pWeekly).sort().map(k => ({
+      week: k,
+      pnl: pWeekly[k],
+    }));
 
     return {
       netProfit,
@@ -208,13 +305,17 @@ export default function App() {
       grossL,
       totCosti,
       totSwap,
-      sharpe: std > 0 ? avgP / std : 0,
-      sortino,
+      sharpe: sharpeAnn,
+      sortino: sortinoAnn,
       maxDrawdown: mxDD,
-      ulcerIndex: Math.sqrt(sumSqDD / cC),
+      ulcerIndex: Math.sqrt(sumSqDDpct / cC),
       winRate: (wns.length / cC) * 100,
       profitFactor: pf,
       avgProfit: avgP,
+      avgWeekly,
+      avgMonthly,
+      monthlyPnL,
+      weeklyPnL,
       stdDev: std,
       completedCount: cC,
       wonCount: wns.length,
@@ -252,7 +353,7 @@ export default function App() {
     return Object.keys(grp)
       .map(name => {
         const deals = grp[name].sort((a, b) => a.TimeMs - b.TimeMs);
-        let curEq = 0, pkEq = 0, mxDD = 0, sumSqDD = 0, netProfit = 0, grossP = 0, grossL = 0, sC = 0, sSwap = 0;
+        let curEq = 0, pkEq = 0, mxDD = 0, sumSqDDpct = 0, netProfit = 0, grossP = 0, grossL = 0, sC = 0, sSwap = 0;
         let wonBuy = 0, wonSell = 0, maxConsecLoss = 0, curConsecLoss = 0;
         const eqSeq = [], tDets = [], opTs = [], clTs = [], pDly = {};
 
@@ -294,7 +395,8 @@ export default function App() {
             pkEq = curEq;
           } else {
             mxDD = Math.max(mxDD, pkEq - curEq);
-            sumSqDD += Math.pow(pkEq - curEq, 2);
+            const ddPct = pkEq > 0 ? ((pkEq - curEq) / pkEq) * 100 : 0;
+            sumSqDDpct += ddPct * ddPct;
           }
 
           eqSeq.push({
@@ -315,11 +417,46 @@ export default function App() {
         const downDev = Math.sqrt(
           lssOnly.length > 0 ? lssOnly.reduce((a, b) => a + Math.pow(b, 2), 0) / lssOnly.length : 0
         );
-        const ulcerIndex = c > 0 ? Math.sqrt(sumSqDD / c) : 0;
+        const ulcerIndex = c > 0 ? Math.sqrt(sumSqDDpct / c) : 0;
+
+        // Annualization factor for this strategy/asset
+        const sDates = tDets.filter(t => t.TimeMs).map(t => t.TimeMs);
+        let sAnnFactor = 1;
+        if (sDates.length >= 2) {
+          const sSpan = Math.max(...sDates) - Math.min(...sDates);
+          const sYears = sSpan / (365.25 * 24 * 60 * 60 * 1000);
+          const sTradesPerYear = sYears > 0 ? c / sYears : c;
+          sAnnFactor = Math.sqrt(sTradesPerYear);
+        }
+
         const { beta, corr } = calcBetaCorr(pDly, spxData);
         const { skew, kurt } = skewnessAndKurtosis(pOnly, avgP, std);
         const jbTest = jarqueBeraTest(c, skew, kurt);
         const andDar = adTest(pOnly, avgP, std);
+
+        // Weekly & Monthly aggregation
+        const sWeekly = {};
+        const sMonthly = {};
+        tDets.forEach(t => {
+          if (!t.TimeMs) return;
+          const d = new Date(t.TimeMs);
+          const jan4 = new Date(d.getFullYear(), 0, 4);
+          const wNum = Math.ceil(((d - new Date(d.getFullYear(), 0, 1)) / 86400000 + jan4.getDay() + 1) / 7);
+          const wK = `${d.getFullYear()}-W${String(wNum).padStart(2, '0')}`;
+          sWeekly[wK] = (sWeekly[wK] || 0) + t.net;
+          const mK = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          sMonthly[mK] = (sMonthly[mK] || 0) + t.net;
+        });
+        const sWkVals = Object.values(sWeekly);
+        const sMoVals = Object.values(sMonthly);
+        const sAvgWeekly = sWkVals.length > 0 ? sWkVals.reduce((a, b) => a + b, 0) / sWkVals.length : 0;
+        const sAvgMonthly = sMoVals.length > 0 ? sMoVals.reduce((a, b) => a + b, 0) / sMoVals.length : 0;
+        const mNames = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+        const sMonthlyPnL = Object.keys(sMonthly).sort().map(k => {
+          const [y, m] = k.split('-');
+          return { month: `${mNames[parseInt(m, 10) - 1]} ${y.slice(2)}`, pnl: sMonthly[k] };
+        });
+        const sWeeklyPnL = Object.keys(sWeekly).sort().map(k => ({ week: k, pnl: sWeekly[k] }));
 
         return {
           name,
@@ -329,8 +466,8 @@ export default function App() {
           lostCount: lss.length,
           wonBuy,
           wonSell,
-          sharpe: std > 0 ? avgP / std : 0,
-          sortino: downDev > 0 ? avgP / downDev : 999,
+          sharpe: std > 0 ? (avgP / std) * sAnnFactor : 0,
+          sortino: downDev > 0 ? (avgP / downDev) * sAnnFactor : avgP > 0 ? 999 : 0,
           maxDrawdown: mxDD,
           netProfit,
           grossP,
@@ -340,6 +477,10 @@ export default function App() {
           avgP,
           std,
           ulcerIndex,
+          avgWeekly: sAvgWeekly,
+          avgMonthly: sAvgMonthly,
+          monthlyPnL: sMonthlyPnL,
+          weeklyPnL: sWeeklyPnL,
           beta,
           corr,
           skew,
@@ -871,39 +1012,43 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-5 lg:gap-6 mb-16">
-                <KPICard isDark={isDark} theme={theme} label="Net Profit" value={globalStats.netProfit.toFixed(2)} valueClass={globalStats.netProfit >= 0 ? theme.success : theme.danger} infoDesc="Profitto finale post costi" infoFormula="Net = Gross + Swap + Commissioni" />
-                <KPICard isDark={isDark} theme={theme} label="Gross Profit" value={`+${globalStats.grossP.toFixed(2)}`} valueClass={theme.success} infoDesc="Somma dei trade vinti" infoFormula="Σ Profitti (>0)" />
-                <KPICard isDark={isDark} theme={theme} label="Gross Loss" value={globalStats.grossL.toFixed(2)} valueClass={theme.danger} infoDesc="Somma dei trade persi" infoFormula="Σ Perdite (<0)" />
-                <KPICard isDark={isDark} theme={theme} label="Costi (Comm)" value={globalStats.totCosti.toFixed(2)} valueClass="text-rose-500" infoDesc="Commissioni e Fee" infoFormula="Σ (Commissioni + Fee)" />
-                <KPICard isDark={isDark} theme={theme} label="Costi (Swap)" value={globalStats.totSwap.toFixed(2)} valueClass="text-amber-500" infoDesc="Tassi Swap Overnight" infoFormula="Σ Swap" />
-                <KPICard isDark={isDark} theme={theme} label="Profit Medio" value={globalStats.avgProfit.toFixed(2)} infoDesc="Expectancy per trade" infoFormula="Net / N. Trade" />
-                <KPICard isDark={isDark} theme={theme} label="Dev. Standard" value={globalStats.stdDev.toFixed(2)} infoDesc="Volatilità ritorni" infoFormula="σ" />
-                <KPICard isDark={isDark} theme={theme} label="Profit Factor" value={globalStats.profitFactor === 999 ? 'MAX' : globalStats.profitFactor.toFixed(2)} infoDesc="Rapporto vincite/perdite assolute" infoFormula="GrossP / |GrossL|" />
+                <KPICard isDark={isDark} theme={theme} label="Net Profit" value={globalStats.netProfit.toFixed(2)} valueClass={globalStats.netProfit >= 0 ? theme.success : theme.danger} infoDesc="Profitto finale post costi" infoFormula="Net = Σ(Profit + Swap + Comm + Fee)" signal={globalStats.netProfit > 0 ? 'good' : 'bad'} />
+                <KPICard isDark={isDark} theme={theme} label="Gross Profit" value={`+${globalStats.grossP.toFixed(2)}`} valueClass={theme.success} infoDesc="Somma dei trade vinti" infoFormula="Σ Profit_i  dove Profit_i > 0" />
+                <KPICard isDark={isDark} theme={theme} label="Gross Loss" value={globalStats.grossL.toFixed(2)} valueClass={theme.danger} infoDesc="Somma dei trade persi" infoFormula="Σ Profit_i  dove Profit_i < 0" />
+                <KPICard isDark={isDark} theme={theme} label="Costi (Comm)" value={globalStats.totCosti.toFixed(2)} valueClass="text-rose-500" infoDesc="Commissioni e Fee totali" infoFormula="Σ (Commission_i + Fee_i)" />
+                <KPICard isDark={isDark} theme={theme} label="Costi (Swap)" value={globalStats.totSwap.toFixed(2)} valueClass="text-amber-500" infoDesc="Tassi Swap Overnight" infoFormula="Σ Swap_i" />
+                <KPICard isDark={isDark} theme={theme} label="Profit Medio" value={globalStats.avgProfit.toFixed(2)} infoDesc="Expectancy per trade" infoFormula="E[X] = NetProfit / N" signal={globalStats.avgProfit > 0 ? 'good' : 'bad'} />
+                <KPICard isDark={isDark} theme={theme} label="Dev. Standard" value={globalStats.stdDev.toFixed(2)} infoDesc="Volatilità dei ritorni" infoFormula="σ = √(Σ(x_i - μ)² / N)" />
+                <KPICard isDark={isDark} theme={theme} label="Profit Factor" value={globalStats.profitFactor === 999 ? 'MAX' : globalStats.profitFactor.toFixed(2)} infoDesc="Rapporto vincite/perdite assolute" infoFormula="PF = GrossProfit / |GrossLoss|" signal={globalStats.profitFactor >= 1.5 ? 'good' : globalStats.profitFactor < 1 ? 'bad' : undefined} />
 
-                <KPICard isDark={isDark} theme={theme} label="Trade Totali" value={globalStats.completedCount} infoDesc="Numero ordini totali" />
-                <KPICard isDark={isDark} theme={theme} label="Trade Vinti" value={globalStats.wonCount} valueClass={theme.success} />
-                <KPICard isDark={isDark} theme={theme} label="Trade Persi" value={globalStats.lostCount} valueClass={theme.danger} />
-                <KPICard isDark={isDark} theme={theme} label="Win Rate" value={`${globalStats.winRate.toFixed(1)}%`} infoDesc="Percentuale successo" infoFormula="(Vinti / Totali)*100" />
-                <KPICard isDark={isDark} theme={theme} label="Buy Vinti" value={globalStats.wonBuy} valueClass={theme.success} infoDesc="Numero di operazioni Long in profitto" />
-                <KPICard isDark={isDark} theme={theme} label="Sell Vinti" value={globalStats.wonSell} valueClass={theme.danger} infoDesc="Numero di operazioni Short in profitto" />
-                <KPICard isDark={isDark} theme={theme} label="Avg Open Time" value={globalStats.avgOpen} icon={Clock} infoDesc="Media oraria di entrata" />
-                <KPICard isDark={isDark} theme={theme} label="Avg Close Time" value={globalStats.avgClose} icon={Clock} infoDesc="Media oraria di uscita" />
+                <KPICard isDark={isDark} theme={theme} label="Trade Totali" value={globalStats.completedCount} infoDesc="Numero ordini chiusi totali" infoFormula="N = count(MergedOut)" />
+                <KPICard isDark={isDark} theme={theme} label="Trade Vinti" value={globalStats.wonCount} valueClass={theme.success} infoDesc="Trade con net > 0" infoFormula="W = count(net_i > 0)" />
+                <KPICard isDark={isDark} theme={theme} label="Trade Persi" value={globalStats.lostCount} valueClass={theme.danger} infoDesc="Trade con net ≤ 0" infoFormula="L = count(net_i ≤ 0)" />
+                <KPICard isDark={isDark} theme={theme} label="Win Rate" value={`${globalStats.winRate.toFixed(1)}%`} infoDesc="Percentuale successo" infoFormula="WR = (W / N) × 100" signal={globalStats.winRate >= 50 ? 'good' : 'bad'} />
+                <KPICard isDark={isDark} theme={theme} label="Buy Vinti" value={globalStats.wonBuy} valueClass={theme.success} infoDesc="Operazioni Long in profitto" infoFormula="count(buy ∧ net > 0)" />
+                <KPICard isDark={isDark} theme={theme} label="Sell Vinti" value={globalStats.wonSell} valueClass={theme.success} infoDesc="Operazioni Short in profitto" infoFormula="count(sell ∧ net > 0)" />
+                <KPICard isDark={isDark} theme={theme} label="Avg Open Time" value={globalStats.avgOpen} icon={Clock} infoDesc="Media oraria di entrata" infoFormula="mean(OpenTime_i)" />
+                <KPICard isDark={isDark} theme={theme} label="Avg Close Time" value={globalStats.avgClose} icon={Clock} infoDesc="Media oraria di uscita" infoFormula="mean(CloseTime_i)" />
 
-                <KPICard isDark={isDark} theme={theme} label="Max Drawdown" value={globalStats.maxDrawdown.toFixed(2)} valueClass={theme.danger} infoDesc="Peggior flessione equity" />
-                <KPICard isDark={isDark} theme={theme} label="Ulcer Index" value={globalStats.ulcerIndex.toFixed(2)} valueClass={theme.warning} infoDesc="Indice di stress (profondità/durata DD)" />
-                <KPICard isDark={isDark} theme={theme} label="Sharpe Ratio" value={globalStats.sharpe.toFixed(2)} infoDesc="Rendimento vs Rischio Totale" />
-                <KPICard isDark={isDark} theme={theme} label="Sortino Ratio" value={globalStats.sortino === 999 ? 'MAX' : globalStats.sortino.toFixed(2)} infoDesc="Rendimento vs Rischio Ribassista" />
-                <KPICard isDark={isDark} theme={theme} label="Market Beta" value={globalStats.beta.toFixed(2)} infoDesc="Esposizione rischio sistematico Mkt" />
-                <KPICard isDark={isDark} theme={theme} label="Corr. S&P500" value={globalStats.corr.toFixed(2)} infoDesc="Direzionalità rispetto al mercato" />
-                <KPICard isDark={isDark} theme={theme} label="Jarque-Bera" value={globalStats.jbTest.jb.toFixed(1)} subValue={globalStats.jbTest.isNormal ? 'Normale' : 'Non Normale'} infoDesc="Test di Normalità asintotica (Chi-Square)" infoFormula="JB = (N/6)*(S² + K²/4)" />
-                <KPICard isDark={isDark} theme={theme} label="And-Darling" value={globalStats.andDar.a2.toFixed(2)} subValue={globalStats.andDar.isNormal ? 'Normale' : 'Non Normale'} infoDesc="Test Normalità sulle code" />
-                <KPICard isDark={isDark} theme={theme} label="Max Consec. Loss" value={globalStats.maxConsecLoss} valueClass={theme.danger} infoDesc="Numero massimo di perdite consecutive" />
+                <KPICard isDark={isDark} theme={theme} label="Max Drawdown" value={globalStats.maxDrawdown.toFixed(2)} valueClass={theme.danger} infoDesc="Peggior flessione equity (assoluta)" infoFormula="MDD = max(Peak_i - Equity_i)" signal="bad" />
+                <KPICard isDark={isDark} theme={theme} label="Ulcer Index" value={globalStats.ulcerIndex.toFixed(2)} valueClass={theme.warning} infoDesc="Indice di stress (RMS % drawdown)" infoFormula="UI = √(Σ DD%_i² / N)  dove DD%=(Peak-Eq)/Peak×100" signal={globalStats.ulcerIndex < 5 ? 'good' : 'bad'} />
+                <KPICard isDark={isDark} theme={theme} label="Sharpe Ratio" value={globalStats.sharpe.toFixed(2)} infoDesc="Rendimento risk-adjusted annualizzato" infoFormula="SR = (μ / σ) × √(N/anno)" signal={globalStats.sharpe >= 1 ? 'good' : globalStats.sharpe < 0 ? 'bad' : undefined} />
+                <KPICard isDark={isDark} theme={theme} label="Sortino Ratio" value={globalStats.sortino === 999 ? 'MAX' : globalStats.sortino.toFixed(2)} infoDesc="Rendimento vs rischio ribassista ann." infoFormula="So = (μ / σ_down) × √(N/anno)" signal={globalStats.sortino >= 1.5 ? 'good' : globalStats.sortino < 0 ? 'bad' : undefined} />
+                <KPICard isDark={isDark} theme={theme} label="Market Beta" value={globalStats.beta.toFixed(2)} infoDesc="Esposizione al rischio sistematico" infoFormula="β = Cov(R_p, R_m) / Var(R_m)" />
+                <KPICard isDark={isDark} theme={theme} label="Corr. S&P500" value={globalStats.corr.toFixed(2)} infoDesc="Correlazione con il mercato" infoFormula="ρ = Cov(R_p, R_m) / (σ_p × σ_m)" />
+                <KPICard isDark={isDark} theme={theme} label="Jarque-Bera" value={globalStats.jbTest.jb.toFixed(1)} subValue={globalStats.jbTest.isNormal ? 'Normale' : 'Non Normale'} infoDesc="Test normalità asintotica (χ²)" infoFormula="JB = (N/6) × (S² + K²/4)" signal={globalStats.jbTest.isNormal ? 'good' : 'bad'} />
+                <KPICard isDark={isDark} theme={theme} label="And-Darling" value={globalStats.andDar.a2.toFixed(2)} subValue={globalStats.andDar.isNormal ? 'Normale' : 'Non Normale'} infoDesc="Test normalità sulle code" infoFormula="A² = -N - Σ(2i-1)/N × [ln(F_i) + ln(1-F_{N+1-i})]" signal={globalStats.andDar.isNormal ? 'good' : 'bad'} />
+                <KPICard isDark={isDark} theme={theme} label="Max Consec. Loss" value={globalStats.maxConsecLoss} valueClass={theme.danger} infoDesc="Numero massimo di perdite consecutive" infoFormula="max(streak  dove net_i ≤ 0)" signal={globalStats.maxConsecLoss <= 5 ? 'good' : 'bad'} />
+                <KPICard isDark={isDark} theme={theme} label="Avg Settimanale" value={globalStats.avgWeekly.toFixed(2)} infoDesc="Profitto medio per settimana" infoFormula="Σ NetWeek_i / N_settimane" signal={globalStats.avgWeekly > 0 ? 'good' : 'bad'} valueClass={globalStats.avgWeekly >= 0 ? theme.success : theme.danger} />
+                <KPICard isDark={isDark} theme={theme} label="Avg Mensile" value={globalStats.avgMonthly.toFixed(2)} infoDesc="Profitto medio per mese" infoFormula="Σ NetMonth_i / N_mesi" signal={globalStats.avgMonthly > 0 ? 'good' : 'bad'} valueClass={globalStats.avgMonthly >= 0 ? theme.success : theme.danger} />
               </div>
 
               <div className="flex flex-col gap-12 mb-14">
                 <EquityChart data={globalStats.equitySequence} isDark={isDark} title="Equity Globale" theme={theme} />
                 <DrawdownChart data={globalStats.equitySequence} isDark={isDark} title="Drawdown Globale" theme={theme} />
               </div>
+
+              <PnLBarCharts weeklyPnL={globalStats.weeklyPnL} monthlyPnL={globalStats.monthlyPnL} theme={theme} />
 
               <div className="mt-14 mb-14">
                 <DayStatsCharts dayStats={globalStats.dayStats} isDark={isDark} theme={theme} />
@@ -966,36 +1111,40 @@ export default function App() {
 
                 <div className="p-10">
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-5 lg:gap-6 mb-14">
-                    <KPICard isDark={isDark} theme={theme} label="Net Profit" value={s.netProfit.toFixed(2)} valueClass={s.netProfit >= 0 ? theme.success : theme.danger} />
-                    <KPICard isDark={isDark} theme={theme} label="Gross Profit" value={`+${s.grossP.toFixed(2)}`} valueClass={theme.success} />
-                    <KPICard isDark={isDark} theme={theme} label="Gross Loss" value={s.grossL.toFixed(2)} valueClass={theme.danger} />
-                    <KPICard isDark={isDark} theme={theme} label="Costi Tot" value={s.totCosti.toFixed(2)} valueClass="text-rose-500" />
-                    <KPICard isDark={isDark} theme={theme} label="Swap Tot" value={s.totSwap.toFixed(2)} valueClass="text-amber-500" />
-                    <KPICard isDark={isDark} theme={theme} label="Profit Medio" value={s.avgP.toFixed(2)} />
-                    <KPICard isDark={isDark} theme={theme} label="Dev. Std" value={s.std.toFixed(2)} />
-                    <KPICard isDark={isDark} theme={theme} label="Max Drawdown" value={s.maxDrawdown.toFixed(2)} valueClass={theme.danger} />
+                    <KPICard isDark={isDark} theme={theme} label="Net Profit" value={s.netProfit.toFixed(2)} valueClass={s.netProfit >= 0 ? theme.success : theme.danger} infoDesc="Profitto finale post costi" infoFormula="Net = Σ(Profit + Swap + Comm + Fee)" signal={s.netProfit > 0 ? 'good' : 'bad'} />
+                    <KPICard isDark={isDark} theme={theme} label="Gross Profit" value={`+${s.grossP.toFixed(2)}`} valueClass={theme.success} infoDesc="Somma dei trade vinti" infoFormula="Σ Profit_i  dove Profit_i > 0" />
+                    <KPICard isDark={isDark} theme={theme} label="Gross Loss" value={s.grossL.toFixed(2)} valueClass={theme.danger} infoDesc="Somma dei trade persi" infoFormula="Σ Profit_i  dove Profit_i < 0" />
+                    <KPICard isDark={isDark} theme={theme} label="Costi Tot" value={s.totCosti.toFixed(2)} valueClass="text-rose-500" infoDesc="Commissioni e Fee totali" infoFormula="Σ (Commission_i + Fee_i)" />
+                    <KPICard isDark={isDark} theme={theme} label="Swap Tot" value={s.totSwap.toFixed(2)} valueClass="text-amber-500" infoDesc="Tassi Swap Overnight" infoFormula="Σ Swap_i" />
+                    <KPICard isDark={isDark} theme={theme} label="Profit Medio" value={s.avgP.toFixed(2)} infoDesc="Expectancy per trade" infoFormula="E[X] = NetProfit / N" signal={s.avgP > 0 ? 'good' : 'bad'} />
+                    <KPICard isDark={isDark} theme={theme} label="Dev. Std" value={s.std.toFixed(2)} infoDesc="Volatilità dei ritorni" infoFormula="σ = √(Σ(x_i - μ)² / N)" />
+                    <KPICard isDark={isDark} theme={theme} label="Max Drawdown" value={s.maxDrawdown.toFixed(2)} valueClass={theme.danger} infoDesc="Peggior flessione equity" infoFormula="MDD = max(Peak_i - Equity_i)" signal="bad" />
 
-                    <KPICard isDark={isDark} theme={theme} label="Trade Totali" value={s.count} />
-                    <KPICard isDark={isDark} theme={theme} label="Win Rate" value={`${s.winRate.toFixed(1)}%`} />
-                    <KPICard isDark={isDark} theme={theme} label="Buy Vinti" value={s.wonBuy} valueClass={theme.success} />
-                    <KPICard isDark={isDark} theme={theme} label="Sell Vinti" value={s.wonSell} valueClass={theme.danger} />
-                    <KPICard isDark={isDark} theme={theme} label="Sharpe" value={s.sharpe.toFixed(2)} />
-                    <KPICard isDark={isDark} theme={theme} label="Sortino" value={s.sortino === 999 ? 'MAX' : s.sortino.toFixed(2)} />
-                    <KPICard isDark={isDark} theme={theme} label="Ulcer Idx" value={s.ulcerIndex.toFixed(2)} valueClass={theme.warning} />
-                    <KPICard isDark={isDark} theme={theme} label="Beta Mkt" value={s.beta.toFixed(2)} />
+                    <KPICard isDark={isDark} theme={theme} label="Trade Totali" value={s.count} infoDesc="Trade chiusi totali" infoFormula="N = count(MergedOut)" />
+                    <KPICard isDark={isDark} theme={theme} label="Win Rate" value={`${s.winRate.toFixed(1)}%`} infoDesc="Percentuale successo" infoFormula="WR = (W / N) × 100" signal={s.winRate >= 50 ? 'good' : 'bad'} />
+                    <KPICard isDark={isDark} theme={theme} label="Buy Vinti" value={s.wonBuy} valueClass={theme.success} infoDesc="Long in profitto" infoFormula="count(buy ∧ net > 0)" />
+                    <KPICard isDark={isDark} theme={theme} label="Sell Vinti" value={s.wonSell} valueClass={theme.success} infoDesc="Short in profitto" infoFormula="count(sell ∧ net > 0)" />
+                    <KPICard isDark={isDark} theme={theme} label="Sharpe" value={s.sharpe.toFixed(2)} infoDesc="Rendimento risk-adjusted ann." infoFormula="SR = (μ / σ) × √(N/anno)" signal={s.sharpe >= 1 ? 'good' : s.sharpe < 0 ? 'bad' : undefined} />
+                    <KPICard isDark={isDark} theme={theme} label="Sortino" value={s.sortino === 999 ? 'MAX' : s.sortino.toFixed(2)} infoDesc="Rendimento vs rischio ribassista ann." infoFormula="So = (μ / σ_down) × √(N/anno)" signal={s.sortino >= 1.5 ? 'good' : s.sortino < 0 ? 'bad' : undefined} />
+                    <KPICard isDark={isDark} theme={theme} label="Ulcer Idx" value={s.ulcerIndex.toFixed(2)} valueClass={theme.warning} infoDesc="Indice di stress (RMS % drawdown)" infoFormula="UI = √(Σ DD%_i² / N)" signal={s.ulcerIndex < 5 ? 'good' : 'bad'} />
+                    <KPICard isDark={isDark} theme={theme} label="Beta Mkt" value={s.beta.toFixed(2)} infoDesc="Esposizione rischio sistematico" infoFormula="β = Cov(R_p, R_m) / Var(R_m)" />
 
-                    <KPICard isDark={isDark} theme={theme} label="Corr Mkt" value={s.corr.toFixed(2)} />
-                    <KPICard isDark={isDark} theme={theme} label="Avg Open" value={s.avgOpen} icon={Clock} />
-                    <KPICard isDark={isDark} theme={theme} label="Avg Close" value={s.avgClose} icon={Clock} />
-                    <KPICard isDark={isDark} theme={theme} label="Jarque-Bera" value={s.jbTest.jb.toFixed(1)} subValue={s.jbTest.isNormal ? 'Norm.' : 'Anomalo'} />
-                    <KPICard isDark={isDark} theme={theme} label="And-Darling" value={s.andDar.a2.toFixed(2)} subValue={s.andDar.isNormal ? 'Norm.' : 'Anomalo'} />
-                    <KPICard isDark={isDark} theme={theme} label="Max Consec. Loss" value={s.maxConsecLoss} valueClass={theme.danger} infoDesc="Perdite consecutive massime" />
+                    <KPICard isDark={isDark} theme={theme} label="Corr Mkt" value={s.corr.toFixed(2)} infoDesc="Correlazione con il mercato" infoFormula="ρ = Cov(R_p, R_m) / (σ_p × σ_m)" />
+                    <KPICard isDark={isDark} theme={theme} label="Avg Open" value={s.avgOpen} icon={Clock} infoDesc="Media oraria di entrata" infoFormula="mean(OpenTime_i)" />
+                    <KPICard isDark={isDark} theme={theme} label="Avg Close" value={s.avgClose} icon={Clock} infoDesc="Media oraria di uscita" infoFormula="mean(CloseTime_i)" />
+                    <KPICard isDark={isDark} theme={theme} label="Jarque-Bera" value={s.jbTest.jb.toFixed(1)} subValue={s.jbTest.isNormal ? 'Norm.' : 'Anomalo'} infoDesc="Test normalità asintotica (χ²)" infoFormula="JB = (N/6) × (S² + K²/4)" signal={s.jbTest.isNormal ? 'good' : 'bad'} />
+                    <KPICard isDark={isDark} theme={theme} label="And-Darling" value={s.andDar.a2.toFixed(2)} subValue={s.andDar.isNormal ? 'Norm.' : 'Anomalo'} infoDesc="Test normalità sulle code" infoFormula="A² = -N - Σ(2i-1)/N × [ln(F_i) + ln(1-F_{N+1-i})]" signal={s.andDar.isNormal ? 'good' : 'bad'} />
+                    <KPICard isDark={isDark} theme={theme} label="Max Consec. Loss" value={s.maxConsecLoss} valueClass={theme.danger} infoDesc="Perdite consecutive massime" infoFormula="max(streak  dove net_i ≤ 0)" signal={s.maxConsecLoss <= 5 ? 'good' : 'bad'} />
+                    <KPICard isDark={isDark} theme={theme} label="Avg Settimanale" value={s.avgWeekly.toFixed(2)} infoDesc="Profitto medio per settimana" infoFormula="Σ NetWeek_i / N_settimane" signal={s.avgWeekly > 0 ? 'good' : 'bad'} valueClass={s.avgWeekly >= 0 ? theme.success : theme.danger} />
+                    <KPICard isDark={isDark} theme={theme} label="Avg Mensile" value={s.avgMonthly.toFixed(2)} infoDesc="Profitto medio per mese" infoFormula="Σ NetMonth_i / N_mesi" signal={s.avgMonthly > 0 ? 'good' : 'bad'} valueClass={s.avgMonthly >= 0 ? theme.success : theme.danger} />
                   </div>
 
                   <div className="flex flex-col gap-12 mb-14">
                     <EquityChart data={s.equitySequence} isDark={isDark} title={`Equity Line (${s.name})`} theme={theme} />
                     <DrawdownChart data={s.equitySequence} isDark={isDark} title={`Drawdown (${s.name})`} theme={theme} />
                   </div>
+
+                  <PnLBarCharts weeklyPnL={s.weeklyPnL} monthlyPnL={s.monthlyPnL} theme={theme} />
 
                   <div className="mt-14 mb-14">
                     <DayStatsCharts dayStats={s.dayStats} isDark={isDark} theme={theme} />
