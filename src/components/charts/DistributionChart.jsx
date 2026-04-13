@@ -47,9 +47,9 @@ const DistributionChartComponent = ({ data, title, isDark, type, theme }) => {
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chart.grid} />
           <XAxis dataKey="pctLabel" tick={{ fontSize: 9, fill: theme.chart.tooltipText }} axisLine={{ stroke: theme.chart.axis }} interval={4} />
           <YAxis tick={{ fontSize: 9, fill: theme.chart.tooltipText }} axisLine={{ stroke: theme.chart.axis }} />
-          <Tooltip cursor={{ fill: isDark ? '#1a1a1a' : '#f1f5f9' }} contentStyle={{ backgroundColor: theme.chart.tooltipBg, color: theme.chart.tooltipText, border: `1px solid ${theme.chart.tooltipBorder}`, fontSize: '11px' }} labelFormatter={(l) => `Area: ${l}`} />
+          <Tooltip cursor={{ fill: isDark ? '#1a1a1a' : '#f1f5f9' }} contentStyle={{ backgroundColor: theme.chart.tooltipBg, color: theme.chart.tooltipText, border: `1px solid ${theme.chart.tooltipBorder}`, fontSize: '11px' }} itemStyle={{ color: theme.chart.tooltipText }} labelStyle={{ color: theme.chart.tooltipText }} labelFormatter={(l) => `Area: ${l}`} />
           <ReferenceLine x="0%" stroke={theme.textMuted} strokeDasharray="3 3" />
-          {filtered.length > 0 && <ReferenceLine x={meanPct} stroke={theme.accent2} strokeWidth={2} label={{ position: 'top', value: 'MEDIA', fill: theme.accent2, fontSize: 10, fontWeight: 'bold' }} />}
+          {filtered.length > 0 && <ReferenceLine x={meanPct} stroke="#ffd740" strokeWidth={2.5} strokeDasharray="6 3" label={{ position: 'top', value: '▼ MEDIA', fill: '#ffd740', fontSize: 11, fontWeight: 'bold' }} />}
           <Bar dataKey="count" fill={barColor} radius={[2, 2, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>

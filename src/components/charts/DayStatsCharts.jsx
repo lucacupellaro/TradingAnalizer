@@ -15,7 +15,7 @@ export const DayStatsCharts = ({ dayStats, isDark, theme }) => {
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chart.grid} />
             <XAxis dataKey="name" tick={{ fontSize: 9, fill: theme.chart.tooltipText, fontFamily: 'JetBrains Mono, monospace' }} axisLine={{ stroke: theme.chart.axis }} />
             <YAxis tick={{ fontSize: 9, fill: theme.chart.tooltipText, fontFamily: 'JetBrains Mono, monospace' }} axisLine={{ stroke: theme.chart.axis }} />
-            <Tooltip formatter={(val) => [`${Number(val).toFixed(2)}`, 'Avg']} cursor={{ fill: isDark ? '#111824' : '#f1f5f9' }} contentStyle={{ backgroundColor: theme.chart.tooltipBg, color: theme.chart.tooltipText, border: `1px solid ${theme.chart.tooltipBorder}`, fontSize: 11 }} />
+            <Tooltip formatter={(val) => [`€${Number(val).toFixed(2)}`, 'Avg']} cursor={{ fill: isDark ? '#111824' : '#f1f5f9' }} contentStyle={{ backgroundColor: theme.chart.tooltipBg, color: theme.chart.tooltipText, border: `1px solid ${theme.chart.tooltipBorder}`, fontSize: 11 }} itemStyle={{ color: theme.chart.tooltipText }} labelStyle={{ color: theme.chart.tooltipText }} />
             <ReferenceLine y={0} stroke={theme.chart.axis} />
             <Bar dataKey="avg" radius={[2, 2, 0, 0]}>
               {dayStats.map((e, idx) => <Cell key={`cell-${idx}`} fill={e.avg < 0 ? '#ff1744' : '#00e676'} />)}

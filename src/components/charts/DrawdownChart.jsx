@@ -22,7 +22,10 @@ const DrawdownChartComponent = ({ data, title, theme }) => {
               border: `1px solid ${theme.chart.tooltipBorder}`,
               fontSize: 11,
             }}
+            itemStyle={{ color: theme.chart.tooltipText }}
+            labelStyle={{ color: theme.chart.tooltipText }}
             labelFormatter={(val) => `Data: ${val}`}
+            formatter={(val) => [Number(val).toFixed(3), 'Drawdown']}
           />
           <Area type="monotone" dataKey="drawdown" stroke="#ff1744" fill="#ff1744" fillOpacity={0.15} strokeWidth={1.5} />
         </AreaChart>
