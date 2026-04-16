@@ -6,14 +6,14 @@ const NAV_ITEMS = [
   { id: 'news',        Icon: Globe,     label: 'Come funziona?' },
 ];
 
-export const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, onLogout }) => {
+export const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, onLogout, isDark, theme }) => {
   const close = () => setIsOpen(false);
 
   return (
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-[190] bg-black/70 backdrop-blur-sm"
+          className={`fixed inset-0 z-[190] ${isDark ? 'bg-black/70' : 'bg-black/30'} backdrop-blur-sm`}
           onClick={close}
         />
       )}
@@ -21,21 +21,21 @@ export const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, onLogout }
       <div
         className={`
           fixed top-0 left-0 h-full z-[200] flex flex-col
-          bg-[#080c14] border-r border-[#1a2332] shadow-2xl
-          transition-transform duration-200 ease-in-out
+          ${isDark ? 'bg-[#050505]' : 'bg-white'} border-r ${theme.navBorder} shadow-2xl
+          transition-all duration-200 ease-in-out
           w-[210px]
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 h-14 border-b border-[#1a2332] flex-shrink-0">
+        <div className={`flex items-center justify-between px-5 h-14 border-b ${theme.navBorder} flex-shrink-0`}>
           <div className="flex items-center gap-2">
             <img src="/Logo.jpg" alt="SniperForex" className="w-7 h-7 rounded-full object-cover" />
-            <span className="font-bold text-xs tracking-widest text-[#ff8c00] font-mono glow-orange">SNIPERFOREX</span>
+            <span className={`font-bold text-xs tracking-widest font-mono ${isDark ? 'text-[#ff8c00] glow-orange' : 'text-[#2563eb]'}`}>SNIPERFOREX</span>
           </div>
           <button
             onClick={close}
-            className="p-2 rounded text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/5 transition-all"
+            className={`p-2 rounded ${theme.navText} ${theme.navHover} transition-all`}
           >
             <X className="w-5 h-5" />
           </button>
@@ -54,8 +54,10 @@ export const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, onLogout }
                     flex items-center gap-3 px-4 py-3 rounded text-sm font-mono font-semibold
                     transition-all duration-150 border text-left w-full uppercase tracking-wider
                     ${active
-                      ? 'bg-[#ff8c00]/10 text-[#ff8c00] border-[#ff8c00]/20'
-                      : 'text-[#4a5568] hover:text-[#8b9dc3] hover:bg-white/[0.02] border-transparent'
+                      ? isDark
+                        ? 'bg-[#ff8c00]/10 text-[#ff8c00] border-[#ff8c00]/20'
+                        : 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/20'
+                      : `${theme.navText} ${theme.navHover} border-transparent`
                     }
                   `}
                 >
@@ -69,9 +71,9 @@ export const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, onLogout }
           {onLogout && (
             <button
               onClick={() => { onLogout(); close(); }}
-              className="flex items-center gap-3 px-4 py-3 rounded text-sm font-mono font-semibold w-full
-                text-[#4a5568] hover:text-[#ff1744] hover:bg-[#ff1744]/5 border border-transparent
-                hover:border-[#ff1744]/20 transition-all duration-150 mt-4 uppercase tracking-wider"
+              className={`flex items-center gap-3 px-4 py-3 rounded text-sm font-mono font-semibold w-full
+                ${theme.navText} hover:text-[#ff1744] hover:bg-[#ff1744]/5 border border-transparent
+                hover:border-[#ff1744]/20 transition-all duration-150 mt-4 uppercase tracking-wider`}
             >
               <LogOut className="w-5 h-5 flex-shrink-0" />
               <span>Esci</span>

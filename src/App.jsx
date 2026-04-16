@@ -32,7 +32,7 @@ import {
   getAvgTimeStr
 } from './utils';
 import { Info, Globe, TableIcon, ChevronUp, ChevronDown, Grid, Shuffle, Clock, Upload, Trophy, Award } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, Cell, ReferenceLine, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'; // eslint-disable-line
+import { LineChart, Line, BarChart, Bar, Cell, ReferenceLine, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from 'recharts'; // eslint-disable-line
 import ChiSono from './pages/ChiSono';
 import ComeFunziona from './pages/ComeFunziona';
 
@@ -76,18 +76,33 @@ const MonteCarloTooltip = ({ active, payload, label, theme, hoveredKey }) => {
   );
 };
 
+// Descrizione affiancata ai grafici
+const ChartDescription = ({ theme, title, text }) => (
+  <div className={`${theme.panel} border ${theme.borderLight} rounded-lg p-5 flex flex-col justify-center glow-panel`}>
+    <h4 className="text-[#ff8c00] font-mono font-bold text-xs uppercase tracking-widest mb-3">{title}</h4>
+    <p className={`${theme.textMuted} text-sm leading-relaxed font-mono`}>{text}</p>
+  </div>
+);
+
 // Grafici PnL settimanale e mensile affiancati
 const PnLBarCharts = ({ weeklyPnL, monthlyPnL, theme }) => {
+  const [mode, setMode] = useState('eur'); // 'eur' | 'pct'
+  const [showSpx, setShowSpx] = useState(false);
+
   if ((!weeklyPnL || weeklyPnL.length === 0) && (!monthlyPnL || monthlyPnL.length === 0)) return null;
 
-  const renderChart = (data, dataKey, labelKey, title) => (
+  const barKey = mode === 'eur' ? 'pnl' : 'pnlPct';
+  const fmtVal = (v) => mode === 'eur' ? `€${Number(v).toFixed(2)}` : `${Number(v).toFixed(2)}%`;
+  const btnBase = 'px-4 py-2 rounded text-xs font-bold uppercase tracking-wide transition-all border font-mono';
+
+  const renderChart = (data, labelKey, title) => (
     <div className={`${theme.panel} border ${theme.borderLight} rounded-lg p-4 glow-panel`}>
       <h3 className="text-center font-bold text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 mb-3 text-[#ff8c00] font-mono">
         {title}
       </h3>
       <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+          <ComposedChart data={data} margin={{ top: 10, right: 5, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chart.grid} />
             <XAxis
               dataKey={labelKey}
@@ -98,7 +113,8 @@ const PnLBarCharts = ({ weeklyPnL, monthlyPnL, theme }) => {
               textAnchor="end"
               height={50}
             />
-            <YAxis tick={{ fontSize: 9, fill: theme.chart.tooltipText }} stroke={theme.chart.axis} />
+            <YAxis yAxisId="left" tick={{ fontSize: 9, fill: theme.chart.tooltipText }} stroke={theme.chart.axis} />
+            <YAxis yAxisId="right" orientation="right" tick={showSpx ? { fontSize: 9, fill: '#64b5f6' } : false} stroke={showSpx ? '#64b5f6' : 'transparent'} tickFormatter={(v) => `${v.toFixed(1)}%`} width={showSpx ? 50 : 5} />
             <Tooltip
               contentStyle={{
                 backgroundColor: theme.chart.tooltipBg,
@@ -108,24 +124,50 @@ const PnLBarCharts = ({ weeklyPnL, monthlyPnL, theme }) => {
               }}
               itemStyle={{ color: theme.chart.tooltipText }}
               labelStyle={{ color: theme.chart.tooltipText }}
-              formatter={(val) => [`€${Number(val).toFixed(2)}`, 'PnL']}
+              formatter={(val, name) => {
+                if (name === 'SP500') return [`${Number(val).toFixed(2)}%`, 'SP500'];
+                return [fmtVal(val), mode === 'eur' ? 'PnL' : 'PnL %'];
+              }}
             />
-            <ReferenceLine y={0} stroke={theme.chart.axis} strokeDasharray="3 3" />
-            <Bar dataKey={dataKey} radius={[3, 3, 0, 0]} isAnimationActive={false}>
+            <ReferenceLine y={0} yAxisId="left" stroke={theme.chart.axis} strokeDasharray="3 3" />
+            <Bar yAxisId="left" dataKey={barKey} radius={[3, 3, 0, 0]} isAnimationActive={false} name={mode === 'eur' ? 'PnL' : 'PnL %'}>
               {data.map((entry, idx) => (
-                <Cell key={idx} fill={entry[dataKey] >= 0 ? '#00e676' : '#ff1744'} fillOpacity={0.8} />
+                <Cell key={idx} fill={entry[barKey] >= 0 ? '#00e676' : '#ff1744'} fillOpacity={0.8} />
               ))}
             </Bar>
-          </BarChart>
+            {showSpx && (
+              <Bar yAxisId="right" dataKey="spxPct" fill="#64b5f6" fillOpacity={0.85} radius={[3, 3, 0, 0]} isAnimationActive={false} name="SP500" />
+            )}
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </div>
   );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-14">
-      {weeklyPnL && weeklyPnL.length > 0 && renderChart(weeklyPnL, 'pnl', 'week', 'PROFITTO SETTIMANALE')}
-      {monthlyPnL && monthlyPnL.length > 0 && renderChart(monthlyPnL, 'pnl', 'month', 'PROFITTO MENSILE')}
+    <div className="mb-14">
+      <div className="flex justify-end gap-2 mb-3">
+        <div className="flex gap-1 bg-black/40 rounded-lg p-1 border border-[var(--c-border)]">
+          <button
+            onClick={() => setMode('eur')}
+            className={`${btnBase} ${mode === 'eur' ? 'bg-[#ff8c00] text-black border-[#ff8c00]' : `${theme.textMuted} border-transparent`}`}
+          >€</button>
+          <button
+            onClick={() => setMode('pct')}
+            className={`${btnBase} ${mode === 'pct' ? 'bg-[#ff8c00] text-black border-[#ff8c00]' : `${theme.textMuted} border-transparent`}`}
+          >%</button>
+        </div>
+        <button
+          onClick={() => setShowSpx(v => !v)}
+          className={`${btnBase} ${showSpx ? 'bg-[#64b5f6]/20 text-[#64b5f6] border-[#64b5f6]/40' : `${theme.textMuted} border-transparent bg-black/40`}`}
+        >
+          {showSpx ? '✓ SP500' : 'SP500'}
+        </button>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {weeklyPnL && weeklyPnL.length > 0 && renderChart(weeklyPnL, 'week', 'PROFITTO SETTIMANALE')}
+        {monthlyPnL && monthlyPnL.length > 0 && renderChart(monthlyPnL, 'month', 'PROFITTO MENSILE')}
+      </div>
     </div>
   );
 };
@@ -183,6 +225,7 @@ export default function App() {
     let netProfit = 0, pkEq = 0, mxDD = 0, sumSqDDpct = 0, grossP = 0, grossL = 0, totCosti = 0, totSwap = 0;
     let curEq = 0, wonBuy = 0, wonSell = 0;
     let maxConsecLoss = 0, curConsecLoss = 0;
+    let maxConsecWin = 0, curConsecWin = 0;
     const tDets = [], pDly = {}, opT = [], clT = [], eqSeq = [];
 
     analyzedTrades.forEach((t, i) => {
@@ -208,8 +251,11 @@ export default function App() {
         if (net < 0) {
           curConsecLoss++;
           if (curConsecLoss > maxConsecLoss) maxConsecLoss = curConsecLoss;
+          curConsecWin = 0;
         } else {
           curConsecLoss = 0;
+          curConsecWin++;
+          if (curConsecWin > maxConsecWin) maxConsecWin = curConsecWin;
         }
 
         if (t.OpenTimeMs) opT.push(t.OpenTimeMs);
@@ -291,18 +337,59 @@ export default function App() {
     const avgWeekly = weeklyValues.length > 0 ? weeklyValues.reduce((a, b) => a + b, 0) / weeklyValues.length : 0;
     const avgMonthly = monthlyValues.length > 0 ? monthlyValues.reduce((a, b) => a + b, 0) / monthlyValues.length : 0;
 
+    // SPX aggregations matching same period keys
+    const spxWeekly = {};
+    const spxMonthly = {};
+    const spxDowSum = [0, 0, 0, 0, 0, 0, 0];
+    const spxDowCnt = [0, 0, 0, 0, 0, 0, 0];
+    if (spxData) {
+      Object.entries(spxData).forEach(([dStr, ret]) => {
+        const dt = new Date(dStr);
+        if (isNaN(dt)) return;
+        const jan4 = new Date(dt.getFullYear(), 0, 4);
+        const wN = Math.ceil(((dt - new Date(dt.getFullYear(), 0, 1)) / 86400000 + jan4.getDay() + 1) / 7);
+        const wK = `${dt.getFullYear()}-W${String(wN).padStart(2, '0')}`;
+        spxWeekly[wK] = (spxWeekly[wK] || 0) + ret;
+        const mK = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+        spxMonthly[mK] = (spxMonthly[mK] || 0) + ret;
+        const dow = dt.getDay();
+        spxDowSum[dow] += ret;
+        spxDowCnt[dow]++;
+      });
+    }
+
+    // Notional initial capital for % return mode (kept stable across periods)
+    const initialCapital = Math.max(10000, mxDD * 5, Math.abs(netProfit) * 2);
+
     // Monthly & Weekly PnL series for histograms (sorted chronologically)
     const monthNames = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
     const monthlyPnL = Object.keys(pMonthly).sort().map(k => {
       const [y, m] = k.split('-');
-      return { month: `${monthNames[parseInt(m, 10) - 1]} ${y.slice(2)}`, pnl: pMonthly[k] };
+      return {
+        month: `${monthNames[parseInt(m, 10) - 1]} ${y.slice(2)}`,
+        pnl: pMonthly[k],
+        pnlPct: (pMonthly[k] / initialCapital) * 100,
+        spxPct: (spxMonthly[k] || 0) * 100,
+      };
     });
     const weeklyPnL = Object.keys(pWeekly).sort().map(k => ({
       week: k,
       pnl: pWeekly[k],
+      pnlPct: (pWeekly[k] / initialCapital) * 100,
+      spxPct: (spxWeekly[k] || 0) * 100,
     }));
 
+    // Enrich day-of-week stats with % mode and SPX avg per day
+    const dayNameToIdx = { 'Domenica': 0, 'Lunedì': 1, 'Martedì': 2, 'Mercoledì': 3, 'Giovedì': 4, 'Venerdì': 5, 'Sabato': 6 };
+    const dayStatsRaw = calculateDayStats(tDets);
+    const dayStatsEnriched = dayStatsRaw.map(d => {
+      const idx = dayNameToIdx[d.name];
+      const spxAvgPct = spxDowCnt[idx] > 0 ? (spxDowSum[idx] / spxDowCnt[idx]) * 100 : 0;
+      return { ...d, avgPct: (d.avg / initialCapital) * 100, spxPct: spxAvgPct };
+    });
+
     return {
+      initialCapital,
       netProfit,
       rawProfit: netProfit - totCosti,
       grossP,
@@ -326,7 +413,7 @@ export default function App() {
       lostCount: lss.length,
       wonBuy,
       wonSell,
-      dayStats: calculateDayStats(tDets),
+      dayStats: dayStatsEnriched,
       tradeProfits: pOnly,
       equitySequence: eqSeq,
       skew,
@@ -338,6 +425,7 @@ export default function App() {
       avgOpen: getAvgTimeStr(opT),
       avgClose: getAvgTimeStr(clT),
       maxConsecLoss,
+      maxConsecWin,
     };
   }, [analyzedTrades, spxData]);
 
@@ -358,7 +446,7 @@ export default function App() {
       .map(name => {
         const deals = grp[name].sort((a, b) => a.TimeMs - b.TimeMs);
         let curEq = 0, pkEq = 0, mxDD = 0, sumSqDDpct = 0, netProfit = 0, grossP = 0, grossL = 0, sC = 0, sSwap = 0;
-        let wonBuy = 0, wonSell = 0, maxConsecLoss = 0, curConsecLoss = 0;
+        let wonBuy = 0, wonSell = 0, maxConsecLoss = 0, curConsecLoss = 0, maxConsecWin = 0, curConsecWin = 0;
         const eqSeq = [], tDets = [], opTs = [], clTs = [], pDly = {};
 
         deals.forEach((d, idx) => {
@@ -383,8 +471,11 @@ export default function App() {
           if (net < 0) {
             curConsecLoss++;
             if (curConsecLoss > maxConsecLoss) maxConsecLoss = curConsecLoss;
+            curConsecWin = 0;
           } else {
             curConsecLoss = 0;
+            curConsecWin++;
+            if (curConsecWin > maxConsecWin) maxConsecWin = curConsecWin;
           }
 
           if (d.OpenTimeMs) opTs.push(d.OpenTimeMs);
@@ -456,11 +547,52 @@ export default function App() {
         const sAvgWeekly = sWkVals.length > 0 ? sWkVals.reduce((a, b) => a + b, 0) / sWkVals.length : 0;
         const sAvgMonthly = sMoVals.length > 0 ? sMoVals.reduce((a, b) => a + b, 0) / sMoVals.length : 0;
         const mNames = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+
+        // SPX aggregations for this strategy (same ranges as its trades)
+        const sSpxWeekly = {};
+        const sSpxMonthly = {};
+        const sSpxDowSum = [0, 0, 0, 0, 0, 0, 0];
+        const sSpxDowCnt = [0, 0, 0, 0, 0, 0, 0];
+        if (spxData) {
+          Object.entries(spxData).forEach(([dStr, ret]) => {
+            const dt = new Date(dStr);
+            if (isNaN(dt)) return;
+            const jan4 = new Date(dt.getFullYear(), 0, 4);
+            const wN = Math.ceil(((dt - new Date(dt.getFullYear(), 0, 1)) / 86400000 + jan4.getDay() + 1) / 7);
+            const wK = `${dt.getFullYear()}-W${String(wN).padStart(2, '0')}`;
+            sSpxWeekly[wK] = (sSpxWeekly[wK] || 0) + ret;
+            const mK = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+            sSpxMonthly[mK] = (sSpxMonthly[mK] || 0) + ret;
+            const dow = dt.getDay();
+            sSpxDowSum[dow] += ret;
+            sSpxDowCnt[dow]++;
+          });
+        }
+
+        const sInitialCapital = Math.max(10000, mxDD * 5, Math.abs(netProfit) * 2);
+
         const sMonthlyPnL = Object.keys(sMonthly).sort().map(k => {
           const [y, m] = k.split('-');
-          return { month: `${mNames[parseInt(m, 10) - 1]} ${y.slice(2)}`, pnl: sMonthly[k] };
+          return {
+            month: `${mNames[parseInt(m, 10) - 1]} ${y.slice(2)}`,
+            pnl: sMonthly[k],
+            pnlPct: (sMonthly[k] / sInitialCapital) * 100,
+            spxPct: (sSpxMonthly[k] || 0) * 100,
+          };
         });
-        const sWeeklyPnL = Object.keys(sWeekly).sort().map(k => ({ week: k, pnl: sWeekly[k] }));
+        const sWeeklyPnL = Object.keys(sWeekly).sort().map(k => ({
+          week: k,
+          pnl: sWeekly[k],
+          pnlPct: (sWeekly[k] / sInitialCapital) * 100,
+          spxPct: (sSpxWeekly[k] || 0) * 100,
+        }));
+
+        const dayNameIdx = { 'Domenica': 0, 'Lunedì': 1, 'Martedì': 2, 'Mercoledì': 3, 'Giovedì': 4, 'Venerdì': 5, 'Sabato': 6 };
+        const sDayStats = calculateDayStats(tDets).map(d => {
+          const idx = dayNameIdx[d.name];
+          const spxAvgPct = sSpxDowCnt[idx] > 0 ? (sSpxDowSum[idx] / sSpxDowCnt[idx]) * 100 : 0;
+          return { ...d, avgPct: (d.avg / sInitialCapital) * 100, spxPct: spxAvgPct };
+        });
 
         return {
           name,
@@ -494,10 +626,12 @@ export default function App() {
           tradeProfits: pOnly,
           profitFactor: Math.abs(grossL) > 0 ? grossP / Math.abs(grossL) : 999,
           equitySequence: eqSeq,
-          dayStats: calculateDayStats(tDets),
+          initialCapital: sInitialCapital,
+          dayStats: sDayStats,
           avgOpen: getAvgTimeStr(opTs),
           avgClose: getAvgTimeStr(clTs),
           maxConsecLoss,
+          maxConsecWin,
         };
       })
       .sort((a, b) => b.netProfit - a.netProfit);
@@ -680,7 +814,16 @@ export default function App() {
   const dynLineColors = getLineColors(isDark);
 
   return (
-    <div className={`w-full min-h-screen ${theme.bg} ${theme.text} font-sans bloomberg-scanline`}>
+    <div className={`w-full min-h-screen ${theme.bg} ${theme.text} font-sans bloomberg-scanline`}
+      style={{
+        '--c-border': isDark ? '#1a1a1a' : '#e5e7eb',
+        '--c-panel': isDark ? '#0a0a0a' : '#ffffff',
+        '--c-card': isDark ? '#0e0e0e' : '#f9fafb',
+        '--c-muted': isDark ? '#555555' : '#6b7280',
+        '--c-text': isDark ? '#e0e0e0' : '#111827',
+        '--c-accent': isDark ? '#ff8c00' : '#2563eb',
+      }}
+    >
       <style>{marqueeStyle}</style>
 
       <AnalysisLoader
@@ -704,6 +847,8 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onLogout={() => authState.setIsAuthenticated(false)}
+        isDark={isDark}
+        theme={theme}
       />
 
       <div className="sticky top-0 z-[100]">
@@ -717,6 +862,7 @@ export default function App() {
               isSidebarOpen={isSidebarOpen}
               setIsSidebarOpen={setIsSidebarOpen}
               onFileUpload={handleFileUpload}
+              theme={theme}
             />
           </div>
         </div>
@@ -728,10 +874,10 @@ export default function App() {
             <div className="flex flex-col items-center justify-center min-h-[62vh] text-center gap-8 animate-fade-in">
               <img src="/Logo.jpg" alt="SniperForex" className="w-20 h-20 opacity-30 rounded-lg" />
               <div>
-                <h2 className="text-3xl font-black mb-3 text-[#e2e8f0] font-mono tracking-tight">
+                <h2 className="text-3xl font-black mb-3 text-[var(--c-text)] font-mono tracking-tight">
                   Nessun Report Caricato
                 </h2>
-                <p className="text-[#4a5568] text-sm max-w-md mx-auto font-mono leading-6">
+                <p className="text-[var(--c-muted)] text-sm max-w-md mx-auto font-mono leading-6">
                   Importa un report MetaTrader 5 in formato <span className="text-[#ff8c00]">.xlsx</span>,{' '}
                   <span className="text-[#ff8c00]">.xls</span>, <span className="text-[#ff8c00]">.html</span> o{' '}
                   <span className="text-[#ff8c00]">.csv</span> per iniziare l&apos;analisi.
@@ -755,10 +901,10 @@ export default function App() {
             <div className="flex flex-col items-center justify-center min-h-[44vh] text-center gap-8 animate-fade-in">
               <img src="/Logo.jpg" alt="SniperForex" className="w-16 h-16 opacity-30 rounded-lg" />
               <div>
-                <h2 className="text-2xl font-black mb-3 text-[#e2e8f0] font-mono tracking-tight">
+                <h2 className="text-2xl font-black mb-3 text-[var(--c-text)] font-mono tracking-tight">
                   Nessun Trade nel Range
                 </h2>
-                <p className="text-[#4a5568] text-sm max-w-md mx-auto font-mono leading-6">
+                <p className="text-[var(--c-muted)] text-sm max-w-md mx-auto font-mono leading-6">
                   Il range selezionato non contiene trade validi. Ricarica il file e seleziona un range diverso.
                 </p>
               </div>
@@ -777,9 +923,9 @@ export default function App() {
           )}
 
           {parsedTrades.length > 0 && activeTab === 'analyzer' && (
-            <div className="rounded-lg border border-[#1a2332] bg-[#0d1117] overflow-hidden glow-panel animate-fade-in">
+            <div className={`rounded-lg border ${theme.border} ${theme.panel} overflow-hidden glow-panel animate-fade-in`}>
               <div
-                className="flex items-center justify-between px-8 py-4.5 border-b border-[#1a2332] cursor-pointer select-none hover:bg-[#111824]/50 transition-colors"
+                className={`flex items-center justify-between px-8 py-4.5 border-b ${theme.border} cursor-pointer select-none ${theme.cardHover} transition-colors`}
                 onClick={() => setShowTable(!showTable)}
               >
                 <div className="flex items-center gap-3">
@@ -792,7 +938,7 @@ export default function App() {
                   </span>
                 </div>
 
-                <button className="p-2.5 rounded text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/5 transition-all">
+                <button className="p-2.5 rounded text-[var(--c-muted)] hover:text-[#ff8c00] hover:bg-[#ff8c00]/5 transition-all">
                   {showTable ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </button>
               </div>
@@ -806,7 +952,7 @@ export default function App() {
                           label: 'Direzione',
                           node: (
                             <select
-                              className="w-full h-10 px-3 rounded text-xs border border-[#1a2332] bg-[#000000] text-[#8b9dc3] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
+                              className="w-full h-10 px-3 rounded text-xs border border-[var(--c-border)] bg-[#000000] text-[var(--c-text)] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
                               value={tableFilters.dir}
                               onChange={e => setTableFilters({ ...tableFilters, dir: e.target.value })}
                             >
@@ -820,7 +966,7 @@ export default function App() {
                           label: 'Tipo',
                           node: (
                             <select
-                              className="w-full h-10 px-3 rounded text-xs border border-[#1a2332] bg-[#000000] text-[#8b9dc3] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
+                              className="w-full h-10 px-3 rounded text-xs border border-[var(--c-border)] bg-[#000000] text-[var(--c-text)] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
                               value={tableFilters.tradeType}
                               onChange={e => setTableFilters({ ...tableFilters, tradeType: e.target.value })}
                             >
@@ -835,7 +981,7 @@ export default function App() {
                           node: (
                             <input
                               type="date"
-                              className="w-full h-10 px-3 rounded text-xs border border-[#1a2332] bg-[#000000] text-[#8b9dc3] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
+                              className="w-full h-10 px-3 rounded text-xs border border-[var(--c-border)] bg-[#000000] text-[var(--c-text)] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
                               value={tableFilters.dateStart}
                               onChange={e => setTableFilters({ ...tableFilters, dateStart: e.target.value })}
                             />
@@ -846,7 +992,7 @@ export default function App() {
                           node: (
                             <input
                               type="date"
-                              className="w-full h-10 px-3 rounded text-xs border border-[#1a2332] bg-[#000000] text-[#8b9dc3] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
+                              className="w-full h-10 px-3 rounded text-xs border border-[var(--c-border)] bg-[#000000] text-[var(--c-text)] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
                               value={tableFilters.dateEnd}
                               onChange={e => setTableFilters({ ...tableFilters, dateEnd: e.target.value })}
                             />
@@ -858,7 +1004,7 @@ export default function App() {
                             <input
                               type="number"
                               min="1"
-                              className="w-full h-10 px-3 rounded text-xs border border-[#1a2332] bg-[#000000] text-[#8b9dc3] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
+                              className="w-full h-10 px-3 rounded text-xs border border-[var(--c-border)] bg-[#000000] text-[var(--c-text)] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
                               value={tableFilters.rowStart || ''}
                               onChange={e => setTableFilters({ ...tableFilters, rowStart: e.target.value || '' })}
                             />
@@ -870,7 +1016,7 @@ export default function App() {
                             <input
                               type="number"
                               min="1"
-                              className="w-full h-10 px-3 rounded text-xs border border-[#1a2332] bg-[#000000] text-[#8b9dc3] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
+                              className="w-full h-10 px-3 rounded text-xs border border-[var(--c-border)] bg-[#000000] text-[var(--c-text)] font-mono focus:border-[#ff8c00]/40 focus:outline-none transition-colors"
                               value={tableFilters.rowEnd || ''}
                               onChange={e => setTableFilters({ ...tableFilters, rowEnd: e.target.value || '' })}
                             />
@@ -878,7 +1024,7 @@ export default function App() {
                         },
                       ].map(({ label, node }) => (
                         <div key={label}>
-                          <label className="block text-[9px] uppercase tracking-[0.15em] font-semibold text-[#4a5568] mb-2 font-mono">
+                          <label className="block text-[9px] uppercase tracking-[0.15em] font-semibold text-[var(--c-muted)] mb-2 font-mono">
                             {label}
                           </label>
                           {node}
@@ -926,7 +1072,7 @@ export default function App() {
                             </button>
                           </div>
 
-                          <div className="flex flex-wrap gap-2 p-4 rounded border border-[#1a2332] bg-[#000000]/60 min-h-[56px] max-h-32 overflow-y-auto">
+                          <div className="flex flex-wrap gap-2 p-4 rounded border border-[var(--c-border)] bg-[#000000]/60 min-h-[56px] max-h-32 overflow-y-auto">
                             {items.map(s => (
                               <button
                                 key={s}
@@ -934,7 +1080,7 @@ export default function App() {
                                 className={`px-3 py-2 rounded text-xs font-mono font-semibold transition-all border ${
                                   selected.includes(s)
                                     ? 'bg-[#ff8c00]/15 text-[#ff8c00] border-[#ff8c00]/30'
-                                    : 'bg-transparent text-[#4a5568] border-[#1a2332] hover:text-[#8b9dc3] hover:border-[#2d3a4a]'
+                                    : 'bg-transparent text-[var(--c-muted)] border-[var(--c-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border)]'
                                 }`}
                               >
                                 {s}
@@ -959,11 +1105,11 @@ export default function App() {
                     <FilterBadge filters={appliedFilters} isDark={isDark} theme={theme} />
                   </div>
 
-                  <div className="rounded-lg border border-[#1a2332] overflow-hidden">
+                  <div className="rounded-lg border border-[var(--c-border)] overflow-hidden">
                     <div className="overflow-x-auto">
                       <div className="overflow-y-auto max-h-[560px]">
                         <table className="w-full text-left text-[11px] font-mono">
-                          <thead className="sticky top-0 z-10 bg-[#111824]">
+                          <thead className="sticky top-0 z-10 bg-[var(--c-card)]">
                             <tr>
                               {[
                                 'Open Time',
@@ -978,7 +1124,7 @@ export default function App() {
                               ].map((h, i) => (
                                 <th
                                   key={h}
-                                  className={`px-4 py-3.5 text-[9px] uppercase tracking-[0.15em] font-semibold text-[#4a5568] border-b border-[#1a2332] whitespace-nowrap ${
+                                  className={`px-4 py-3.5 text-[9px] uppercase tracking-[0.15em] font-semibold text-[var(--c-muted)] border-b border-[var(--c-border)] whitespace-nowrap ${
                                     i >= 5 ? 'text-right' : ''
                                   }`}
                                 >
@@ -997,9 +1143,9 @@ export default function App() {
                               return (
                                 <tr
                                   key={idx}
-                                  className="hover:bg-[#111824]/60 transition-colors duration-100 group"
+                                  className="hover:bg-[var(--c-card)]/60 transition-colors duration-100 group"
                                 >
-                                  <td className="px-4 py-3 text-[#4a5568] whitespace-nowrap">
+                                  <td className="px-4 py-3 text-[var(--c-muted)] whitespace-nowrap">
                                     {t.OpenTimeMs ? new Date(t.OpenTimeMs).toLocaleString() : '—'}
                                   </td>
 
@@ -1027,8 +1173,8 @@ export default function App() {
                                     </span>
                                   </td>
 
-                                  <td className="px-4 py-3 font-bold text-[#e2e8f0]">{t.Symbol}</td>
-                                  <td className="px-4 py-3 text-[#4a5568] max-w-[180px] truncate">{t.Id}</td>
+                                  <td className="px-4 py-3 font-bold text-[var(--c-text)]">{t.Symbol}</td>
+                                  <td className="px-4 py-3 text-[var(--c-muted)] max-w-[180px] truncate">{t.Id}</td>
 
                                   <td
                                     className={`px-4 py-3 text-right font-semibold ${
@@ -1097,13 +1243,14 @@ export default function App() {
                 <KPICard isDark={isDark} theme={theme} label="Corr. S&P500" value={globalStats.corr.toFixed(2)} infoDesc="Correlazione con il mercato" infoFormula="ρ = Cov(R_p, R_m) / (σ_p × σ_m)" />
                 <KPICard isDark={isDark} theme={theme} label="Jarque-Bera" value={globalStats.jbTest.jb.toFixed(1)} subValue={globalStats.jbTest.isNormal ? 'Normale' : 'Non Normale'} infoDesc="Test normalità asintotica (χ²)" infoFormula="JB = (N/6) × (S² + K²/4)" signal={globalStats.jbTest.isNormal ? 'good' : 'bad'} />
                 <KPICard isDark={isDark} theme={theme} label="And-Darling" value={globalStats.andDar.a2.toFixed(2)} subValue={globalStats.andDar.isNormal ? 'Normale' : 'Non Normale'} infoDesc="Test normalità sulle code" infoFormula="A² = -N - Σ(2i-1)/N × [ln(F_i) + ln(1-F_{N+1-i})]" signal={globalStats.andDar.isNormal ? 'good' : 'bad'} />
+                <KPICard isDark={isDark} theme={theme} label="Max Consec. Win" value={globalStats.maxConsecWin} valueClass={theme.success} infoDesc="Numero massimo di vincite consecutive" infoFormula="max(streak  dove net_i > 0)" signal={globalStats.maxConsecWin >= 3 ? 'good' : undefined} />
                 <KPICard isDark={isDark} theme={theme} label="Max Consec. Loss" value={globalStats.maxConsecLoss} valueClass={theme.danger} infoDesc="Numero massimo di perdite consecutive" infoFormula="max(streak  dove net_i ≤ 0)" signal={globalStats.maxConsecLoss <= 5 ? 'good' : 'bad'} />
                 <KPICard isDark={isDark} theme={theme} label="Avg Settimanale" value={`€${globalStats.avgWeekly.toFixed(2)}`} infoDesc="Profitto medio per settimana" infoFormula="Σ NetWeek_i / N_settimane" signal={globalStats.avgWeekly > 0 ? 'good' : 'bad'} valueClass={globalStats.avgWeekly >= 0 ? theme.success : theme.danger} />
                 <KPICard isDark={isDark} theme={theme} label="Avg Mensile" value={`€${globalStats.avgMonthly.toFixed(2)}`} infoDesc="Profitto medio per mese" infoFormula="Σ NetMonth_i / N_mesi" signal={globalStats.avgMonthly > 0 ? 'good' : 'bad'} valueClass={globalStats.avgMonthly >= 0 ? theme.success : theme.danger} />
               </div>
 
               <div className="flex flex-col gap-12 mb-14">
-                <EquityChart data={globalStats.equitySequence} isDark={isDark} title="Equity Globale" theme={theme} />
+                <EquityChart data={globalStats.equitySequence} isDark={isDark} title="Equity Globale" theme={theme} spxData={spxData} initialCapital={globalStats.initialCapital} />
                 <DrawdownChart data={globalStats.equitySequence} isDark={isDark} title="Drawdown Globale" theme={theme} />
               </div>
 
@@ -1113,8 +1260,9 @@ export default function App() {
                 <DayStatsCharts dayStats={globalStats.dayStats} isDark={isDark} theme={theme} />
               </div>
 
-              <div className="mt-16">
+              <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
                 <CullenFreyPlot skew={globalStats.skew} kurt={globalStats.kurt} name="Globale" isDark={isDark} theme={theme} />
+                <ChartDescription theme={theme} title="Cullen-Frey Plot" text="Mappa la distribuzione dei tuoi rendimenti nello spazio skewness-kurtosi. Mostra se i profitti seguono una distribuzione Normale, Lognormale, Beta, Gamma o Uniforme. Se il punto cade lontano dalla Normale i modelli basati su ipotesi gaussiane sono poco affidabili." />
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
                 <DistributionChart data={globalStats.tradeProfits} title="Distribuzione Totale" type="all" isDark={isDark} theme={theme} />
@@ -1129,7 +1277,7 @@ export default function App() {
                     <h3 className="font-bold text-[11px] uppercase tracking-widest flex items-center gap-2 text-[#ffd740] font-mono">
                       <Trophy className="w-4 h-4" /> Classifica Performance
                     </h3>
-                    <div className="flex items-center gap-1 bg-black/40 rounded-lg p-1 border border-[#1a2332]">
+                    <div className="flex items-center gap-1 bg-black/40 rounded-lg p-1 border border-[var(--c-border)]">
                       {[
                         { key: 'week', label: 'Settimana' },
                         { key: 'month', label: 'Mese' },
@@ -1166,12 +1314,12 @@ export default function App() {
                                 <span className={`text-[11px] font-black font-mono w-6 text-center ${i === 0 ? 'text-[#ffd740]' : i === 1 ? 'text-[#c0c0c0]' : i === 2 ? 'text-[#cd7f32]' : theme.textMuted}`}>
                                   #{i + 1}
                                 </span>
-                                <span className="text-[11px] font-bold font-mono text-[#e2e8f0]">{a.name}</span>
+                                <span className="text-[11px] font-bold font-mono text-[var(--c-text)]">{a.name}</span>
                               </div>
                               <div className="flex items-center gap-4">
-                                <span className="text-[9px] font-mono text-[#4a5568]">{a.trades} trades</span>
-                                <span className="text-[9px] font-mono text-[#4a5568]">WR {a.winRate.toFixed(0)}%</span>
-                                <span className={`text-[9px] font-mono ${a.sharpe >= 1 ? 'text-[#00e676]' : a.sharpe < 0 ? 'text-[#ff1744]' : 'text-[#4a5568]'}`}>SR {a.sharpe.toFixed(2)}</span>
+                                <span className="text-[9px] font-mono text-[var(--c-muted)]">{a.trades} trades</span>
+                                <span className="text-[9px] font-mono text-[var(--c-muted)]">WR {a.winRate.toFixed(0)}%</span>
+                                <span className={`text-[9px] font-mono ${a.sharpe >= 1 ? 'text-[#00e676]' : a.sharpe < 0 ? 'text-[#ff1744]' : 'text-[var(--c-muted)]'}`}>SR {a.sharpe.toFixed(2)}</span>
                                 <span className={`text-[11px] font-bold font-mono ${a.pnl >= 0 ? 'text-[#00e676]' : 'text-[#ff1744]'}`}>
                                   {a.pnl >= 0 ? '+' : ''}€{a.pnl.toFixed(2)}
                                 </span>
@@ -1195,12 +1343,12 @@ export default function App() {
                                 <span className={`text-[11px] font-black font-mono w-6 text-center ${i === 0 ? 'text-[#ffd740]' : i === 1 ? 'text-[#c0c0c0]' : i === 2 ? 'text-[#cd7f32]' : theme.textMuted}`}>
                                   #{i + 1}
                                 </span>
-                                <span className="text-[11px] font-bold font-mono text-[#e2e8f0]">{s.name}</span>
+                                <span className="text-[11px] font-bold font-mono text-[var(--c-text)]">{s.name}</span>
                               </div>
                               <div className="flex items-center gap-4">
-                                <span className="text-[9px] font-mono text-[#4a5568]">{s.trades} trades</span>
-                                <span className="text-[9px] font-mono text-[#4a5568]">WR {s.winRate.toFixed(0)}%</span>
-                                <span className={`text-[9px] font-mono ${s.sharpe >= 1 ? 'text-[#00e676]' : s.sharpe < 0 ? 'text-[#ff1744]' : 'text-[#4a5568]'}`}>SR {s.sharpe.toFixed(2)}</span>
+                                <span className="text-[9px] font-mono text-[var(--c-muted)]">{s.trades} trades</span>
+                                <span className="text-[9px] font-mono text-[var(--c-muted)]">WR {s.winRate.toFixed(0)}%</span>
+                                <span className={`text-[9px] font-mono ${s.sharpe >= 1 ? 'text-[#00e676]' : s.sharpe < 0 ? 'text-[#ff1744]' : 'text-[var(--c-muted)]'}`}>SR {s.sharpe.toFixed(2)}</span>
                                 <span className={`text-[11px] font-bold font-mono ${s.pnl >= 0 ? 'text-[#00e676]' : 'text-[#ff1744]'}`}>
                                   {s.pnl >= 0 ? '+' : ''}€{s.pnl.toFixed(2)}
                                 </span>
@@ -1214,7 +1362,7 @@ export default function App() {
                 </div>
               )}
 
-              <div className="flex justify-between items-center mb-8 mt-16 border-b pb-6 border-[#1a2332]">
+              <div className="flex justify-between items-center mb-8 mt-16 border-b pb-6 border-[var(--c-border)]">
                 <div className="flex items-center gap-3">
                   <div className="w-1 h-5 bg-[#ff8c00] rounded-full" />
                   <h2 className="text-xs font-bold text-[#ff8c00] uppercase tracking-[0.2em] font-mono glow-orange">
@@ -1222,13 +1370,13 @@ export default function App() {
                   </h2>
                 </div>
 
-                <div className="flex bg-[#000000] border border-[#1a2332] rounded-xl p-2 gap-3">
+                <div className="flex bg-[#000000] border border-[var(--c-border)] rounded-xl p-2 gap-3">
                   <button
                     onClick={() => setGroupBy('Strategy')}
                     className={`flex items-center justify-center px-7 h-12 rounded-lg text-sm font-bold font-mono uppercase tracking-[0.15em] transition-all ${
                       groupBy === 'Strategy'
                         ? 'bg-[#ff8c00] text-black shadow-lg shadow-[#ff8c00]/40 scale-105'
-                        : 'text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/10'
+                        : 'text-[var(--c-muted)] hover:text-[#ff8c00] hover:bg-[#ff8c00]/10'
                     }`}
                   >
                     Strategy
@@ -1239,7 +1387,7 @@ export default function App() {
                     className={`flex items-center justify-center px-7 h-12 rounded-lg text-sm font-bold font-mono uppercase tracking-[0.15em] transition-all ${
                       groupBy === 'Asset'
                         ? 'bg-[#ff8c00] text-black shadow-lg shadow-[#ff8c00]/40 scale-105'
-                        : 'text-[#4a5568] hover:text-[#ff8c00] hover:bg-[#ff8c00]/10'
+                        : 'text-[var(--c-muted)] hover:text-[#ff8c00] hover:bg-[#ff8c00]/10'
                     }`}
                   >
                     Asset
@@ -1252,10 +1400,10 @@ export default function App() {
           {activeTab === 'analyzer' &&
             strategyStats.map((s, i) => (
               <div key={i} className={`${theme.panel} rounded-lg border ${theme.border} overflow-hidden glow-panel animate-fade-in`}>
-                <div className="bg-[#111824] px-8 py-5 border-b border-[#1a2332] flex justify-between items-center">
+                <div className="bg-[var(--c-card)] px-8 py-5 border-b border-[var(--c-border)] flex justify-between items-center">
                   <div className="flex items-center gap-3">
                     <div className="w-0.5 h-5 bg-[#ff8c00] rounded-full" />
-                    <h4 className="font-bold text-sm text-[#e2e8f0] font-mono uppercase tracking-wider">{s.name}</h4>
+                    <h4 className="font-bold text-sm text-[var(--c-text)] font-mono uppercase tracking-wider">{s.name}</h4>
                   </div>
                   <span className={`text-lg font-mono font-black ${s.netProfit >= 0 ? 'text-[#00e676] glow-green' : 'text-[#ff1744] glow-red'}`}>
                     {s.netProfit.toFixed(2)}
@@ -1287,13 +1435,14 @@ export default function App() {
                     <KPICard isDark={isDark} theme={theme} label="Avg Close" value={s.avgClose} icon={Clock} infoDesc="Media oraria di uscita" infoFormula="mean(CloseTime_i)" />
                     <KPICard isDark={isDark} theme={theme} label="Jarque-Bera" value={s.jbTest.jb.toFixed(1)} subValue={s.jbTest.isNormal ? 'Norm.' : 'Anomalo'} infoDesc="Test normalità asintotica (χ²)" infoFormula="JB = (N/6) × (S² + K²/4)" signal={s.jbTest.isNormal ? 'good' : 'bad'} />
                     <KPICard isDark={isDark} theme={theme} label="And-Darling" value={s.andDar.a2.toFixed(2)} subValue={s.andDar.isNormal ? 'Norm.' : 'Anomalo'} infoDesc="Test normalità sulle code" infoFormula="A² = -N - Σ(2i-1)/N × [ln(F_i) + ln(1-F_{N+1-i})]" signal={s.andDar.isNormal ? 'good' : 'bad'} />
+                    <KPICard isDark={isDark} theme={theme} label="Max Consec. Win" value={s.maxConsecWin} valueClass={theme.success} infoDesc="Vincite consecutive massime" infoFormula="max(streak  dove net_i > 0)" signal={s.maxConsecWin >= 3 ? 'good' : undefined} />
                     <KPICard isDark={isDark} theme={theme} label="Max Consec. Loss" value={s.maxConsecLoss} valueClass={theme.danger} infoDesc="Perdite consecutive massime" infoFormula="max(streak  dove net_i ≤ 0)" signal={s.maxConsecLoss <= 5 ? 'good' : 'bad'} />
                     <KPICard isDark={isDark} theme={theme} label="Avg Settimanale" value={`€${s.avgWeekly.toFixed(2)}`} infoDesc="Profitto medio per settimana" infoFormula="Σ NetWeek_i / N_settimane" signal={s.avgWeekly > 0 ? 'good' : 'bad'} valueClass={s.avgWeekly >= 0 ? theme.success : theme.danger} />
                     <KPICard isDark={isDark} theme={theme} label="Avg Mensile" value={`€${s.avgMonthly.toFixed(2)}`} infoDesc="Profitto medio per mese" infoFormula="Σ NetMonth_i / N_mesi" signal={s.avgMonthly > 0 ? 'good' : 'bad'} valueClass={s.avgMonthly >= 0 ? theme.success : theme.danger} />
                   </div>
 
                   <div className="flex flex-col gap-12 mb-14">
-                    <EquityChart data={s.equitySequence} isDark={isDark} title={`Equity Line (${s.name})`} theme={theme} />
+                    <EquityChart data={s.equitySequence} isDark={isDark} title={`Equity Line (${s.name})`} theme={theme} spxData={spxData} initialCapital={s.initialCapital} />
                     <DrawdownChart data={s.equitySequence} isDark={isDark} title={`Drawdown (${s.name})`} theme={theme} />
                   </div>
 
@@ -1303,8 +1452,9 @@ export default function App() {
                     <DayStatsCharts dayStats={s.dayStats} isDark={isDark} theme={theme} />
                   </div>
 
-                  <div className="mt-16">
+                  <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
                     <CullenFreyPlot skew={s.skew} kurt={s.kurt} name={s.name} isDark={isDark} theme={theme} />
+                    <ChartDescription theme={theme} title="Cullen-Frey Plot" text="Mappa la distribuzione dei rendimenti nello spazio skewness-kurtosi. Mostra se i profitti seguono una Normale, Lognormale, Beta, Gamma o Uniforme." />
                   </div>
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
                     <DistributionChart data={s.tradeProfits} title={`Distribuzione Totale (${s.name})`} type="all" isDark={isDark} theme={theme} />
@@ -1325,7 +1475,7 @@ export default function App() {
                 </h3>
               </div>
 
-              <p className="text-[#4a5568] text-[10px] mb-10 font-mono tracking-wide leading-6">
+              <p className="text-[var(--c-muted)] text-[10px] mb-10 font-mono tracking-wide leading-6">
                 Pearson correlation on daily net returns. Shows mathematical divergences between grouped entities.
               </p>
 
@@ -1335,7 +1485,7 @@ export default function App() {
 
           {activeTab === 'analyzer' && (monteCarloData || isMcLoading) && (
             <div className={`${theme.panel} rounded-lg border ${theme.border} p-10 lg:p-12 glow-panel animate-fade-in`}>
-              <div className="flex justify-between items-center mb-10 border-b border-[#1a2332] pb-6">
+              <div className="flex justify-between items-center mb-10 border-b border-[var(--c-border)] pb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-1 h-6 bg-[#ff8c00] rounded-full" />
                   <Shuffle className="w-5 h-5 text-[#ff8c00]" />
@@ -1465,8 +1615,8 @@ function RowRangeModal({ totalRows, onConfirm }) {
 
   return (
     <div className="fixed inset-0 z-[9000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-5">
-      <div className="w-full max-w-md bg-[#0d1117] border border-[#1a2332] rounded-lg shadow-2xl overflow-hidden glow-panel">
-        <div className="px-7 py-6 border-b border-[#1a2332]">
+      <div className="w-full max-w-md bg-[var(--c-panel)] border border-[var(--c-border)] rounded-lg shadow-2xl overflow-hidden glow-panel">
+        <div className="px-7 py-6 border-b border-[var(--c-border)]">
           <div className="flex items-center gap-2 mb-2">
             <TableIcon className="w-4 h-4 text-[#ff8c00]" />
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#ff8c00] font-mono glow-orange">
@@ -1474,11 +1624,11 @@ function RowRangeModal({ totalRows, onConfirm }) {
             </span>
           </div>
 
-          <h2 className="text-sm font-bold text-[#e2e8f0] font-mono mt-2">
+          <h2 className="text-sm font-bold text-[var(--c-text)] font-mono mt-2">
             Select analysis range
           </h2>
 
-          <p className="text-[10px] text-[#4a5568] mt-2 font-mono">
+          <p className="text-[10px] text-[var(--c-muted)] mt-2 font-mono">
             Loaded file — <span className="text-[#ff8c00]">{dataRows}</span> data rows available
           </p>
         </div>
@@ -1486,7 +1636,7 @@ function RowRangeModal({ totalRows, onConfirm }) {
         <form onSubmit={handleSubmit} className="px-7 py-6 space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[9px] uppercase tracking-[0.15em] font-semibold text-[#4a5568] mb-2 font-mono">
+              <label className="block text-[9px] uppercase tracking-[0.15em] font-semibold text-[var(--c-muted)] mb-2 font-mono">
                 From row
               </label>
               <input
@@ -1495,12 +1645,12 @@ function RowRangeModal({ totalRows, onConfirm }) {
                 placeholder="Start (e.g. 1)"
                 value={start}
                 onChange={e => setStart(e.target.value)}
-                className="w-full h-11 px-3 rounded text-sm border border-[#1a2332] bg-[#000000] text-[#e2e8f0] focus:border-[#ff8c00]/40 focus:outline-none transition-colors font-mono placeholder:text-[#2d3a4a]"
+                className="w-full h-11 px-3 rounded text-sm border border-[var(--c-border)] bg-[#000000] text-[var(--c-text)] focus:border-[#ff8c00]/40 focus:outline-none transition-colors font-mono placeholder:text-[#2d3a4a]"
               />
             </div>
 
             <div>
-              <label className="block text-[9px] uppercase tracking-[0.15em] font-semibold text-[#4a5568] mb-2 font-mono">
+              <label className="block text-[9px] uppercase tracking-[0.15em] font-semibold text-[var(--c-muted)] mb-2 font-mono">
                 To row
               </label>
               <input
@@ -1509,12 +1659,12 @@ function RowRangeModal({ totalRows, onConfirm }) {
                 placeholder={`End (e.g. ${dataRows || '...'})`}
                 value={end}
                 onChange={e => setEnd(e.target.value)}
-                className="w-full h-11 px-3 rounded text-sm border border-[#1a2332] bg-[#000000] text-[#e2e8f0] focus:border-[#ff8c00]/40 focus:outline-none transition-colors font-mono placeholder:text-[#2d3a4a]"
+                className="w-full h-11 px-3 rounded text-sm border border-[var(--c-border)] bg-[#000000] text-[var(--c-text)] focus:border-[#ff8c00]/40 focus:outline-none transition-colors font-mono placeholder:text-[#2d3a4a]"
               />
             </div>
           </div>
 
-          <p className="text-[10px] text-[#4a5568] font-mono leading-5">
+          <p className="text-[10px] text-[var(--c-muted)] font-mono leading-5">
             Leave empty to include all available rows.
           </p>
 
@@ -1529,7 +1679,7 @@ function RowRangeModal({ totalRows, onConfirm }) {
             <button
               type="button"
               onClick={() => onConfirm('', '')}
-              className="px-5 py-3.5 rounded text-xs font-bold font-mono uppercase tracking-wider text-[#4a5568] hover:text-[#ff8c00] border border-[#1a2332] hover:border-[#ff8c00]/20 bg-transparent transition-all"
+              className="px-5 py-3.5 rounded text-xs font-bold font-mono uppercase tracking-wider text-[var(--c-muted)] hover:text-[#ff8c00] border border-[var(--c-border)] hover:border-[#ff8c00]/20 bg-transparent transition-all"
             >
               ALL
             </button>
