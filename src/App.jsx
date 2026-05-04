@@ -35,6 +35,7 @@ import { Info, Globe, TableIcon, ChevronUp, ChevronDown, Grid, Shuffle, Clock, U
 import { LineChart, Line, BarChart, Bar, Cell, ReferenceLine, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from 'recharts'; // eslint-disable-line
 import ChiSono from './pages/ChiSono';
 import ComeFunziona from './pages/ComeFunziona';
+import Landing from './pages/Landing';
 
 // Tooltip Monte Carlo: mostra SOLO la linea attualmente hover-ata (non tutte le 50)
 const MonteCarloTooltip = ({ active, payload, label, theme, hoveredKey }) => {
@@ -176,6 +177,7 @@ export default function App() {
   const [isDark, setIsDark] = useState(true);
   const [activeTab, setActiveTab] = useState('analyzer');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [ctaClicked, setCtaClicked] = useState(false);
   const [pendingRows, setPendingRows] = useState(null);
   const [confirmedRows, setConfirmedRows] = useState([]);
   const [rankingPeriod, setRankingPeriod] = useState('max');
@@ -835,7 +837,18 @@ export default function App() {
         rowEnd={tableFilters.rowEnd}
       />
 
-      {!authState.isAuthenticated && <LoginModal {...authState} theme={theme} />}
+      {!authState.isAuthenticated && !ctaClicked && (
+        <Landing
+          isDark={isDark}
+          setIsDark={setIsDark}
+          theme={theme}
+          onStart={() => setCtaClicked(true)}
+          marketQuotes={marketQuotes}
+        />
+      )}
+      {!authState.isAuthenticated && ctaClicked && (
+        <LoginModal {...authState} theme={theme} onBack={() => { setCtaClicked(false); authState.setLoginStep('input'); }} />
+      )}
 
       {pendingRows && (
         <RowRangeModal totalRows={pendingRows.length} onConfirm={handleRowConfirm} />
@@ -846,7 +859,7 @@ export default function App() {
         setIsOpen={setIsSidebarOpen}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onLogout={() => authState.setIsAuthenticated(false)}
+        onLogout={() => { authState.setIsAuthenticated(false); setCtaClicked(false); }}
         isDark={isDark}
         theme={theme}
       />
