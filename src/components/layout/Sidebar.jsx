@@ -1,7 +1,10 @@
-import { BarChart2, Info, Globe, X, LogOut } from 'lucide-react';
+import { BarChart2, Info, Globe, X, LogOut, Activity, Layers, Gauge } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'analyzer',    Icon: BarChart2, label: 'Analyzer' },
+  { id: 'regime',      Icon: Activity,  label: 'Market Regime' },
+  { id: 'volatility',  Icon: Gauge,     label: 'Volatility Regime' },
+  { id: 'themes',      Icon: Layers,    label: 'Themes' },
   { id: 'descrizione', Icon: Info,      label: 'Chi sono?' },
   { id: 'news',        Icon: Globe,     label: 'Come funziona?' },
 ];

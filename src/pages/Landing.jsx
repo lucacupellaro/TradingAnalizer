@@ -12,6 +12,7 @@ import {
   Moon,
   Sun,
   TrendingUp,
+  TrendingDown,
   Dice5,
   GitCompare,
   BarChart3,
@@ -20,6 +21,12 @@ import {
   FileSpreadsheet,
   CheckCircle2,
   Sparkles,
+  Activity,
+  Target,
+  Layers,
+  Gauge,
+  AlertTriangle,
+  Scale,
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ *
@@ -796,6 +803,635 @@ function FinalCTA({ theme, isDark, onStart }) {
 }
 
 /* ------------------------------------------------------------------ *
+ *  Market Regime Showcase — animated preview of the live dashboard
+ * ------------------------------------------------------------------ */
+
+const REGIME_CYCLE = [
+  { label: 'ESPANSIONE',  color: '#00e676', desc: 'Crescita forte, risk-on, volatilità contenuta.', growth: 3, risk: 2 },
+  { label: 'STAGFLAZIONE',color: '#ff6d00', desc: 'Bassa crescita + vol persistente. Difensivi e oro.', growth: -2, risk: -1 },
+  { label: 'RECESSIONE',  color: '#ff1744', desc: 'Contrazione, fuga verso bond e qualità.',           growth: -3, risk: -3 },
+  { label: 'GOLDILOCKS',  color: '#00e676', desc: 'Crescita moderata, vol bassa. Ideale per equity.',  growth: 2, risk: 2 },
+];
+
+const SHOWCASE_INDICATORS = [
+  { name: 'VVIX/VIX',    base: 5.4, range: 1.0, healthy: [4, 7], suffix: '', label: 'Vol of Vol' },
+  { name: 'SPY/RSP',     base: 1.62, range: 0.10, healthy: [1.0, 1.5], suffix: '', label: 'Concentrazione' },
+  { name: 'XLY/XLP',     base: 1.55, range: 0.15, healthy: [1.4, 1.8], suffix: '', label: 'Cicliche/Difensive' },
+];
+
+const SHOWCASE_ROWS = [
+  { sym: 'SPY',  name: 'S&P 500',         score: 78, action: 'BUY',         color: '#66bb6a', d: 1.97, w: 2.50, m: 6.47 },
+  { sym: 'QQQ',  name: 'Nasdaq 100',      score: 72, action: 'BUY',         color: '#66bb6a', d: 2.18, w: 1.84, m: 8.23 },
+  { sym: 'IWM',  name: 'Russell 2000',    score: 81, action: 'STRONG BUY',  color: '#00e676', d: 3.55, w: 2.08, m: 11.96 },
+  { sym: 'GLD',  name: 'Oro',             score: 65, action: 'HOLD',        color: '#ffa726', d: 0.42, w: 1.20, m: 4.80 },
+  { sym: 'TLT',  name: '20+Y Treasury',   score: 38, action: 'SELL',        color: '#ef5350', d: -0.62,w: -1.40, m: -3.20 },
+  { sym: 'EWJ',  name: 'Giappone',        score: 62, action: 'BUY',         color: '#66bb6a', d: 1.10, w: 0.80, m: 3.40 },
+];
+
+function showcaseSparkPath(seed, w = 80, h = 22) {
+  // Deterministic pseudo-random walk based on seed
+  const pts = [];
+  let v = 50;
+  for (let i = 0; i < 24; i++) {
+    const noise = ((Math.sin(seed * 13 + i * 1.7) + Math.cos(seed * 7 + i * 0.9)) * 4);
+    v += noise;
+    pts.push(v);
+  }
+  const min = Math.min(...pts), max = Math.max(...pts), range = max - min || 1;
+  const stepX = w / (pts.length - 1);
+  return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${(i * stepX).toFixed(1)} ${(h - ((p - min) / range) * h).toFixed(1)}`).join(' ');
+}
+
+function RegimeShowcase({ theme, isDark }) {
+  const [regimeIdx, setRegimeIdx] = useState(0);
+  const [scoreVal, setScoreVal] = useState(78);
+  const reduce = useReducedMotion();
+  const regime = REGIME_CYCLE[regimeIdx];
+
+  useEffect(() => {
+    if (reduce) return;
+    const id = setInterval(() => {
+      setRegimeIdx((i) => (i + 1) % REGIME_CYCLE.length);
+      setScoreVal(60 + Math.floor(Math.random() * 35));
+    }, 4500);
+    return () => clearInterval(id);
+  }, [reduce]);
+
+  return (
+    <section className={`w-full border-t ${theme.border}`}>
+      <div className="w-full py-20 md:py-28">
+        <div className="w-full flex justify-center mb-12">
+          <div className="text-center max-w-3xl">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Activity className={`w-4 h-4 ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'}`} />
+              <span className={`text-[10px] uppercase tracking-[0.3em] font-mono font-bold ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'}`}>
+                Market Regime · Live
+              </span>
+            </div>
+            <h2 className={`font-display text-3xl md:text-5xl font-black tracking-tight ${theme.textBold}`}>
+              Conosci il regime.
+              <br />
+              <span className={isDark ? 'text-[#ff8c00] glow-orange' : 'text-[#2563eb]'}>
+                Scegli lo strumento giusto.
+              </span>
+            </h2>
+            <p className={`mt-5 ${theme.textMuted}`}>
+              Pannello live con indicatori macro (VIX, VVIX, SPY/RSP, Value/Growth, Cicliche/Difensive),
+              identificazione automatica del regime (Espansione, Stagflazione, Recessione...) e screener su 70+ strumenti
+              con score 0-100, livelli opzioni, stagionalità e forecast.
+            </p>
+          </div>
+        </div>
+
+        {/* Mock dashboard preview */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-5">
+
+          {/* LEFT — Regime banner + indicators + table */}
+          <div className="space-y-4">
+            {/* Regime banner */}
+            <motion.div
+              key={`banner-${regimeIdx}`}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}
+              style={{ borderColor: `${regime.color}55` }}
+            >
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="w-3 h-3 rounded-full pulse-live" style={{ background: regime.color, boxShadow: `0 0 16px ${regime.color}` }} />
+                <span className={`text-[10px] font-mono uppercase tracking-widest ${theme.textMuted}`}>Regime corrente:</span>
+                <span className="text-2xl md:text-3xl font-black font-mono uppercase tracking-tight"
+                  style={{ color: regime.color, textShadow: `0 0 12px ${regime.color}66` }}>
+                  {regime.label}
+                </span>
+                <span className={`flex-1 min-w-[260px] text-sm font-mono ${theme.textMuted}`}>{regime.desc}</span>
+              </div>
+            </motion.div>
+
+            {/* Indicators */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {SHOWCASE_INDICATORS.map((ind, i) => {
+                const offset = Math.sin((regimeIdx * 1.3) + i) * ind.range;
+                const value = ind.base + offset;
+                const inRange = value >= ind.healthy[0] && value <= ind.healthy[1];
+                const c = inRange ? '#00e676' : value < ind.healthy[0] ? '#ff1744' : '#ffa726';
+                return (
+                  <motion.div
+                    key={ind.name}
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.08 }}
+                    className={`${theme.panel} border ${theme.border} rounded-lg p-4`}
+                  >
+                    <div className="flex items-baseline justify-between mb-2">
+                      <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00]">{ind.name}</span>
+                      <span className="text-[9px] font-mono uppercase font-bold" style={{ color: c }}>
+                        {inRange ? 'SANA' : 'ALERT'}
+                      </span>
+                    </div>
+                    <motion.div
+                      key={`v-${regimeIdx}-${i}`}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                      className="text-2xl font-black font-mono mb-2"
+                      style={{ color: c }}
+                    >
+                      {value.toFixed(2)}
+                    </motion.div>
+                    {/* mini range bar */}
+                    <div className="relative h-1.5 rounded-full overflow-hidden bg-[#00e67620]">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(100, ((value - ind.healthy[0] + 1) / (ind.healthy[1] - ind.healthy[0] + 2)) * 100)}%` }}
+                        transition={{ duration: 0.7 }}
+                        className="h-full"
+                        style={{ background: c }}
+                      />
+                    </div>
+                    <p className={`mt-2 text-[10px] font-mono ${theme.textMuted}`}>{ind.label}</p>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Mock screener table */}
+            <div className={`${theme.panel} border ${theme.border} rounded-lg overflow-hidden`}>
+              <div className="px-5 py-3 border-b border-[var(--c-border)] flex items-center gap-2">
+                <Target className="w-4 h-4 text-[#ff8c00]" />
+                <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00]">
+                  Screener · Indici USA
+                </span>
+              </div>
+              <table className="w-full">
+                <thead>
+                  <tr className={`text-[9px] font-mono uppercase tracking-widest ${theme.textMuted}`}>
+                    <th className="px-4 py-2 text-left">Strumento</th>
+                    <th className="px-4 py-2 text-center">Posiz.</th>
+                    <th className="px-4 py-2 text-center">Score</th>
+                    <th className="px-4 py-2 text-right">1D %</th>
+                    <th className="px-4 py-2 text-right">1M %</th>
+                    <th className="px-4 py-2 text-right">Trend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SHOWCASE_ROWS.map((r, i) => {
+                    const sparkColor = r.d >= 0 ? '#00e676' : '#ff1744';
+                    return (
+                      <motion.tr
+                        key={r.sym}
+                        initial={{ opacity: 0, x: -10 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.35, delay: i * 0.08 }}
+                        className={`border-t ${theme.borderLight}`}
+                      >
+                        <td className="px-4 py-3 font-mono">
+                          <div className="flex flex-col">
+                            <span className={`font-bold ${theme.textBold} text-sm`}>{r.sym}</span>
+                            <span className={`text-[10px] ${theme.textMuted}`}>{r.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="inline-block px-3 py-1 rounded text-[10px] font-mono font-black uppercase tracking-widest"
+                            style={{ background: r.color, color: '#000' }}>
+                            {r.action}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="inline-block min-w-[42px] px-2 py-1 rounded text-xs font-mono font-black"
+                            style={{ background: `${r.color}15`, color: r.color, border: `1px solid ${r.color}40` }}>
+                            {r.score}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right text-xs font-mono font-bold"
+                          style={{ color: r.d >= 0 ? '#00e676' : '#ff1744' }}>
+                          {r.d >= 0 ? '+' : ''}{r.d.toFixed(2)}% {r.d >= 0 ? '↑' : '↓'}
+                        </td>
+                        <td className="px-4 py-3 text-right text-xs font-mono font-bold"
+                          style={{ color: r.m >= 0 ? '#00e676' : '#ff1744' }}>
+                          {r.m >= 0 ? '+' : ''}{r.m.toFixed(2)}%
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <svg width="80" height="22" className="inline-block overflow-visible">
+                            <path d={showcaseSparkPath(i + regimeIdx)} fill="none"
+                              stroke={sparkColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                              style={{ filter: `drop-shadow(0 0 2px ${sparkColor}66)` }} />
+                          </svg>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* RIGHT — SniperScore gauge + 3 ratings */}
+          <div className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel flex flex-col items-center`}
+            >
+              <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-1 self-start`}>
+                SniperScore · IWM
+              </h4>
+              <div className="h-px w-full bg-[#ff8c00]/30 mb-3" />
+              <motion.span
+                key={`act-${regimeIdx}`}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="font-mono font-black text-2xl uppercase tracking-widest mb-3"
+                style={{ color: scoreVal >= 75 ? '#00e676' : scoreVal >= 60 ? '#66bb6a' : scoreVal >= 45 ? '#ffa726' : '#ef5350' }}
+              >
+                {scoreVal >= 75 ? 'STRONG BUY' : scoreVal >= 60 ? 'BUY' : scoreVal >= 45 ? 'HOLD' : 'SELL'}
+              </motion.span>
+
+              {/* Circular gauge */}
+              <div className="relative w-40 h-40">
+                <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+                  <circle cx="60" cy="60" r="50" stroke={isDark ? '#1a1a1a' : '#e5e7eb'} strokeWidth="10" fill="none" />
+                  <motion.circle
+                    cx="60" cy="60" r="50"
+                    stroke={scoreVal >= 75 ? '#00e676' : scoreVal >= 60 ? '#66bb6a' : '#ffa726'}
+                    strokeWidth="10" fill="none" strokeLinecap="round"
+                    initial={false}
+                    animate={{ strokeDasharray: `${scoreVal * 3.14} 314` }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
+                    style={{ filter: 'drop-shadow(0 0 8px rgba(0,230,118,0.6))' }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <motion.span
+                    key={`s-${scoreVal}`}
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.4 }}
+                    className="text-3xl font-black font-mono"
+                    style={{ color: scoreVal >= 60 ? '#00e676' : '#ffa726' }}
+                  >
+                    {scoreVal}
+                  </motion.span>
+                  <span className="text-[9px] font-mono uppercase tracking-widest text-[#555]">/100</span>
+                </div>
+              </div>
+
+              {/* Color scale */}
+              <div className="flex gap-0.5 mt-4">
+                {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((v, i) => {
+                  const colors = ['#ff1744','#ff5722','#ff7043','#ffa726','#ffd54f','#cddc39','#9ccc65','#66bb6a','#00e676'];
+                  const active = Math.floor(scoreVal / 10) === i;
+                  return (
+                    <span key={v}
+                      className={`w-6 h-4 flex items-center justify-center text-[8px] font-mono font-bold rounded-sm transition-all ${active ? 'ring-1 ring-white/60 scale-110' : ''}`}
+                      style={{ background: colors[i], color: '#000', opacity: active ? 1 : 0.4 }}>
+                      {v}
+                    </span>
+                  );
+                })}
+              </div>
+            </motion.div>
+
+            {/* 3 mini rating cards */}
+            {[
+              { icon: <Layers className="w-3.5 h-3.5 text-[#ff8c00]" />, title: 'MACRO',        action: regime.label, color: regime.color,  rating: 78 },
+              { icon: <BarChart3 className="w-3.5 h-3.5 text-[#ff8c00]" />, title: 'TECNICO',   action: 'STRONG BUY', color: '#00e676',     rating: 83 },
+              { icon: <TrendingUp className="w-3.5 h-3.5 text-[#ff8c00]" />, title: 'STAGIONALITÀ', action: 'BUY',     color: '#66bb6a',     rating: 61 },
+            ].map((c, i) => (
+              <motion.div
+                key={c.title}
+                initial={{ opacity: 0, x: 12 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.15 + i * 0.08 }}
+                className={`${theme.panel} border ${theme.border} rounded-lg p-4 flex items-center gap-3`}
+              >
+                {c.icon}
+                <div className="flex-1 min-w-0">
+                  <div className={`text-[9px] font-mono uppercase tracking-widest font-bold ${theme.textMuted}`}>{c.title}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: c.color, boxShadow: `0 0 4px ${c.color}` }} />
+                    <span className="font-mono font-black text-sm" style={{ color: c.color }}>{c.action}</span>
+                  </div>
+                </div>
+                <span className={`font-mono font-bold text-sm ${theme.textBold}`}>{c.rating}/100</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        <div className={`text-center mt-10 text-[10px] font-mono uppercase tracking-widest ${theme.textFaint}`}>
+          ↻ animazione · regime ciclico ogni 4.5s · dashboard reale aggiornata in tempo reale
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ *
+ *  Volatility Regime Showcase — promote the Volatility dashboard
+ * ------------------------------------------------------------------ */
+
+const VOL_REGIMES = [
+  { idx: 0, label: 'MOLTO BASSA', color: '#00e676', vix: 11.2, score: 12, sizePct: 100, kelly: 1.4,
+    desc: 'Mercato calmo, premio rischio compresso. Si può aumentare la size: la vol contenuta rende il drawdown atteso piccolo.' },
+  { idx: 1, label: 'BASSA',        color: '#66bb6a', vix: 14.8, score: 28, sizePct: 80, kelly: 1.1,
+    desc: 'Risk-on diffuso. Size standard maggiorata, mantenere stop ampi e diversificazione.' },
+  { idx: 2, label: 'MEDIA',        color: '#ffd740', vix: 18.6, score: 50, sizePct: 60, kelly: 0.9,
+    desc: 'Equilibrio. Size base, copertura tail-risk via opzioni o vol target.' },
+  { idx: 3, label: 'ALTA',         color: '#ff8c00', vix: 26.5, score: 70, sizePct: 35, kelly: 0.5,
+    desc: 'Stress in formazione. Ridurre la size, accorciare gli stop, evitare leverage.' },
+  { idx: 4, label: 'STRESS',       color: '#ff1744', vix: 38.0, score: 88, sizePct: 15, kelly: 0.2,
+    desc: 'Drawdown probabile, correlazioni vicine a 1. Position size minima, cash + safe haven.' },
+];
+
+function VolatilityRegimeAnimated({ idx, theme, isDark }) {
+  const r = VOL_REGIMES[idx];
+  const reduce = useReducedMotion();
+
+  return (
+    <div className={`${theme.panel} border ${theme.border} rounded-lg p-6 glow-panel`} style={{ borderColor: `${r.color}55` }}>
+      <svg viewBox="0 0 380 320" className="w-full h-auto">
+        <defs>
+          <linearGradient id="volScale" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor="#00e676" />
+            <stop offset="25%"  stopColor="#66bb6a" />
+            <stop offset="50%"  stopColor="#ffd740" />
+            <stop offset="75%"  stopColor="#ff8c00" />
+            <stop offset="100%" stopColor="#ff1744" />
+          </linearGradient>
+          <radialGradient id={`bubble-${idx}`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%"  stopColor={r.color} stopOpacity="0.9" />
+            <stop offset="70%" stopColor={r.color} stopOpacity="0.4" />
+            <stop offset="100%" stopColor={r.color} stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* Title */}
+        <text x="190" y="22" textAnchor="middle" fill={isDark ? '#a0a0a0' : '#6b7280'}
+          fontFamily="JetBrains Mono, monospace" fontSize="9" fontWeight="700" letterSpacing="3">
+          REGIME DI VOLATILITÀ
+        </text>
+
+        {/* Volatility scale (horizontal bar) */}
+        <rect x="30" y="40" width="320" height="14" rx="7" fill="url(#volScale)" opacity="0.85" />
+
+        {/* Markers / segment labels */}
+        {VOL_REGIMES.map((seg, i) => {
+          const x = 30 + (i / 4) * 320;
+          return (
+            <g key={i}>
+              <line x1={x} y1="36" x2={x} y2="58" stroke={isDark ? '#222' : '#ccc'} strokeWidth="1" opacity="0.6" />
+              <text x={x} y="72" textAnchor="middle"
+                fill={i === idx ? seg.color : (isDark ? '#555' : '#9ca3af')}
+                fontFamily="JetBrains Mono, monospace" fontSize="7" fontWeight={i === idx ? 800 : 500} letterSpacing="1">
+                {seg.label.split(' ')[0]}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Indicator triangle moving along the bar */}
+        <motion.g
+          initial={false}
+          animate={{ x: 30 + (idx / 4) * 320 }}
+          transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 110, damping: 18 }}
+        >
+          <polygon points="-7,-10 7,-10 0,0" fill={r.color} stroke={isDark ? '#000' : '#fff'} strokeWidth="1.5"
+            style={{ filter: `drop-shadow(0 0 6px ${r.color}aa)` }} transform="translate(0 30)" />
+        </motion.g>
+
+        {/* VIX value next to the marker */}
+        <motion.g
+          initial={false}
+          animate={{ x: 30 + (idx / 4) * 320 }}
+          transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 110, damping: 18 }}
+        >
+          <rect x={-22} y={-2} width="44" height="14" rx="3" fill={r.color} fillOpacity="0.15" stroke={r.color} strokeOpacity="0.55" />
+          <text x="0" y="8" textAnchor="middle" fill={r.color}
+            fontFamily="JetBrains Mono, monospace" fontSize="9" fontWeight="800">
+            VIX {r.vix.toFixed(1)}
+          </text>
+        </motion.g>
+
+        {/* Position size visualization — circle that scales inversely with vol */}
+        <text x="190" y="120" textAnchor="middle" fill={isDark ? '#555' : '#9ca3af'}
+          fontFamily="JetBrains Mono, monospace" fontSize="9" fontWeight="700" letterSpacing="3">
+          POSITION SIZE SUGGERITA
+        </text>
+
+        {/* Reference circle (max size) */}
+        <circle cx="190" cy="210" r="62" fill="none" stroke={isDark ? '#333' : '#d1d5db'} strokeWidth="1" strokeDasharray="3 3" />
+
+        {/* Glow halo */}
+        <motion.circle
+          cx="190" cy="210"
+          initial={false}
+          animate={{ r: 62 * Math.sqrt(r.sizePct / 100) + 8 }}
+          transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 80, damping: 16 }}
+          fill={`url(#bubble-${idx})`}
+        />
+
+        {/* Active size bubble */}
+        <motion.circle
+          cx="190" cy="210"
+          initial={false}
+          animate={{ r: 62 * Math.sqrt(r.sizePct / 100) }}
+          transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 80, damping: 16 }}
+          fill={r.color} fillOpacity="0.85"
+          stroke={r.color} strokeWidth="2"
+          style={{ filter: `drop-shadow(0 0 12px ${r.color})` }}
+        />
+
+        {/* Size % text inside bubble */}
+        <motion.text
+          key={idx}
+          x="190" y="216" textAnchor="middle"
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.45 }}
+          fill="#000" fontFamily="JetBrains Mono, monospace" fontSize="22" fontWeight="900"
+        >
+          {r.sizePct}%
+        </motion.text>
+        <motion.text
+          key={`k-${idx}`}
+          x="190" y="232" textAnchor="middle"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.55, delay: 0.1 }}
+          fill="#000" fontFamily="JetBrains Mono, monospace" fontSize="9" fontWeight="700"
+        >
+          Kelly × {r.kelly.toFixed(1)}
+        </motion.text>
+
+        {/* Footer: regime label + score */}
+        <g transform="translate(190 290)">
+          <rect x="-100" y="-14" width="200" height="28" rx="14" fill={r.color} fillOpacity="0.15" stroke={r.color} strokeOpacity="0.5" />
+          <motion.text
+            key={`l-${idx}`}
+            x="0" y="5" textAnchor="middle"
+            initial={{ opacity: 0, y: -2 }}
+            animate={{ opacity: 1, y: 5 }}
+            transition={{ duration: 0.4 }}
+            fill={r.color} fontFamily="JetBrains Mono, monospace" fontSize="11" fontWeight="900" letterSpacing="2"
+          >
+            {r.label} · SCORE {r.score}
+          </motion.text>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function VolatilityShowcase({ theme, isDark }) {
+  const [idx, setIdx] = useState(2);
+  const reduce = useReducedMotion();
+
+  useEffect(() => {
+    if (reduce) return;
+    const id = setInterval(() => {
+      setIdx(i => (i + 1) % VOL_REGIMES.length);
+    }, 3500);
+    return () => clearInterval(id);
+  }, [reduce]);
+
+  const r = VOL_REGIMES[idx];
+
+  return (
+    <section className={`w-full border-t ${theme.border}`}>
+      <div className="w-full py-20 md:py-28">
+        {/* Header */}
+        <div className="w-full flex justify-center mb-12">
+          <div className="text-center max-w-3xl">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Gauge className={`w-4 h-4 ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'}`} />
+              <span className={`text-[10px] uppercase tracking-[0.3em] font-mono font-bold ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'}`}>
+                Volatility Regime · Position Sizing
+              </span>
+            </div>
+            <h2 className={`font-display text-3xl md:text-5xl font-black tracking-tight ${theme.textBold}`}>
+              Difficoltà a scegliere
+              <br />
+              <span className={isDark ? 'text-[#ff8c00] glow-orange' : 'text-[#2563eb]'}>
+                la size della posizione?
+              </span>
+            </h2>
+            <p className={`mt-5 ${theme.textMuted}`}>
+              La risposta non è "quanto credo nel trade", ma <span className={theme.textBold}>quanta volatilità sopporta il mercato</span>.
+              La nostra dashboard misura 13 indicatori macro-finanziari (VIX, MOVE, VVIX, credit spread, correlazioni…)
+              e produce uno score 0-100 che oggettivizza il regime corrente — e di conseguenza la size ottimale.
+            </p>
+          </div>
+        </div>
+
+        {/* Main: animated SVG + sizing matrix */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 items-stretch">
+
+          {/* LEFT — animated SVG */}
+          <VolatilityRegimeAnimated idx={idx} theme={theme} isDark={isDark} />
+
+          {/* RIGHT — sizing rules / problem statement */}
+          <div className="space-y-4">
+            {/* Problem callout */}
+            <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ background: '#ff174415', border: '1px solid #ff174455' }}>
+                  <AlertTriangle className="w-4 h-4 text-[#ff1744]" />
+                </div>
+                <div>
+                  <h4 className={`text-sm font-bold font-mono uppercase tracking-widest text-[#ff1744]`}>
+                    Il bias del trader
+                  </h4>
+                  <p className={`mt-2 text-xs font-mono ${theme.textMuted} leading-relaxed`}>
+                    La maggior parte degli operatori sceglie la size <span className={theme.textBold}>"a sentimento"</span>:
+                    grande quando ha convinzione, piccola dopo una perdita. È esattamente l'opposto di ciò che dice la statistica:
+                    in regime di stress la stessa "convinzione" comporta un drawdown atteso 5× maggiore.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Current regime card — updates with the animation */}
+            <motion.div
+              key={`card-${idx}`}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}
+              style={{ borderColor: `${r.color}55` }}
+            >
+              <div className="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full pulse-live" style={{ background: r.color, boxShadow: `0 0 8px ${r.color}` }} />
+                  <span className={`text-[10px] font-mono uppercase tracking-widest ${theme.textMuted}`}>Regime corrente:</span>
+                  <span className="font-mono font-black uppercase tracking-widest text-base" style={{ color: r.color }}>
+                    {r.label}
+                  </span>
+                </div>
+                <span className="font-mono text-xs font-bold" style={{ color: r.color }}>
+                  Score {r.score}/100
+                </span>
+              </div>
+              <p className={`text-xs font-mono ${theme.textMuted} leading-relaxed mb-3`}>{r.desc}</p>
+              <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[var(--c-border)]">
+                <div>
+                  <div className={`text-[9px] font-mono uppercase tracking-widest ${theme.textMuted}`}>VIX</div>
+                  <div className="font-mono font-bold text-sm" style={{ color: r.color }}>{r.vix.toFixed(1)}</div>
+                </div>
+                <div>
+                  <div className={`text-[9px] font-mono uppercase tracking-widest ${theme.textMuted}`}>Size suggerita</div>
+                  <div className="font-mono font-bold text-sm" style={{ color: r.color }}>{r.sizePct}% base</div>
+                </div>
+                <div>
+                  <div className={`text-[9px] font-mono uppercase tracking-widest ${theme.textMuted}`}>Kelly multiplier</div>
+                  <div className="font-mono font-bold text-sm" style={{ color: r.color }}>×{r.kelly.toFixed(1)}</div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Quick rules */}
+            <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
+              <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'} mb-3 flex items-center gap-2`}>
+                <Scale className="w-3.5 h-3.5" /> Regole oggettive di sizing
+              </h4>
+              <ul className={`space-y-1.5 text-[11px] font-mono ${theme.textMuted} leading-relaxed`}>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#00e676] font-bold flex-shrink-0">›</span>
+                  <span><span className={theme.textBold}>Vol Targeting</span>: position size ∝ target_vol / realized_vol corrente.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#00e676] font-bold flex-shrink-0">›</span>
+                  <span><span className={theme.textBold}>Kelly Frazionario</span>: edge / vol², scalato col regime score.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#ff8c00] font-bold flex-shrink-0">›</span>
+                  <span><span className={theme.textBold}>Risk Budget</span>: max 1% rischio per trade, ridotto a 0.3% in stress regime.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#ff1744] font-bold flex-shrink-0">›</span>
+                  <span><span className={theme.textBold}>Correlation Throttle</span>: se correlazione cross-asset &gt; 0.75, dimezza la size.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className={`text-center mt-10 text-[10px] font-mono uppercase tracking-widest ${theme.textFaint}`}>
+          ↻ animazione · regime ciclico ogni 3.5s · dashboard reale aggiornata ogni 5 minuti
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ *
  *  Footer
  * ------------------------------------------------------------------ */
 
@@ -858,6 +1494,16 @@ export default function Landing({ isDark, setIsDark, theme, onStart, marketQuote
             theme={theme}
             isDark={isDark}
             anchorRef={demoRef}
+          />
+
+          <RegimeShowcase
+            theme={theme}
+            isDark={isDark}
+          />
+
+          <VolatilityShowcase
+            theme={theme}
+            isDark={isDark}
           />
 
           <FeatureGrid

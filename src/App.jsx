@@ -35,6 +35,9 @@ import { Info, Globe, TableIcon, ChevronUp, ChevronDown, Grid, Shuffle, Clock, U
 import { LineChart, Line, BarChart, Bar, Cell, ReferenceLine, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from 'recharts'; // eslint-disable-line
 import ChiSono from './pages/ChiSono';
 import ComeFunziona from './pages/ComeFunziona';
+import MarketRegime from './pages/MarketRegime';
+import MarketThemes from './pages/MarketThemes';
+import VolatilityRegime from './pages/VolatilityRegime';
 import Landing from './pages/Landing';
 
 // Tooltip Monte Carlo: mostra SOLO la linea attualmente hover-ata (non tutte le 50)
@@ -1605,6 +1608,12 @@ export default function App() {
               )}
             </div>
           )}
+
+          {activeTab === 'regime' && <MarketRegime isDark={isDark} theme={theme} setActiveTab={setActiveTab} />}
+
+          {activeTab === 'themes' && <MarketThemes isDark={isDark} theme={theme} />}
+
+          {activeTab === 'volatility' && <VolatilityRegime isDark={isDark} theme={theme} />}
 
           {activeTab === 'descrizione' && <ChiSono theme={theme} />}
 
