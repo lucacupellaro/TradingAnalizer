@@ -38,6 +38,9 @@ import ComeFunziona from './pages/ComeFunziona';
 import MarketRegime from './pages/MarketRegime';
 import MarketThemes from './pages/MarketThemes';
 import VolatilityRegime from './pages/VolatilityRegime';
+import AnalystEstimates from './pages/AnalystEstimates';
+import TradingAccounts from './pages/TradingAccounts';
+import Researcher from './pages/Researcher';
 import Landing from './pages/Landing';
 
 // Tooltip Monte Carlo: mostra SOLO la linea attualmente hover-ata (non tutte le 50)
@@ -1614,6 +1617,12 @@ export default function App() {
           {activeTab === 'themes' && <MarketThemes isDark={isDark} theme={theme} />}
 
           {activeTab === 'volatility' && <VolatilityRegime isDark={isDark} theme={theme} />}
+
+          {activeTab === 'analysts' && <AnalystEstimates isDark={isDark} theme={theme} />}
+
+          {activeTab === 'accounts' && <TradingAccounts isDark={isDark} theme={theme} />}
+
+          {activeTab === 'researcher' && <Researcher isDark={isDark} theme={theme} />}
 
           {activeTab === 'descrizione' && <ChiSono theme={theme} />}
 

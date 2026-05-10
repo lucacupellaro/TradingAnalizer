@@ -1,10 +1,13 @@
-import { BarChart2, Info, Globe, X, LogOut, Activity, Layers, Gauge } from 'lucide-react';
+import { BarChart2, Info, Globe, X, LogOut, Activity, Layers, Gauge, Users, Wallet, BookOpen } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'analyzer',    Icon: BarChart2, label: 'Analyzer' },
+  { id: 'accounts',    Icon: Wallet,    label: 'I Miei Conti' },
   { id: 'regime',      Icon: Activity,  label: 'Market Regime' },
   { id: 'volatility',  Icon: Gauge,     label: 'Volatility Regime' },
   { id: 'themes',      Icon: Layers,    label: 'Themes' },
+  { id: 'analysts',    Icon: Users,     label: 'Analyst Estimates' },
+  { id: 'researcher',  Icon: BookOpen,  label: 'Researcher' },
   { id: 'descrizione', Icon: Info,      label: 'Chi sono?' },
   { id: 'news',        Icon: Globe,     label: 'Come funziona?' },
 ];
