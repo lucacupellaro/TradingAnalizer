@@ -887,7 +887,7 @@ const ScoreGauge = ({ score, action, color, theme }) => {
         </div>
       </div>
       <div
-        className="px-4 py-2 rounded font-mono font-black uppercase tracking-widest text-sm border"
+        className="px-4 py-14 rounded font-mono font-black uppercase tracking-widest text-sm border"
         style={{ color, borderColor: `${color}66`, background: `${color}15` }}
       >
         {action}
@@ -937,7 +937,7 @@ const ScoreScaleBar = ({ score }) => {
   ];
   const activeIdx = Math.max(0, Math.min(8, Math.floor(score / 10)));
   return (
-    <div className="flex flex-col items-center gap-1.5 mt-3">
+    <div className="flex flex-col items-center gap-1.5 mt-12">
       <div className="flex gap-0.5">
         {buckets.map((b, i) => (
           <span
@@ -967,7 +967,7 @@ const RatingCard = ({ icon, title, label, action, color, rating, theme }) => {
           <span className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted}`}>{title}</span>
         </div>
       </div>
-      <div className="px-5 py-5 text-center">
+      <div className="px-5 py-12 text-center">
         <div className="flex items-center justify-center gap-2 mb-1">
           <span className="w-2 h-2 rounded-full" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
           <span className="font-mono font-black text-xl" style={{ color }}>{action}</span>
@@ -987,8 +987,8 @@ const RatingCard = ({ icon, title, label, action, color, rating, theme }) => {
 const OpportunityPanel = ({ opportunities, theme }) => {
   if (!opportunities || opportunities.length === 0) {
     return (
-      <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
-        <div className="flex items-center gap-2 mb-2">
+      <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
+        <div className="flex items-center gap-2 mb-10">
           <Zap className="w-4 h-4 text-[#555]" />
           <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted}`}>
             Vantaggio Statistico
@@ -1001,15 +1001,15 @@ const OpportunityPanel = ({ opportunities, theme }) => {
     );
   }
   return (
-    <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}
+    <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}
       style={{ borderColor: opportunities.some(o => o.strength === 'high') ? '#00e67655' : '#ffa72655' }}>
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-10">
         <Zap className="w-4 h-4 text-[#00e676]" />
         <h4 className="text-[11px] font-mono uppercase tracking-widest font-bold text-[#00e676]">
           Vantaggio Statistico · {opportunities.length} segnale{opportunities.length === 1 ? '' : 'i'}
         </h4>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-6">
         {opportunities.map((o, i) => {
           const c = o.strength === 'high' ? '#00e676' : '#ffa726';
           return (
@@ -1109,7 +1109,7 @@ const PctCell = ({ value }) => {
 
 const ActionBadge = ({ action, color }) => (
   <span
-    className="inline-block px-3 py-1 rounded text-[10px] font-mono font-black uppercase tracking-widest"
+    className="inline-block px-3 py-14 rounded text-[10px] font-mono font-black uppercase tracking-widest"
     style={{ background: color, color: '#000' }}
   >
     {action}
@@ -1118,7 +1118,7 @@ const ActionBadge = ({ action, color }) => (
 
 const RowSkeleton = ({ theme }) => (
   <tr className={`border-t ${theme.borderLight}`}>
-    <td colSpan={7} className="px-4 py-3">
+    <td colSpan={7} className="px-4 py-12">
       <div className="h-4 bg-[var(--c-card)] rounded animate-pulse w-full" />
     </td>
   </tr>
@@ -1137,9 +1137,9 @@ const SectionTable = ({ title, items, analyses, isLoading, onSelect, selectedSym
   });
 
   return (
-    <div className="mb-6">
+    <div className="mb-10">
       {title && (
-        <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-3 flex items-center gap-2`}>
+        <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-12 flex items-center gap-2`}>
           <span className="h-px flex-1 bg-[var(--c-border)]" />
           <span>{title}</span>
           <span className="opacity-60">{items.length}</span>
@@ -1150,14 +1150,14 @@ const SectionTable = ({ title, items, analyses, isLoading, onSelect, selectedSym
         <table className="w-full">
           <thead>
             <tr className={`text-[9px] font-mono uppercase tracking-widest ${theme.textMuted}`}>
-              <th className="px-4 py-3 text-left font-semibold">Strumento</th>
-              <th className="px-4 py-3 text-center font-semibold">Posizionamento</th>
-              <th className="px-4 py-3 text-center font-semibold">SniperScore</th>
-              <th className="px-4 py-3 text-right font-semibold">1D %</th>
-              <th className="px-4 py-3 text-right font-semibold">1W %</th>
-              <th className="px-4 py-3 text-right font-semibold">1M %</th>
-              <th className="px-4 py-3 text-right font-semibold">Momentum</th>
-              <th className="px-4 py-3 text-right font-semibold">Trend</th>
+              <th className="px-4 py-12 text-left font-semibold">Strumento</th>
+              <th className="px-4 py-12 text-center font-semibold">Posizionamento</th>
+              <th className="px-4 py-12 text-center font-semibold">SniperScore</th>
+              <th className="px-4 py-12 text-right font-semibold">1D %</th>
+              <th className="px-4 py-12 text-right font-semibold">1W %</th>
+              <th className="px-4 py-12 text-right font-semibold">1M %</th>
+              <th className="px-4 py-12 text-right font-semibold">Momentum</th>
+              <th className="px-4 py-12 text-right font-semibold">Trend</th>
             </tr>
           </thead>
           <tbody>
@@ -1170,13 +1170,13 @@ const SectionTable = ({ title, items, analyses, isLoading, onSelect, selectedSym
                     onClick={() => onSelect(item)}
                     className={`border-t ${theme.borderLight} cursor-pointer transition-colors ${active ? 'bg-[#ff8c00]/5' : `${theme.cardHover}`}`}
                   >
-                    <td className="px-4 py-3 text-sm font-mono">
+                    <td className="px-4 py-12 text-sm font-mono">
                       <div className="flex items-center gap-2">
                         <span className={`font-bold ${theme.textBold}`}>{item.sym}</span>
                         <span className={`text-[10px] ${theme.textMuted}`}>{item.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center" colSpan={7}>
+                    <td className="px-4 py-12 text-center" colSpan={7}>
                       <span className={`text-[10px] font-mono italic ${theme.textMuted}`}>
                         {isLoading ? 'Caricamento...' : 'Dati non disponibili'}
                       </span>
@@ -1191,32 +1191,32 @@ const SectionTable = ({ title, items, analyses, isLoading, onSelect, selectedSym
                   onClick={() => onSelect(item)}
                   className={`border-t ${theme.borderLight} cursor-pointer transition-colors ${active ? 'bg-[#ff8c00]/10' : `${theme.cardHover}`}`}
                 >
-                  <td className="px-4 py-3 text-sm font-mono">
+                  <td className="px-4 py-12 text-sm font-mono">
                     <div className="flex flex-col">
                       <span className={`font-bold ${theme.textBold}`}>{item.sym}</span>
                       <span className={`text-[10px] ${theme.textMuted}`}>{item.name}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-4 py-12 text-center">
                     <ActionBadge action={summary.action} color={summary.actionColor} />
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-4 py-12 text-center">
                     <span
-                      className="inline-block min-w-[42px] px-2 py-1 rounded text-xs font-mono font-black"
+                      className="inline-block min-w-[42px] px-2 py-14 rounded text-xs font-mono font-black"
                       style={{ background: `${summary.actionColor}15`, color: summary.actionColor, border: `1px solid ${summary.actionColor}40` }}
                     >
                       {summary.score}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right"><PctCell value={summary.r1d} /></td>
-                  <td className="px-4 py-3 text-right"><PctCell value={summary.r1w} /></td>
-                  <td className="px-4 py-3 text-right"><PctCell value={summary.r1m} /></td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-12 text-right"><PctCell value={summary.r1d} /></td>
+                  <td className="px-4 py-12 text-right"><PctCell value={summary.r1w} /></td>
+                  <td className="px-4 py-12 text-right"><PctCell value={summary.r1m} /></td>
+                  <td className="px-4 py-12 text-right">
                     <span className="font-mono text-xs font-bold" style={{ color: momentumColor }}>
                       {summary.momentum >= 0 ? '+' : ''}{summary.momentum.toFixed(2)}%
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-12 text-right">
                     <div className="inline-flex">
                       <Sparkline data={summary.sparkline} color={summary.sparkColor} />
                     </div>
@@ -1379,8 +1379,8 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
   }, [cache]);
 
   return (
-    <div className={`${theme.panel} border ${theme.border} rounded-lg p-6 glow-panel`}>
-      <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
+    <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
+      <div className="flex items-start justify-between mb-12 flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <Target className="w-5 h-5 text-[#ff8c00]" />
           <div>
@@ -1399,13 +1399,13 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
             placeholder="Cerca ticker / nome..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className={`pl-9 pr-3 py-2 rounded text-xs font-mono border ${theme.border} bg-[#000000] text-[#e0e0e0] placeholder:text-[#555] focus:border-[#ff8c00]/50 focus:outline-none w-56`}
+            className={`pl-9 pr-3 py-14 rounded text-xs font-mono border ${theme.border} bg-[#000000] text-[#e0e0e0] placeholder:text-[#555] focus:border-[#ff8c00]/50 focus:outline-none w-56`}
           />
         </div>
       </div>
 
       {/* Category tabs */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-10">
         {CATEGORIES.map(c => {
           const active = activeCategory === c.id;
           const count = c.id === 'all'
@@ -1415,7 +1415,7 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
             <button
               key={c.id}
               onClick={() => setActiveCategory(c.id)}
-              className={`px-3 py-1.5 rounded text-[11px] font-mono font-bold uppercase tracking-wider border transition-all ${
+              className={`px-3 py-14.5 rounded text-[11px] font-mono font-bold uppercase tracking-wider border transition-all ${
                 active
                   ? 'bg-[#ff8c00]/15 text-[#ff8c00] border-[#ff8c00]/40'
                   : `${theme.card} ${theme.textMuted} border-[var(--c-border)] hover:text-[#e0e0e0] hover:border-[#ff8c00]/20`
@@ -1428,12 +1428,12 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
       </div>
 
       {/* Instrument tables — grouped by section */}
-      <div className="mb-6">
+      <div className="mb-10">
         {groupedFiltered.length === 0 && (
           <span className={`text-xs font-mono ${theme.textMuted}`}>Nessuno strumento corrisponde alla ricerca.</span>
         )}
         {batchLoading && Object.keys(analyses).length === 0 && (
-          <div className={`flex items-center gap-2 mb-3 text-[10px] font-mono uppercase tracking-widest ${theme.textMuted}`}>
+          <div className={`flex items-center gap-2 mb-12 text-[10px] font-mono uppercase tracking-widest ${theme.textMuted}`}>
             <RefreshCw className="w-3 h-3 animate-spin" />
             Caricamento dati di mercato...
           </div>
@@ -1453,13 +1453,13 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
       </div>
 
       {!selected && (
-        <div className={`text-center py-8 ${theme.textMuted} text-sm font-mono italic border-t ${theme.border}`}>
+        <div className={`text-center py-12 ${theme.textMuted} text-sm font-mono italic border-t ${theme.border}`}>
           Clicca una riga per aprire l&apos;analisi dettagliata dello strumento.
         </div>
       )}
 
       {selected && loading && (
-        <div className="flex flex-col items-center py-12 gap-3">
+        <div className="flex flex-col items-center py-16 gap-3">
           <RefreshCw className="w-6 h-6 animate-spin text-[#ff8c00]" />
           <span className={`text-xs font-mono uppercase tracking-widest ${theme.textMuted}`}>
             Caricamento {selected.sym}...
@@ -1479,7 +1479,7 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="space-y-6"
+          className="space-y-14"
         >
           {/* Header */}
           <div className="flex items-baseline justify-between flex-wrap gap-3 pb-4 border-b border-[var(--c-border)]">
@@ -1508,7 +1508,7 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
           {/* Big chart + SniperScore gauge */}
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 items-stretch">
             <div className={`${theme.panel} border ${theme.border} rounded-lg p-4 glow-panel`}>
-              <div className="flex items-center justify-between mb-3 flex-wrap gap-3">
+              <div className="flex items-center justify-between mb-12 flex-wrap gap-3">
                 <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00]">
                   Grafico avanzato · Bollinger Bands · SMA50/200
                 </span>
@@ -1524,20 +1524,20 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
               </div>
               <AdvancedPriceChart data={analysis.combinedChart} showForecast={showForecast} theme={theme} />
             </div>
-            <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel flex flex-col items-center justify-center`}>
+            <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel flex flex-col items-center justify-center`}>
               <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-1 self-start`}>
                 SniperScore
               </h4>
-              <div className="h-px w-full bg-[#ff8c00]/30 mb-3" />
+              <div className="h-px w-full bg-[#ff8c00]/30 mb-12" />
               <span
-                className="font-mono font-black text-2xl uppercase tracking-widest mb-2"
+                className="font-mono font-black text-2xl uppercase tracking-widest mb-10"
                 style={{ color: analysis.actionColor }}
               >
                 {analysis.action}
               </span>
               <ScoreGauge score={analysis.score} action="" color={analysis.actionColor} theme={isDark ? 'dark' : 'light'} />
               <ScoreScaleBar score={analysis.score} />
-              <p className={`mt-3 text-[10px] font-mono leading-relaxed text-center ${theme.textMuted}`}>
+              <p className={`mt-12 text-[10px] font-mono leading-relaxed text-center ${theme.textMuted}`}>
                 Basato sul rating tecnico, fondamentali macro e stagionalità.
               </p>
             </div>
@@ -1601,7 +1601,7 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
 
           {/* Trends */}
           <div>
-            <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-3 flex items-center gap-2">
+            <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-12 flex items-center gap-2">
               <Zap className="w-3.5 h-3.5" /> Trend per orizzonte
             </h4>
             <div className="grid grid-cols-3 gap-3">
@@ -1614,10 +1614,10 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
           {/* Attention */}
           {analysis.attention.length > 0 && (
             <div>
-              <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-3">
+              <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-12">
                 Livelli di attenzione
               </h4>
-              <div className="space-y-2">
+              <div className="space-y-10">
                 {analysis.attention.map((a, i) => {
                   const c = a.level === 'high' ? '#ff1744' : a.level === 'medium' ? '#ffa726' : '#00e676';
                   return (
@@ -1633,7 +1633,7 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
 
           {/* Stagionalità */}
           <div>
-              <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-3 flex items-center gap-2">
+              <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-12 flex items-center gap-2">
                 <Calendar className="w-3.5 h-3.5" /> Stagionalità · ritorno medio mensile (2Y)
               </h4>
               <div className="h-[260px]">
@@ -1661,7 +1661,7 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <p className={`text-[10px] font-mono ${theme.textMuted} mt-2 text-center`}>
+              <p className={`text-[10px] font-mono ${theme.textMuted} mt-10 text-center`}>
                 Mese corrente in <span className="text-[#ff8c00] font-bold">arancione</span> · media storica {analysis.currentMonthAvg.toFixed(2)}%
               </p>
             </div>
@@ -1671,7 +1671,7 @@ export default function StockAnalyzer({ regimeLabel, isDark, theme }) {
             <OptionsPanel levels={optionLevels} expiry={options?.expiry} theme={theme} />
           )}
           {selected.hasOptions && !optionLevels && !loading && (
-            <div className={`text-xs font-mono ${theme.textMuted} italic px-3 py-2 border-l-2 border-[#ff8c00]/30`}>
+            <div className={`text-xs font-mono ${theme.textMuted} italic px-3 py-14 border-l-2 border-[#ff8c00]/30`}>
               Catena opzioni non disponibile per questo strumento.
             </div>
           )}
@@ -1698,7 +1698,7 @@ function OptionsPanel({ levels, expiry, theme }) {
   const pcRatioLabel = pcRatio == null ? 'N/D' : pcRatio > 1.2 ? 'BEARISH' : pcRatio < 0.7 ? 'BULLISH' : 'NEUTRO';
 
   return (
-    <div className="space-y-5 pt-5 border-t border-[var(--c-border)]">
+    <div className="space-y-10 pt-5 border-t border-[var(--c-border)]">
       <div className="flex items-center gap-3">
         <Layers className="w-5 h-5 text-[#ff8c00]" />
         <div>
@@ -1745,7 +1745,7 @@ function OptionsPanel({ levels, expiry, theme }) {
 
       {/* OI per strike chart */}
       <div>
-        <h5 className={`text-[10px] font-mono uppercase tracking-widest font-bold mb-2 ${theme.textMuted}`}>
+        <h5 className={`text-[10px] font-mono uppercase tracking-widest font-bold mb-10 ${theme.textMuted}`}>
           Open Interest per Strike (±25% dallo spot)
         </h5>
         <div className="h-[220px]">
@@ -1776,26 +1776,26 @@ function OptionsPanel({ levels, expiry, theme }) {
       {/* Top strikes lists */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <h5 className="text-[10px] font-mono uppercase tracking-widest font-bold mb-2 text-[#00e676]">
+          <h5 className="text-[10px] font-mono uppercase tracking-widest font-bold mb-10 text-[#00e676]">
             Top Call Strikes · Resistenze
           </h5>
           <div className={`${theme.card} border ${theme.borderLight} rounded overflow-hidden`}>
             <table className="w-full text-xs font-mono">
               <thead>
                 <tr className={`${theme.textMuted} text-[9px] uppercase tracking-widest`}>
-                  <th className="px-3 py-2 text-left">Strike</th>
-                  <th className="px-3 py-2 text-right">OI</th>
-                  <th className="px-3 py-2 text-right">Vol</th>
-                  <th className="px-3 py-2 text-right">IV</th>
+                  <th className="px-3 py-14 text-left">Strike</th>
+                  <th className="px-3 py-14 text-right">OI</th>
+                  <th className="px-3 py-14 text-right">Vol</th>
+                  <th className="px-3 py-14 text-right">IV</th>
                 </tr>
               </thead>
               <tbody>
                 {topCalls.map((c, i) => (
                   <tr key={i} className={`border-t ${theme.borderLight}`}>
-                    <td className="px-3 py-1.5 font-bold text-[#00e676]">${c.strike.toFixed(2)}</td>
-                    <td className="px-3 py-1.5 text-right">{c.oi.toLocaleString()}</td>
-                    <td className={`px-3 py-1.5 text-right ${theme.textMuted}`}>{c.vol.toLocaleString()}</td>
-                    <td className={`px-3 py-1.5 text-right ${theme.textMuted}`}>{(c.iv * 100).toFixed(1)}%</td>
+                    <td className="px-3 py-14.5 font-bold text-[#00e676]">${c.strike.toFixed(2)}</td>
+                    <td className="px-3 py-14.5 text-right">{c.oi.toLocaleString()}</td>
+                    <td className={`px-3 py-14.5 text-right ${theme.textMuted}`}>{c.vol.toLocaleString()}</td>
+                    <td className={`px-3 py-14.5 text-right ${theme.textMuted}`}>{(c.iv * 100).toFixed(1)}%</td>
                   </tr>
                 ))}
               </tbody>
@@ -1804,26 +1804,26 @@ function OptionsPanel({ levels, expiry, theme }) {
         </div>
 
         <div>
-          <h5 className="text-[10px] font-mono uppercase tracking-widest font-bold mb-2 text-[#ff1744]">
+          <h5 className="text-[10px] font-mono uppercase tracking-widest font-bold mb-10 text-[#ff1744]">
             Top Put Strikes · Supporti
           </h5>
           <div className={`${theme.card} border ${theme.borderLight} rounded overflow-hidden`}>
             <table className="w-full text-xs font-mono">
               <thead>
                 <tr className={`${theme.textMuted} text-[9px] uppercase tracking-widest`}>
-                  <th className="px-3 py-2 text-left">Strike</th>
-                  <th className="px-3 py-2 text-right">OI</th>
-                  <th className="px-3 py-2 text-right">Vol</th>
-                  <th className="px-3 py-2 text-right">IV</th>
+                  <th className="px-3 py-14 text-left">Strike</th>
+                  <th className="px-3 py-14 text-right">OI</th>
+                  <th className="px-3 py-14 text-right">Vol</th>
+                  <th className="px-3 py-14 text-right">IV</th>
                 </tr>
               </thead>
               <tbody>
                 {topPuts.map((p, i) => (
                   <tr key={i} className={`border-t ${theme.borderLight}`}>
-                    <td className="px-3 py-1.5 font-bold text-[#ff1744]">${p.strike.toFixed(2)}</td>
-                    <td className="px-3 py-1.5 text-right">{p.oi.toLocaleString()}</td>
-                    <td className={`px-3 py-1.5 text-right ${theme.textMuted}`}>{p.vol.toLocaleString()}</td>
-                    <td className={`px-3 py-1.5 text-right ${theme.textMuted}`}>{(p.iv * 100).toFixed(1)}%</td>
+                    <td className="px-3 py-14.5 font-bold text-[#ff1744]">${p.strike.toFixed(2)}</td>
+                    <td className="px-3 py-14.5 text-right">{p.oi.toLocaleString()}</td>
+                    <td className={`px-3 py-14.5 text-right ${theme.textMuted}`}>{p.vol.toLocaleString()}</td>
+                    <td className={`px-3 py-14.5 text-right ${theme.textMuted}`}>{(p.iv * 100).toFixed(1)}%</td>
                   </tr>
                 ))}
               </tbody>

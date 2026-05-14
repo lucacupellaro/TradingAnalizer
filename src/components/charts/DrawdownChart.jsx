@@ -7,7 +7,7 @@ const DrawdownChartComponent = ({ data, title, theme }) => {
   if (!data || data.length === 0) return null;
   return (
     <div className={`${theme.panel} border ${theme.borderLight} rounded-lg p-4 h-[300px] glow-panel`}>
-      <h3 className="text-center font-bold text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 mb-3 text-[#ff1744] font-mono">
+      <h3 className="text-center font-bold text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 mb-12 text-[#ff1744] font-mono">
         <TrendingDown className="w-3.5 h-3.5" /> {title || 'Drawdown'}
       </h3>
       <ResponsiveContainer width="100%" height="88%">

@@ -2,7 +2,7 @@ import React from 'react';
 
 export const CorrelationHeatmap = ({ data, isDark, theme }) => {
   if (!data || !data.entities || data.entities.length <= 1) {
-    return <div className={`${theme.textMuted} font-mono text-sm text-center py-8 border ${theme.borderLight} rounded ${theme.panel}`}>Dati insufficienti per la matrice di correlazione.</div>;
+    return <div className={`${theme.textMuted} font-mono text-sm text-center py-12 border ${theme.borderLight} rounded ${theme.panel}`}>Dati insufficienti per la matrice di correlazione.</div>;
   }
 
   const { entities, matrix } = data;

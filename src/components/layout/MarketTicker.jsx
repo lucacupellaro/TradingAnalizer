@@ -11,7 +11,7 @@ const TickerItems = ({ quotes, isDark }) =>
 
 export const MarketTicker = ({ marketQuotes, isDark, theme }) => {
   return (
-    <div className={`w-full ${theme.navBg} border-b ${theme.navBorder}/60 overflow-hidden py-2 relative z-50 transition-colors`}>
+    <div className={`w-full ${theme.navBg} border-b ${theme.navBorder}/60 overflow-hidden py-14 relative z-50 transition-colors`}>
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
         {marketQuotes.length > 0 ? (
           <div className="animate-marquee whitespace-nowrap flex items-center gap-12 font-mono text-xs">

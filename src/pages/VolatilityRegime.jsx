@@ -69,7 +69,7 @@ function RegimeScale({ score, theme }) {
         {segs.map(s => {
           const inSeg = score >= s.range[0] && score <= s.range[1];
           return (
-            <div key={s.key} className={`flex-1 px-2 py-2 text-center transition-all ${inSeg ? 'ring-2 ring-white/40 scale-y-110 z-10' : ''}`}
+            <div key={s.key} className={`flex-1 px-2 py-14 text-center transition-all ${inSeg ? 'ring-2 ring-white/40 scale-y-110 z-10' : ''}`}
               style={{ background: s.c, opacity: inSeg ? 1 : 0.4 }}>
               <span className="text-[8px] font-mono font-black uppercase tracking-widest text-black whitespace-pre-line leading-tight">
                 {s.label}
@@ -153,10 +153,10 @@ function IndicatorCard({ cfg, m, theme }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel flex flex-col`}
+      className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel flex flex-col`}
       style={{ borderColor: m.alertActive ? `${regimeInfo.c}66` : undefined }}
     >
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between mb-12">
         <div className="flex items-center gap-2 min-w-0">
           <Icon className="w-4 h-4 flex-shrink-0" style={{ color: regimeInfo.c }} />
           <div className="min-w-0">
@@ -170,7 +170,7 @@ function IndicatorCard({ cfg, m, theme }) {
         </span>
       </div>
 
-      <div className="flex items-end justify-between gap-3 mb-3">
+      <div className="flex items-end justify-between gap-3 mb-12">
         <div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black font-mono" style={{ color: regimeInfo.c }}>{fmtNum(m.last)}</span>
@@ -188,12 +188,12 @@ function IndicatorCard({ cfg, m, theme }) {
       </div>
 
       {cfg.thresholds && (
-        <div className="mb-3">
+        <div className="mb-12">
           <ThresholdBar value={m.last} thresholds={cfg.thresholds} higherIsRiskier={cfg.higherIsRiskier} regimeColor={regimeInfo.c} />
         </div>
       )}
 
-      <div className={`grid grid-cols-3 gap-2 mb-3 text-[10px] font-mono ${theme.textMuted}`}>
+      <div className={`grid grid-cols-3 gap-2 mb-12 text-[10px] font-mono ${theme.textMuted}`}>
         <div>
           <div className={theme.textMuted}>Z-Score</div>
           <div className={theme.textBold}>{fmtSigned(m.zScore, 2)}</div>
@@ -208,7 +208,7 @@ function IndicatorCard({ cfg, m, theme }) {
         </div>
       </div>
 
-      <p className={`text-[11px] font-mono ${theme.textMuted} leading-relaxed mb-3 italic`}>{cfg.desc}</p>
+      <p className={`text-[11px] font-mono ${theme.textMuted} leading-relaxed mb-12 italic`}>{cfg.desc}</p>
 
       <div className={`text-[10px] font-mono ${theme.textMuted} mt-auto pt-3 border-t border-[var(--c-border)]`}>
         Contributo allo score: <span className={theme.textBold}>{m.contribution.toFixed(1)}</span>
@@ -216,7 +216,7 @@ function IndicatorCard({ cfg, m, theme }) {
       </div>
 
       {m.alertActive && (
-        <div className="mt-3 p-2 rounded text-[10px] font-mono flex items-start gap-2"
+        <div className="mt-12 p-2 rounded text-[10px] font-mono flex items-start gap-2"
           style={{ background: `${regimeInfo.c}10`, border: `1px solid ${regimeInfo.c}40`, color: regimeInfo.c }}>
           <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
           <span>{m.alertMessage}</span>
@@ -342,14 +342,14 @@ export default function VolatilityRegime({ isDark, theme }) {
   const histChartData = historicalScore?.map(p => ({ date: p.date.toISOString().split('T')[0], v: parseFloat(p.v.toFixed(2)) })) || [];
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-12 animate-fade-in">
       {/* ---- HEADER ---- */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className={`text-3xl md:text-4xl font-black font-mono uppercase tracking-tight ${theme.textBold}`}>
             Volatility <span className="text-[#ff8c00] glow-orange">Regime</span>
           </h1>
-          <p className={`mt-2 text-sm font-mono ${theme.textMuted}`}>
+          <p className={`mt-10 text-sm font-mono ${theme.textMuted}`}>
             Dashboard live · {INDICATORS_CONFIG.length} indicatori macro-finanziari · Score 0-100 con classificazione regime
           </p>
         </div>
@@ -384,10 +384,10 @@ export default function VolatilityRegime({ isDark, theme }) {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className={`${theme.panel} border ${theme.border} rounded-lg p-6 glow-panel`}
+            className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}
             style={{ borderColor: `${composite.regimeColor}55` }}
           >
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-10">
               <Compass className="w-4 h-4 text-[#ff8c00]" />
               <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00]">
                 Executive Summary
@@ -413,7 +413,7 @@ export default function VolatilityRegime({ isDark, theme }) {
               </div>
 
               {/* Right: scale + drivers + message */}
-              <div className="space-y-4">
+              <div className="space-y-8">
                 <RegimeScale score={composite.score} theme={theme} />
 
                 <p className={`text-sm font-mono ${theme.textMuted} leading-relaxed`}>
@@ -421,7 +421,7 @@ export default function VolatilityRegime({ isDark, theme }) {
                 </p>
 
                 <div>
-                  <div className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-2`}>
+                  <div className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-10`}>
                     Top driver dello stress
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -447,8 +447,8 @@ export default function VolatilityRegime({ isDark, theme }) {
 
           {/* ---- 2. SCORE STORICO ---- */}
           {histChartData.length > 5 && (
-            <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
-              <h3 className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00] mb-3 flex items-center gap-2">
+            <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
+              <h3 className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00] mb-12 flex items-center gap-2">
                 <Activity className="w-3.5 h-3.5" /> Evoluzione Storica dello Score (12M)
               </h3>
               <div className="h-[220px]">
@@ -487,7 +487,7 @@ export default function VolatilityRegime({ isDark, theme }) {
             const Icon = catInfo.icon;
             return (
               <section key={catId}>
-                <h2 className="text-[11px] font-mono uppercase tracking-widest font-bold mb-3 flex items-center gap-2" style={{ color: catInfo.color }}>
+                <h2 className="text-[11px] font-mono uppercase tracking-widest font-bold mb-12 flex items-center gap-2" style={{ color: catInfo.color }}>
                   <Icon className="w-4 h-4" /> {catInfo.label}
                   <span className={`${theme.textMuted} opacity-60`}>· {items.length}</span>
                 </h2>
@@ -499,19 +499,19 @@ export default function VolatilityRegime({ isDark, theme }) {
           })}
 
           {/* ---- 8. ALERT PANEL ---- */}
-          <section className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}
+          <section className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}
             style={{ borderColor: alerts.length > 0 ? '#ff174455' : undefined }}>
-            <h2 className="text-[11px] font-mono uppercase tracking-widest font-bold mb-3 flex items-center gap-2 text-[#ff8c00]">
+            <h2 className="text-[11px] font-mono uppercase tracking-widest font-bold mb-12 flex items-center gap-2 text-[#ff8c00]">
               <Bell className="w-4 h-4" /> Alert Panel
               <span className={`${theme.textMuted} opacity-60`}>· {alerts.length} attivi</span>
             </h2>
             {alerts.length === 0 ? (
-              <div className="flex items-center gap-2 py-4">
+              <div className="flex items-center gap-2 py-14">
                 <CheckCircle2 className="w-4 h-4 text-[#00e676]" />
                 <span className={`text-xs font-mono ${theme.textMuted}`}>Nessun alert attivo. Indicatori entro soglie normali.</span>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-10">
                 {alerts.map((a, i) => {
                   const c = a.severity === 'critical' ? '#ff1744' : a.severity === 'high' ? '#ff8c00' : a.severity === 'medium' ? '#ffd740' : '#66bb6a';
                   return (
@@ -547,7 +547,7 @@ export default function VolatilityRegime({ isDark, theme }) {
 
           {/* ---- 9. HEATMAP ---- */}
           <section>
-            <h2 className="text-[11px] font-mono uppercase tracking-widest font-bold mb-3 flex items-center gap-2 text-[#ff8c00]">
+            <h2 className="text-[11px] font-mono uppercase tracking-widest font-bold mb-12 flex items-center gap-2 text-[#ff8c00]">
               <Layers className="w-4 h-4" /> Heatmap Indicatori
             </h2>
             <div className={`${theme.panel} border ${theme.border} rounded-lg overflow-hidden glow-panel`}>
@@ -555,18 +555,18 @@ export default function VolatilityRegime({ isDark, theme }) {
                 <table className="w-full">
                   <thead>
                     <tr className={`text-[9px] font-mono uppercase tracking-widest ${theme.textMuted}`}>
-                      <th className="px-3 py-3 text-left">Indicatore</th>
-                      <th className="px-3 py-3 text-left">Cat.</th>
-                      <th className="px-3 py-3 text-right">Valore</th>
-                      <th className="px-3 py-3 text-right">1D</th>
-                      <th className="px-3 py-3 text-right">1W</th>
-                      <th className="px-3 py-3 text-right">1M</th>
-                      <th className="px-3 py-3 text-right">Z-Score</th>
-                      <th className="px-3 py-3 text-right">Pctile</th>
-                      <th className="px-3 py-3 text-center">Regime</th>
-                      <th className="px-3 py-3 text-center">Score</th>
-                      <th className="px-3 py-3 text-right">Contrib.</th>
-                      <th className="px-3 py-3 text-center">Alert</th>
+                      <th className="px-3 py-12 text-left">Indicatore</th>
+                      <th className="px-3 py-12 text-left">Cat.</th>
+                      <th className="px-3 py-12 text-right">Valore</th>
+                      <th className="px-3 py-12 text-right">1D</th>
+                      <th className="px-3 py-12 text-right">1W</th>
+                      <th className="px-3 py-12 text-right">1M</th>
+                      <th className="px-3 py-12 text-right">Z-Score</th>
+                      <th className="px-3 py-12 text-right">Pctile</th>
+                      <th className="px-3 py-12 text-center">Regime</th>
+                      <th className="px-3 py-12 text-center">Score</th>
+                      <th className="px-3 py-12 text-right">Contrib.</th>
+                      <th className="px-3 py-12 text-center">Alert</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -574,8 +574,8 @@ export default function VolatilityRegime({ isDark, theme }) {
                       const m = data[cfg.id];
                       if (!m) return (
                         <tr key={cfg.id} className={`border-t ${theme.borderLight} opacity-50`}>
-                          <td className="px-3 py-2 font-mono text-xs font-bold">{cfg.name}</td>
-                          <td className="px-3 py-2 font-mono text-[10px]" colSpan={11}>
+                          <td className="px-3 py-14 font-mono text-xs font-bold">{cfg.name}</td>
+                          <td className="px-3 py-14 font-mono text-[10px]" colSpan={11}>
                             <span className={`${theme.textMuted} italic`}>Dati non disponibili</span>
                           </td>
                         </tr>
@@ -584,25 +584,25 @@ export default function VolatilityRegime({ isDark, theme }) {
                       const cellBg = (s) => ({ background: `${ri.c}${Math.round(Math.min(40, s * 0.4)).toString(16).padStart(2, '0')}` });
                       return (
                         <tr key={cfg.id} className={`border-t ${theme.borderLight}`}>
-                          <td className="px-3 py-2 font-mono text-xs font-bold">{cfg.name}</td>
-                          <td className={`px-3 py-2 font-mono text-[10px] ${theme.textMuted}`}>{(CATEGORIES[cfg.cat] || {}).label?.split(' ')[0]}</td>
-                          <td className={`px-3 py-2 text-right font-mono text-xs ${theme.textBold}`}>{fmtNum(m.last)}</td>
-                          <td className="px-3 py-2 text-right font-mono text-[10px]" style={{ color: m.pct1 >= 0 ? '#00e676' : '#ff1744' }}>{fmtPct(m.pct1)}</td>
-                          <td className="px-3 py-2 text-right font-mono text-[10px]" style={{ color: m.pct5 >= 0 ? '#00e676' : '#ff1744' }}>{fmtPct(m.pct5)}</td>
-                          <td className="px-3 py-2 text-right font-mono text-[10px]" style={{ color: m.pct20 >= 0 ? '#00e676' : '#ff1744' }}>{fmtPct(m.pct20)}</td>
-                          <td className={`px-3 py-2 text-right font-mono text-[10px] ${theme.textBold}`}>{fmtSigned(m.zScore, 1)}</td>
-                          <td className={`px-3 py-2 text-right font-mono text-[10px] ${theme.textBold}`}>{Math.round(m.percentile)}°</td>
-                          <td className="px-3 py-2 text-center">
+                          <td className="px-3 py-14 font-mono text-xs font-bold">{cfg.name}</td>
+                          <td className={`px-3 py-14 font-mono text-[10px] ${theme.textMuted}`}>{(CATEGORIES[cfg.cat] || {}).label?.split(' ')[0]}</td>
+                          <td className={`px-3 py-14 text-right font-mono text-xs ${theme.textBold}`}>{fmtNum(m.last)}</td>
+                          <td className="px-3 py-14 text-right font-mono text-[10px]" style={{ color: m.pct1 >= 0 ? '#00e676' : '#ff1744' }}>{fmtPct(m.pct1)}</td>
+                          <td className="px-3 py-14 text-right font-mono text-[10px]" style={{ color: m.pct5 >= 0 ? '#00e676' : '#ff1744' }}>{fmtPct(m.pct5)}</td>
+                          <td className="px-3 py-14 text-right font-mono text-[10px]" style={{ color: m.pct20 >= 0 ? '#00e676' : '#ff1744' }}>{fmtPct(m.pct20)}</td>
+                          <td className={`px-3 py-14 text-right font-mono text-[10px] ${theme.textBold}`}>{fmtSigned(m.zScore, 1)}</td>
+                          <td className={`px-3 py-14 text-right font-mono text-[10px] ${theme.textBold}`}>{Math.round(m.percentile)}°</td>
+                          <td className="px-3 py-14 text-center">
                             <span className="text-[9px] font-mono font-black uppercase px-2 py-0.5 rounded"
                               style={{ background: `${ri.c}25`, color: ri.c }}>
                               {ri.label}
                             </span>
                           </td>
-                          <td className="px-3 py-2 text-center font-mono text-xs font-black" style={cellBg(m.score)}>
+                          <td className="px-3 py-14 text-center font-mono text-xs font-black" style={cellBg(m.score)}>
                             <span style={{ color: ri.c }}>{Math.round(m.score)}</span>
                           </td>
-                          <td className={`px-3 py-2 text-right font-mono text-[10px] ${theme.textBold}`}>{m.contribution.toFixed(1)}</td>
-                          <td className="px-3 py-2 text-center">
+                          <td className={`px-3 py-14 text-right font-mono text-[10px] ${theme.textBold}`}>{m.contribution.toFixed(1)}</td>
+                          <td className="px-3 py-14 text-center">
                             {m.alertActive
                               ? <AlertTriangle className="w-3.5 h-3.5 inline" style={{ color: ri.c }} />
                               : <span className={`text-[10px] ${theme.textMuted}`}>—</span>}
@@ -618,13 +618,13 @@ export default function VolatilityRegime({ isDark, theme }) {
 
           {/* ---- 10. OPERATIONAL GUIDANCE ---- */}
           {guidance && (
-            <section className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}
+            <section className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}
               style={{ borderColor: `${composite.regimeColor}55` }}>
-              <h2 className="text-[11px] font-mono uppercase tracking-widest font-bold mb-3 flex items-center gap-2"
+              <h2 className="text-[11px] font-mono uppercase tracking-widest font-bold mb-12 flex items-center gap-2"
                 style={{ color: composite.regimeColor }}>
                 <Target className="w-4 h-4" /> Implicazioni Operative — {guidance.title}
               </h2>
-              <ul className={`space-y-2 text-xs font-mono ${theme.textMuted} leading-relaxed`}>
+              <ul className={`space-y-10 text-xs font-mono ${theme.textMuted} leading-relaxed`}>
                 {guidance.bullets.map((b, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="font-bold flex-shrink-0" style={{ color: composite.regimeColor }}>›</span>
@@ -636,11 +636,11 @@ export default function VolatilityRegime({ isDark, theme }) {
           )}
 
           {/* ---- METHODOLOGY ---- */}
-          <section className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
-            <h2 className="text-[11px] font-mono uppercase tracking-widest font-bold text-[#ff8c00] mb-3 flex items-center gap-2">
+          <section className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
+            <h2 className="text-[11px] font-mono uppercase tracking-widest font-bold text-[#ff8c00] mb-12 flex items-center gap-2">
               <Layers className="w-4 h-4" /> Metodologia
             </h2>
-            <div className={`text-xs font-mono ${theme.textMuted} leading-relaxed space-y-2`}>
+            <div className={`text-xs font-mono ${theme.textMuted} leading-relaxed space-y-10`}>
               <p>
                 <span className={theme.textBold}>Volatility Regime Score</span>: media pesata degli score per indicatore.
                 Ogni indicatore è normalizzato 0-100 via percentile rank vs. storico 2 anni

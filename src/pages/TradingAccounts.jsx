@@ -59,7 +59,7 @@ function AccountCard({ account, theme }) {
       className={`${theme.panel} border ${theme.border} rounded-lg overflow-hidden glow-panel flex flex-col`}
     >
       {/* Header */}
-      <div className="px-5 py-4 border-b border-[var(--c-border)] flex items-center justify-between gap-3">
+      <div className="px-5 py-14 border-b border-[var(--c-border)] flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0"
             style={{ background: '#ff8c0015', border: '1px solid #ff8c0040' }}>
@@ -99,7 +99,7 @@ function AccountCard({ account, theme }) {
 
       {/* Notes */}
       {account.note && (
-        <div className={`px-5 py-2.5 border-b border-[var(--c-border)] text-[11px] font-mono italic ${theme.textMuted}`}>
+        <div className={`px-5 py-14.5 border-b border-[var(--c-border)] text-[11px] font-mono italic ${theme.textMuted}`}>
           {account.note}
         </div>
       )}
@@ -107,18 +107,18 @@ function AccountCard({ account, theme }) {
       {/* Embed area */}
       <div className="flex-1 relative bg-black/20 flex items-center justify-center" style={{ minHeight: embed?.type === 'image' ? 0 : 360 }}>
         {!embed ? (
-          <div className={`flex flex-col items-center justify-center text-center px-6 py-12 ${theme.textMuted} text-xs font-mono`}>
-            <AlertCircle className="w-6 h-6 mb-2 text-[#ff1744]" />
+          <div className={`flex flex-col items-center justify-center text-center px-6 py-16 ${theme.textMuted} text-xs font-mono`}>
+            <AlertCircle className="w-6 h-6 mb-10 text-[#ff1744]" />
             Embed non valido per questo account.
           </div>
         ) : embed.type === 'image' ? (
           imgError ? (
-            <div className={`flex flex-col items-center justify-center text-center px-6 py-8 ${theme.textMuted} text-xs font-mono gap-3`}>
+            <div className={`flex flex-col items-center justify-center text-center px-6 py-12 ${theme.textMuted} text-xs font-mono gap-3`}>
               <AlertCircle className="w-6 h-6 text-[#ff8c00]" />
               <span>Widget temporaneamente non disponibile.</span>
               {outboundUrl && (
                 <a href={outboundUrl} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded text-xs font-bold bg-[#ff8c00] text-black hover:bg-[#ff9f1c] transition-all">
+                  className="inline-flex items-center gap-2 px-3 py-14 rounded text-xs font-bold bg-[#ff8c00] text-black hover:bg-[#ff9f1c] transition-all">
                   <ExternalLink className="w-3.5 h-3.5" /> Apri su MyFxBook
                 </a>
               )}
@@ -144,7 +144,7 @@ function AccountCard({ account, theme }) {
             <span>Widget bloccato dal sito.</span>
             {outboundUrl && (
               <a href={outboundUrl} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded text-xs font-bold bg-[#ff8c00] text-black hover:bg-[#ff9f1c] transition-all">
+                className="inline-flex items-center gap-2 px-3 py-14 rounded text-xs font-bold bg-[#ff8c00] text-black hover:bg-[#ff9f1c] transition-all">
                 <ExternalLink className="w-3.5 h-3.5" /> Apri su MyFxBook
               </a>
             )}
@@ -166,7 +166,7 @@ function AccountCard({ account, theme }) {
 
       {/* Footer with link */}
       {outboundUrl && (
-        <div className={`px-5 py-2.5 border-t border-[var(--c-border)] flex items-center justify-between text-[10px] font-mono ${theme.textMuted}`}>
+        <div className={`px-5 py-14.5 border-t border-[var(--c-border)] flex items-center justify-between text-[10px] font-mono ${theme.textMuted}`}>
           <span className="truncate flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#00e676] pulse-live" />
             Aggiornamento live · widget MyFxBook ufficiale
@@ -186,22 +186,22 @@ function AccountCard({ account, theme }) {
 // =====================================================================
 export default function TradingAccounts({ isDark, theme }) {
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-14 animate-fade-in">
       {/* HEADER */}
       <div>
         <h1 className={`text-3xl md:text-4xl font-black font-mono uppercase tracking-tight ${theme.textBold}`}>
           I Miei <span className="text-[#ff8c00] glow-orange">Conti Live</span>
         </h1>
-        <p className={`mt-2 text-sm font-mono ${theme.textMuted}`}>
+        <p className={`mt-10 text-sm font-mono ${theme.textMuted}`}>
           Track record verificato · Widget MyFxBook ufficiali · Aggiornamento automatico in tempo reale
         </p>
       </div>
 
       {/* ACCOUNTS GRID */}
       {MY_ACCOUNTS.length === 0 ? (
-        <div className={`${theme.panel} border ${theme.border} rounded-lg p-12 glow-panel text-center`}>
-          <Wallet className="w-12 h-12 text-[#ff8c00] mx-auto mb-4 opacity-60" />
-          <h3 className={`font-mono font-bold uppercase tracking-widest text-base ${theme.textBold} mb-2`}>
+        <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel text-center`}>
+          <Wallet className="w-12 h-12 text-[#ff8c00] mx-auto mb-10 opacity-60" />
+          <h3 className={`font-mono font-bold uppercase tracking-widest text-base ${theme.textBold} mb-10`}>
             Nessun account configurato
           </h3>
           <p className={`text-sm font-mono ${theme.textMuted}`}>
@@ -217,14 +217,14 @@ export default function TradingAccounts({ isDark, theme }) {
       )}
 
       {/* Trust footer */}
-      <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
+      <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
         <div className="flex items-start gap-3">
           <div className="w-9 h-9 rounded flex items-center justify-center flex-shrink-0"
             style={{ background: '#00e67615', border: '1px solid #00e67640' }}>
             <ShieldCheck className="w-4 h-4 text-[#00e676]" />
           </div>
           <div>
-            <h4 className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#00e676] mb-2">
+            <h4 className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#00e676] mb-10">
               Track record verificato
             </h4>
             <p className={`text-xs font-mono leading-relaxed ${theme.textMuted}`}>

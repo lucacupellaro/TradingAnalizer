@@ -270,8 +270,8 @@ const ThemeCard = ({ theme, themeData, onSelect, isDark, themeUI }) => {
       {/* Header bar with theme color */}
       <div className="h-1" style={{ background: `linear-gradient(90deg, ${theme.color}, ${theme.accent})` }} />
 
-      <div className="p-5">
-        <div className="flex items-start justify-between mb-3">
+      <div className="p-14">
+        <div className="flex items-start justify-between mb-12">
           <div className="flex-1 min-w-0">
             <h3 className={`font-display text-base font-bold ${themeUI.textBold} truncate`}>{theme.name}</h3>
             <p className={`text-[11px] ${themeUI.textMuted} font-mono mt-0.5 line-clamp-1`}>{theme.desc}</p>
@@ -279,7 +279,7 @@ const ThemeCard = ({ theme, themeData, onSelect, isDark, themeUI }) => {
           {themeData && (
             <div className="flex-shrink-0 ml-3">
               <span
-                className="inline-block px-2.5 py-1 rounded text-[10px] font-mono font-black uppercase tracking-widest"
+                className="inline-block px-2.5 py-14 rounded text-[10px] font-mono font-black uppercase tracking-widest"
                 style={{ background: themeData.actionColor, color: '#000' }}
               >
                 {themeData.action}
@@ -289,7 +289,7 @@ const ThemeCard = ({ theme, themeData, onSelect, isDark, themeUI }) => {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-8 gap-2">
+          <div className="flex items-center justify-center py-12 gap-2">
             <RefreshCw className="w-3.5 h-3.5 animate-spin" style={{ color: theme.color }} />
             <span className={`text-[10px] font-mono uppercase tracking-widest ${themeUI.textMuted}`}>
               Caricamento...
@@ -298,7 +298,7 @@ const ThemeCard = ({ theme, themeData, onSelect, isDark, themeUI }) => {
         ) : (
           <>
             {/* Score + sparkline */}
-            <div className="flex items-end justify-between gap-3 mb-4">
+            <div className="flex items-end justify-between gap-3 mb-10">
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-black font-mono" style={{ color: themeData.actionColor }}>
@@ -312,7 +312,7 @@ const ThemeCard = ({ theme, themeData, onSelect, isDark, themeUI }) => {
             </div>
 
             {/* Returns row */}
-            <div className="grid grid-cols-3 gap-1.5 mb-4">
+            <div className="grid grid-cols-3 gap-1.5 mb-10">
               {[
                 { label: '1D', value: themeData.r1dAvg },
                 { label: '1W', value: themeData.r1wAvg },
@@ -356,7 +356,7 @@ const ThemeCard = ({ theme, themeData, onSelect, isDark, themeUI }) => {
         )}
 
         {/* Footer arrow */}
-        <div className={`mt-4 pt-3 border-t border-[var(--c-border)] flex items-center justify-between text-[10px] font-mono uppercase tracking-widest ${themeUI.textMuted} group-hover:text-[#ff8c00] transition-colors`}>
+        <div className={`mt-10 pt-3 border-t border-[var(--c-border)] flex items-center justify-between text-[10px] font-mono uppercase tracking-widest ${themeUI.textMuted} group-hover:text-[#ff8c00] transition-colors`}>
           <span>{theme.constituents.length} costituenti</span>
           <ArrowUpRight className="w-3.5 h-3.5" />
         </div>
@@ -373,10 +373,10 @@ const ThemeDetail = ({ theme, themeData, onClose, themeUI }) => {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className={`${themeUI.panel} border ${themeUI.border} rounded-lg p-6 glow-panel mb-8`}
+      className={`${themeUI.panel} border ${themeUI.border} rounded-lg p-14 glow-panel mb-12`}
       style={{ borderColor: `${theme.color}55` }}
     >
-      <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-12">
         <div className="flex items-center gap-3">
           <div className="w-1 h-10 rounded-full" style={{ background: theme.color, boxShadow: `0 0 12px ${theme.color}` }} />
           <div>
@@ -393,7 +393,7 @@ const ThemeDetail = ({ theme, themeData, onClose, themeUI }) => {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-10">
         <KPICard label="SniperScore" value={`${themeData.score}/100`} color={themeData.actionColor} themeUI={themeUI} />
         <KPICard label="1 Giorno"  value={`${themeData.r1dAvg >= 0 ? '+' : ''}${themeData.r1dAvg.toFixed(2)}%`} color={themeData.r1dAvg >= 0 ? '#00e676' : '#ff1744'} themeUI={themeUI} />
         <KPICard label="1 Settimana" value={`${themeData.r1wAvg >= 0 ? '+' : ''}${themeData.r1wAvg.toFixed(2)}%`} color={themeData.r1wAvg >= 0 ? '#00e676' : '#ff1744'} themeUI={themeUI} />
@@ -406,29 +406,29 @@ const ThemeDetail = ({ theme, themeData, onClose, themeUI }) => {
         <table className="w-full">
           <thead>
             <tr className={`text-[9px] font-mono uppercase tracking-widest ${themeUI.textMuted}`}>
-              <th className="px-4 py-3 text-left">Ticker</th>
-              <th className="px-4 py-3 text-right">Prezzo</th>
-              <th className="px-4 py-3 text-right">1D %</th>
-              <th className="px-4 py-3 text-right">1W %</th>
-              <th className="px-4 py-3 text-right">1M %</th>
-              <th className="px-4 py-3 text-right">3M %</th>
+              <th className="px-4 py-12 text-left">Ticker</th>
+              <th className="px-4 py-12 text-right">Prezzo</th>
+              <th className="px-4 py-12 text-right">1D %</th>
+              <th className="px-4 py-12 text-right">1W %</th>
+              <th className="px-4 py-12 text-right">1M %</th>
+              <th className="px-4 py-12 text-right">3M %</th>
             </tr>
           </thead>
           <tbody>
             {[...themeData.stocks].sort((a, b) => b.r1m - a.r1m).map(s => (
               <tr key={s.sym} className="border-t border-[var(--c-border)]">
-                <td className="px-4 py-3 font-mono font-bold text-sm" style={{ color: theme.color }}>{s.sym}</td>
-                <td className={`px-4 py-3 text-right font-mono text-sm ${themeUI.textBold}`}>${s.last.toFixed(2)}</td>
-                <td className="px-4 py-3 text-right font-mono text-xs font-bold" style={{ color: s.r1d >= 0 ? '#00e676' : '#ff1744' }}>
+                <td className="px-4 py-12 font-mono font-bold text-sm" style={{ color: theme.color }}>{s.sym}</td>
+                <td className={`px-4 py-12 text-right font-mono text-sm ${themeUI.textBold}`}>${s.last.toFixed(2)}</td>
+                <td className="px-4 py-12 text-right font-mono text-xs font-bold" style={{ color: s.r1d >= 0 ? '#00e676' : '#ff1744' }}>
                   {s.r1d >= 0 ? '+' : ''}{s.r1d.toFixed(2)}%
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-xs font-bold" style={{ color: s.r1w >= 0 ? '#00e676' : '#ff1744' }}>
+                <td className="px-4 py-12 text-right font-mono text-xs font-bold" style={{ color: s.r1w >= 0 ? '#00e676' : '#ff1744' }}>
                   {s.r1w >= 0 ? '+' : ''}{s.r1w.toFixed(2)}%
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-xs font-bold" style={{ color: s.r1m >= 0 ? '#00e676' : '#ff1744' }}>
+                <td className="px-4 py-12 text-right font-mono text-xs font-bold" style={{ color: s.r1m >= 0 ? '#00e676' : '#ff1744' }}>
                   {s.r1m >= 0 ? '+' : ''}{s.r1m.toFixed(2)}%
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-xs font-bold" style={{ color: s.r3m >= 0 ? '#00e676' : '#ff1744' }}>
+                <td className="px-4 py-12 text-right font-mono text-xs font-bold" style={{ color: s.r3m >= 0 ? '#00e676' : '#ff1744' }}>
                   {s.r3m >= 0 ? '+' : ''}{s.r3m.toFixed(2)}%
                 </td>
               </tr>
@@ -500,14 +500,14 @@ export default function MarketThemes({ isDark, theme }) {
   }, [data]);
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-12 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className={`text-3xl md:text-4xl font-black font-mono uppercase tracking-tight ${theme.textBold}`}>
             Market <span className="text-[#ff8c00] glow-orange">Themes</span>
           </h1>
-          <p className={`mt-2 text-sm font-mono ${theme.textMuted}`}>
+          <p className={`mt-10 text-sm font-mono ${theme.textMuted}`}>
             Overview di {THEMES.length} temi di investimento · Score aggregato dai costituenti · Breadth + momentum 1M/3M
           </p>
         </div>
@@ -524,7 +524,7 @@ export default function MarketThemes({ isDark, theme }) {
       {/* Loading progress */}
       {loading && progress.total > 0 && (
         <div className={`${theme.panel} border ${theme.border} rounded-lg p-4 glow-panel`}>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-10">
             <span className={`text-[10px] font-mono uppercase tracking-widest ${theme.textMuted}`}>
               Caricamento temi · {progress.done}/{progress.total}
             </span>
@@ -567,11 +567,11 @@ export default function MarketThemes({ isDark, theme }) {
       </div>
 
       {/* Methodology footer */}
-      <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
-        <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-3 flex items-center gap-2">
+      <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
+        <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-12 flex items-center gap-2">
           <Layers className="w-3.5 h-3.5" /> Metodologia
         </h4>
-        <ul className={`space-y-2 text-xs font-mono ${theme.textMuted} leading-relaxed`}>
+        <ul className={`space-y-10 text-xs font-mono ${theme.textMuted} leading-relaxed`}>
           <li>· <span className={theme.textBold}>SniperScore tema</span> = 50 + (ritorno medio 1M × 1.2) + (ritorno medio 3M × 0.5) + (breadth − 50%) × 30, clampato 0-100.</li>
           <li>· <span className={theme.textBold}>Breadth</span> = % di costituenti con ritorno 1M positivo. Misura l&apos;ampiezza del trend.</li>
           <li>· <span className={theme.textBold}>Sparkline</span> = indice equal-weighted normalizzato a 100 sui 3 mesi precedenti.</li>

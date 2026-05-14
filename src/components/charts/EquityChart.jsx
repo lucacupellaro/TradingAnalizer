@@ -73,7 +73,7 @@ const EquityChartComponent = ({ data, title, theme, spxData, initialCapital }) =
 
   return (
     <div className={`${theme.panel} border ${theme.borderLight} rounded-lg p-4 glow-panel`}>
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <div className="flex items-center justify-between mb-12 flex-wrap gap-2">
         <h3 className="font-bold text-[#00e676] text-[11px] uppercase tracking-widest flex items-center gap-2 font-mono">
           <TrendingUp className="w-3.5 h-3.5" />
           {title || 'Equity Line'}

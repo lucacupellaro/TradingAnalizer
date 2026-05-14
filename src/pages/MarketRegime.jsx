@@ -181,23 +181,23 @@ const IndicatorCard = ({ title, ratio, formula, value, change, status, ranges, i
   return (
     <motion.div
       variants={fadeUp}
-      className={`${theme.panel} border ${theme.border} rounded-lg p-5 flex flex-col glow-panel`}
+      className={`${theme.panel} border ${theme.border} rounded-lg p-14 flex flex-col glow-panel`}
       style={{ borderColor: status === 'red' ? `${color}55` : status === 'green' ? `${color}33` : undefined }}
     >
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between mb-12">
         <div>
           <h3 className="text-[10px] uppercase tracking-widest font-mono font-bold text-[#ff8c00]">{ratio}</h3>
           <p className={`text-sm font-bold mt-0.5 ${theme.textBold}`}>{title}</p>
         </div>
         <span
-          className="text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-1 rounded border"
+          className="text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-14 rounded border"
           style={{ color, borderColor: `${color}55`, background: `${color}10` }}
         >
           {label}
         </span>
       </div>
 
-      <div className="flex items-baseline gap-3 mb-4">
+      <div className="flex items-baseline gap-3 mb-10">
         <span className="text-3xl font-black font-mono" style={{ color }}>
           {value != null && !isNaN(value) ? value.toFixed(2) : '—'}
         </span>
@@ -210,7 +210,7 @@ const IndicatorCard = ({ title, ratio, formula, value, change, status, ranges, i
 
       <RangeBar value={value} ranges={ranges} status={status} />
 
-      <div className={`mt-4 pt-3 border-t ${theme.borderLight} text-[11px] leading-relaxed ${theme.textMuted} font-mono`}>
+      <div className={`mt-10 pt-3 border-t ${theme.borderLight} text-[11px] leading-relaxed ${theme.textMuted} font-mono`}>
         <span className="font-mono text-[9px] uppercase tracking-widest text-[#555] block mb-1">{formula}</span>
         {interpretation}
       </div>
@@ -233,8 +233,8 @@ const RegimeMatrix = ({ growthScore, riskScore, regime, color, theme, isDark }) 
   ];
 
   return (
-    <div className={`${theme.panel} border ${theme.border} rounded-lg p-6 glow-panel`}>
-      <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+    <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
+      <div className="flex items-center justify-between mb-12 flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <Activity className="w-5 h-5 text-[#ff8c00]" />
           <div>
@@ -245,7 +245,7 @@ const RegimeMatrix = ({ growthScore, riskScore, regime, color, theme, isDark }) 
           </div>
         </div>
         <div
-          className="px-4 py-2 rounded font-mono font-bold uppercase tracking-widest text-sm border"
+          className="px-4 py-14 rounded font-mono font-bold uppercase tracking-widest text-sm border"
           style={{ color, borderColor: `${color}66`, background: `${color}15` }}
         >
           {regime}
@@ -453,13 +453,13 @@ export default function MarketRegime({ isDark, theme, setActiveTab }) {
   ];
 
   return (
-    <div className="space-y-10 animate-fade-in">
+    <div className="space-y-14 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className={`text-3xl md:text-4xl font-black font-mono uppercase tracking-tight ${theme.textBold}`}>
             Market <span className="text-[#ff8c00] glow-orange">Regime</span>
           </h1>
-          <p className={`mt-2 text-sm font-mono ${theme.textMuted}`}>
+          <p className={`mt-10 text-sm font-mono ${theme.textMuted}`}>
             Pannello live · Indicatori macro per identificare il regime di mercato (espansione, recessione, stagflazione)
           </p>
         </div>
@@ -501,7 +501,7 @@ export default function MarketRegime({ isDark, theme, setActiveTab }) {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className={`${theme.panel} border ${theme.border} rounded-lg p-6 glow-panel`}
+            className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}
             style={{ borderColor: `${regime.color}55` }}
           >
             <div className="flex items-center gap-4 flex-wrap">
@@ -522,7 +522,7 @@ export default function MarketRegime({ isDark, theme, setActiveTab }) {
                 {regime.desc}
               </span>
             </div>
-            <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="mt-10 grid grid-cols-3 gap-3">
               <ScoreBadge label="Crescita" value={regime.growthScore} icon={TrendingUp} theme={theme} />
               <ScoreBadge label="Risk Appetite" value={regime.riskScore} icon={ShieldCheck} theme={theme} />
               <ScoreBadge label="Volatilità" value={regime.volScore} icon={Activity} theme={theme} invert />
@@ -555,7 +555,7 @@ export default function MarketRegime({ isDark, theme, setActiveTab }) {
           {setActiveTab && (
             <button
               onClick={() => setActiveTab('themes')}
-              className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel w-full text-left flex items-center justify-between gap-4 group transition-all hover:border-[#ff8c00]/50`}
+              className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel w-full text-left flex items-center justify-between gap-4 group transition-all hover:border-[#ff8c00]/50`}
             >
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0"
@@ -579,8 +579,8 @@ export default function MarketRegime({ isDark, theme, setActiveTab }) {
           <StockAnalyzer regimeLabel={regime.regime} isDark={isDark} theme={theme} />
 
           {/* Legend */}
-          <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
-            <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-3">
+          <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
+            <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-12">
               Legenda zone di colore
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-mono">

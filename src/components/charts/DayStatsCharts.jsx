@@ -11,12 +11,12 @@ export const DayStatsCharts = ({ dayStats, isDark, theme }) => {
 
   const barKey = mode === 'eur' ? 'avg' : 'avgPct';
   const fmtVal = (v) => mode === 'eur' ? `€${Number(v).toFixed(2)}` : `${Number(v).toFixed(2)}%`;
-  const btn = 'px-4 py-2 rounded text-xs font-bold uppercase tracking-wide transition-all border';
+  const btn = 'px-4 py-14 rounded text-xs font-bold uppercase tracking-wide transition-all border';
 
   return (
-    <div className={`grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6 border-t ${theme.border} pt-6`}>
+    <div className={`grid grid-cols-1 lg:grid-cols-2 gap-5 mt-10 border-t ${theme.border} pt-6`}>
       <div className={`${theme.panel} rounded-lg border ${theme.borderLight} p-4 h-[300px] glow-panel`}>
-        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div className="flex items-center justify-between mb-12 flex-wrap gap-2">
           <h3 className="font-bold text-[11px] uppercase tracking-widest flex items-center gap-2 text-[#ffa726] font-mono">
             <Calendar className="w-3.5 h-3.5" /> Daily PNL
           </h3>
@@ -42,7 +42,7 @@ export const DayStatsCharts = ({ dayStats, isDark, theme }) => {
         </ResponsiveContainer>
       </div>
       <div className={`${theme.panel} rounded-lg border ${theme.borderLight} p-4 h-[300px] glow-panel`}>
-        <h3 className="text-center font-bold text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 mb-3 text-[#64b5f6] font-mono">
+        <h3 className="text-center font-bold text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 mb-12 text-[#64b5f6] font-mono">
           <Activity className="w-3.5 h-3.5" /> Box Plot
         </h3>
         <ResponsiveContainer width="100%" height="88%">

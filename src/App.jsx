@@ -188,6 +188,10 @@ export default function App() {
   const [confirmedRows, setConfirmedRows] = useState([]);
   const [rankingPeriod, setRankingPeriod] = useState('max');
 
+  // Analyzer compact navigation: 'global' | 'asset:<sym>' | 'strategy:<id>'
+  const [analyzerView, setAnalyzerView] = useState('global');
+  const [analyzerMenuOpen, setAnalyzerMenuOpen] = useState({ asset: false, strategy: false });
+
   const theme = useMemo(() => getTheme(isDark), [isDark]);
 
   const authState = useAuth();
@@ -871,24 +875,190 @@ export default function App() {
       />
 
       <div className="sticky top-0 z-[100]">
-        <div className="w-full flex justify-center">
-          <div className="w-full max-w-[1400px] px-8 lg:px-16 xl:px-20">
-            <MarketTicker marketQuotes={marketQuotes} isDark={isDark} theme={theme} />
-            <Navbar
-              isDark={isDark}
-              setIsDark={setIsDark}
-              isLoading={isLoading}
-              isSidebarOpen={isSidebarOpen}
-              setIsSidebarOpen={setIsSidebarOpen}
-              onFileUpload={handleFileUpload}
-              theme={theme}
-            />
-          </div>
+        <div className="w-full px-6 lg:px-10 xl:px-14">
+          <MarketTicker marketQuotes={marketQuotes} isDark={isDark} theme={theme} />
+          <Navbar
+            isDark={isDark}
+            setIsDark={setIsDark}
+            isLoading={isLoading}
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
+            onFileUpload={handleFileUpload}
+            theme={theme}
+          />
         </div>
       </div>
 
-      <main className="w-full flex justify-center py-12 pb-28">
-        <div className="w-full max-w-[1400px] px-8 lg:px-16 xl:px-20 py-12 space-y-16 pb-28">
+      <main className="w-full py-20 pb-40">
+        <div className="w-full px-8 lg:px-14 xl:px-20 py-16 pb-40 flex gap-10">
+          {/* Sidebar Analyzer compatta: appare solo con report caricato */}
+          {activeTab === 'analyzer' && parsedTrades.length > 0 && (
+            <aside className="w-72 flex-shrink-0 sticky top-32 self-start max-h-[calc(100vh-10rem)] overflow-y-auto bg-[var(--c-panel)] border border-[var(--c-border)] rounded-lg">
+              {/* Header */}
+              <div className="px-6 py-5 border-b border-[var(--c-border)]">
+                <div className="text-[9px] font-mono uppercase tracking-[0.2em] text-[var(--c-muted)]">
+                  Navigazione
+                </div>
+                <div className="mt-2 text-sm font-mono font-bold text-[var(--c-text)] tracking-wide">
+                  Report Analyzer
+                </div>
+              </div>
+
+              {/* Globale */}
+              <div className="px-3 py-5">
+                <button
+                  onClick={() => setAnalyzerView('global')}
+                  className={`w-full flex items-center gap-3 px-4 h-11 rounded-md font-mono text-[13px] tracking-wide transition-all ${
+                    analyzerView === 'global'
+                      ? 'bg-[#ff8c00] text-black shadow-sm'
+                      : 'text-[var(--c-text)] hover:bg-[#ff8c00]/10 hover:text-[#ff8c00]'
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    analyzerView === 'global' ? 'bg-black' : 'bg-[var(--c-muted)]'
+                  }`} />
+                  <span className="font-semibold">Globale</span>
+                </button>
+              </div>
+
+              <div className="h-px bg-[var(--c-border)]" />
+
+              {/* Orders */}
+              <div className="px-3 py-5">
+                <button
+                  onClick={() => setAnalyzerView('orders')}
+                  className={`w-full flex items-center gap-3 px-4 h-11 rounded-md font-mono text-[13px] tracking-wide transition-all ${
+                    analyzerView === 'orders'
+                      ? 'bg-[#ff8c00] text-black shadow-sm'
+                      : 'text-[var(--c-text)] hover:bg-[#ff8c00]/10 hover:text-[#ff8c00]'
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    analyzerView === 'orders' ? 'bg-black' : 'bg-[var(--c-muted)]'
+                  }`} />
+                  <span className="font-semibold">Orders</span>
+                  <span className="ml-auto text-[10px] font-mono opacity-60">
+                    {filteredTableTrades.length}
+                  </span>
+                </button>
+              </div>
+
+              <div className="h-px bg-[var(--c-border)]" />
+
+              {/* Classifica Performance */}
+              <div className="px-3 py-5">
+                <button
+                  onClick={() => setAnalyzerView('rankings')}
+                  className={`w-full flex items-center gap-3 px-4 h-11 rounded-md font-mono text-[13px] tracking-wide transition-all ${
+                    analyzerView === 'rankings'
+                      ? 'bg-[#ff8c00] text-black shadow-sm'
+                      : 'text-[var(--c-text)] hover:bg-[#ff8c00]/10 hover:text-[#ff8c00]'
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    analyzerView === 'rankings' ? 'bg-black' : 'bg-[var(--c-muted)]'
+                  }`} />
+                  <span className="font-semibold">Classifica Performance</span>
+                </button>
+              </div>
+
+              <div className="h-px bg-[var(--c-border)]" />
+
+              {/* Per Asset */}
+              <div className="px-3 py-5">
+                <button
+                  onClick={() => setAnalyzerMenuOpen((s) => ({ ...s, asset: !s.asset }))}
+                  className="w-full flex items-center justify-between px-4 h-11 rounded-md font-mono text-[13px] tracking-wide text-[var(--c-text)] hover:bg-[#ff8c00]/10 hover:text-[#ff8c00] transition-all"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--c-muted)]" />
+                    <span className="font-semibold">Per Asset</span>
+                    <span className="text-[10px] font-mono text-[var(--c-muted)]">
+                      {uniqueSymbols.length}
+                    </span>
+                  </span>
+                  {analyzerMenuOpen.asset ? <ChevronUp className="w-3.5 h-3.5 opacity-60" /> : <ChevronDown className="w-3.5 h-3.5 opacity-60" />}
+                </button>
+                {analyzerMenuOpen.asset && (
+                  <div className="mt-3 ml-5 pl-5 border-l border-[var(--c-border)] space-y-1.5 py-2">
+                    {uniqueSymbols.map((sym) => {
+                      const key = `asset:${sym}`;
+                      const selected = analyzerView === key;
+                      return (
+                        <button
+                          key={sym}
+                          onClick={() => {
+                            if (groupBy !== 'Asset') setGroupBy('Asset');
+                            setAnalyzerView(key);
+                          }}
+                          className={`w-full text-left px-3 h-9 flex items-center rounded font-mono text-xs tracking-wide transition-all ${
+                            selected
+                              ? 'bg-[#ff8c00]/15 text-[#ff8c00]'
+                              : 'text-[var(--c-muted)] hover:text-[var(--c-text)] hover:bg-[#ff8c00]/5'
+                          }`}
+                        >
+                          {sym}
+                        </button>
+                      );
+                    })}
+                    {uniqueSymbols.length === 0 && (
+                      <div className="text-xs font-mono text-[var(--c-muted)] italic px-3 py-2">Nessun asset</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="h-px bg-[var(--c-border)]" />
+
+              {/* Per Strategia */}
+              <div className="px-3 py-5">
+                <button
+                  onClick={() => setAnalyzerMenuOpen((s) => ({ ...s, strategy: !s.strategy }))}
+                  className="w-full flex items-center justify-between px-4 h-11 rounded-md font-mono text-[13px] tracking-wide text-[var(--c-text)] hover:bg-[#ff8c00]/10 hover:text-[#ff8c00] transition-all"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--c-muted)]" />
+                    <span className="font-semibold">Per Strategia</span>
+                    <span className="text-[10px] font-mono text-[var(--c-muted)]">
+                      {uniqueStrategies.filter((s) => s !== 'Senza Commento').length}
+                    </span>
+                  </span>
+                  {analyzerMenuOpen.strategy ? <ChevronUp className="w-3.5 h-3.5 opacity-60" /> : <ChevronDown className="w-3.5 h-3.5 opacity-60" />}
+                </button>
+                {analyzerMenuOpen.strategy && (
+                  <div className="mt-3 ml-5 pl-5 border-l border-[var(--c-border)] space-y-1.5 py-2">
+                    {uniqueStrategies.filter((s) => s !== 'Senza Commento').map((id) => {
+                      const key = `strategy:${id}`;
+                      const selected = analyzerView === key;
+                      return (
+                        <button
+                          key={id}
+                          onClick={() => {
+                            if (groupBy !== 'Strategy') setGroupBy('Strategy');
+                            setAnalyzerView(key);
+                          }}
+                          className={`w-full text-left px-3 h-9 flex items-center rounded font-mono text-xs tracking-wide transition-all truncate ${
+                            selected
+                              ? 'bg-[#ff8c00]/15 text-[#ff8c00]'
+                              : 'text-[var(--c-muted)] hover:text-[var(--c-text)] hover:bg-[#ff8c00]/5'
+                          }`}
+                          title={id}
+                        >
+                          {id}
+                        </button>
+                      );
+                    })}
+                    {uniqueStrategies.filter((s) => s !== 'Senza Commento').length === 0 && (
+                      <div className="text-xs font-mono text-[var(--c-muted)] italic px-3 py-2">Nessuna strategia</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </aside>
+          )}
+
+          {/* Contenuto principale (preserva lo space-y-32 di prima) */}
+          <div className="flex-1 min-w-0 space-y-32">
           {parsedTrades.length === 0 && confirmedRows.length === 0 && activeTab === 'analyzer' && (
             <div className="flex flex-col items-center justify-center min-h-[62vh] text-center gap-8 animate-fade-in">
               <img src="/Logo.jpg" alt="SniperForex" className="w-20 h-20 opacity-30 rounded-lg" />
@@ -941,7 +1111,7 @@ export default function App() {
             </div>
           )}
 
-          {parsedTrades.length > 0 && activeTab === 'analyzer' && (
+          {parsedTrades.length > 0 && activeTab === 'analyzer' && analyzerView === 'orders' && (
             <div className={`rounded-lg border ${theme.border} ${theme.panel} overflow-hidden glow-panel animate-fade-in`}>
               <div
                 className={`flex items-center justify-between px-8 py-4.5 border-b ${theme.border} cursor-pointer select-none ${theme.cardHover} transition-colors`}
@@ -1226,7 +1396,7 @@ export default function App() {
             </div>
           )}
 
-          {globalStats && activeTab === 'analyzer' && (
+          {globalStats && activeTab === 'analyzer' && analyzerView === 'global' && (
             <div className={`${theme.panel} rounded-lg border ${theme.border} p-10 lg:p-12 glow-panel animate-fade-in`}>
               <div className="flex items-center gap-3 mb-14">
                 <div className="w-1 h-6 bg-[#ff8c00] rounded-full" />
@@ -1288,10 +1458,15 @@ export default function App() {
                 <DistributionChart data={globalStats.tradeProfits} title="Distribuzione (Solo Win)" type="win" isDark={isDark} theme={theme} />
                 <DistributionChart data={globalStats.tradeProfits} title="Distribuzione (Solo Loss)" type="loss" isDark={isDark} theme={theme} />
               </div>
+            </div>
+          )}
 
+          {/* ==== CLASSIFICA PERFORMANCE — visibile da menu 'rankings' ==== */}
+          {globalStats && activeTab === 'analyzer' && analyzerView === 'rankings' && (
+            <div className={`${theme.panel} rounded-lg border ${theme.border} p-10 lg:p-12 glow-panel animate-fade-in`}>
               {/* Rankings / Leaderboard */}
               {(rankings.assets.length > 0 || rankings.strategies.length > 0) && (
-                <div className={`mt-16 ${theme.panel} border ${theme.borderLight} rounded-lg p-6 glow-panel`}>
+                <div className={`${theme.panel} border ${theme.borderLight} rounded-lg p-6 glow-panel`}>
                   <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                     <h3 className="font-bold text-[11px] uppercase tracking-widest flex items-center gap-2 text-[#ffd740] font-mono">
                       <Trophy className="w-4 h-4" /> Classifica Performance
@@ -1380,44 +1555,19 @@ export default function App() {
                   </div>
                 </div>
               )}
-
-              <div className="flex justify-between items-center mb-8 mt-16 border-b pb-6 border-[var(--c-border)]">
-                <div className="flex items-center gap-3">
-                  <div className="w-1 h-5 bg-[#ff8c00] rounded-full" />
-                  <h2 className="text-xs font-bold text-[#ff8c00] uppercase tracking-[0.2em] font-mono glow-orange">
-                    PERFORMANCE BREAKDOWN
-                  </h2>
-                </div>
-
-                <div className="flex bg-[#000000] border border-[var(--c-border)] rounded-xl p-2 gap-3">
-                  <button
-                    onClick={() => setGroupBy('Strategy')}
-                    className={`flex items-center justify-center px-7 h-12 rounded-lg text-sm font-bold font-mono uppercase tracking-[0.15em] transition-all ${
-                      groupBy === 'Strategy'
-                        ? 'bg-[#ff8c00] text-black shadow-lg shadow-[#ff8c00]/40 scale-105'
-                        : 'text-[var(--c-muted)] hover:text-[#ff8c00] hover:bg-[#ff8c00]/10'
-                    }`}
-                  >
-                    Strategy
-                  </button>
-
-                  <button
-                    onClick={() => setGroupBy('Asset')}
-                    className={`flex items-center justify-center px-7 h-12 rounded-lg text-sm font-bold font-mono uppercase tracking-[0.15em] transition-all ${
-                      groupBy === 'Asset'
-                        ? 'bg-[#ff8c00] text-black shadow-lg shadow-[#ff8c00]/40 scale-105'
-                        : 'text-[var(--c-muted)] hover:text-[#ff8c00] hover:bg-[#ff8c00]/10'
-                    }`}
-                  >
-                    Asset
-                  </button>
-                </div>
-              </div>
             </div>
           )}
 
           {activeTab === 'analyzer' &&
-            strategyStats.map((s, i) => (
+            strategyStats
+              .filter((s) => {
+                if (analyzerView === 'global') return false;
+                if (analyzerView === 'rankings') return false;
+                const [kind, name] = analyzerView.split(':');
+                return (kind === 'asset' && groupBy === 'Asset' && s.name === name)
+                    || (kind === 'strategy' && groupBy === 'Strategy' && s.name === name);
+              })
+              .map((s, i) => (
               <div key={i} className={`${theme.panel} rounded-lg border ${theme.border} overflow-hidden glow-panel animate-fade-in`}>
                 <div className="bg-[var(--c-card)] px-8 py-5 border-b border-[var(--c-border)] flex justify-between items-center">
                   <div className="flex items-center gap-3">
@@ -1429,8 +1579,8 @@ export default function App() {
                   </span>
                 </div>
 
-                <div className="p-10">
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-5 lg:gap-6 mb-14">
+                <div className="p-12 lg:p-14">
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-5 lg:gap-6 mb-20">
                     <KPICard isDark={isDark} theme={theme} label="Net Profit" value={`€${s.netProfit.toFixed(2)}`} valueClass={s.netProfit >= 0 ? theme.success : theme.danger} infoDesc="Profitto finale post costi" infoFormula="Net = Σ(Profit + Swap + Comm + Fee)" signal={s.netProfit > 0 ? 'good' : 'bad'} />
                     <KPICard isDark={isDark} theme={theme} label="Gross Profit" value={`+€${s.grossP.toFixed(2)}`} valueClass={theme.success} infoDesc="Somma dei trade vinti" infoFormula="Σ Profit_i  dove Profit_i > 0" />
                     <KPICard isDark={isDark} theme={theme} label="Gross Loss" value={`€${s.grossL.toFixed(2)}`} valueClass={theme.danger} infoDesc="Somma dei trade persi" infoFormula="Σ Profit_i  dove Profit_i < 0" />
@@ -1460,22 +1610,22 @@ export default function App() {
                     <KPICard isDark={isDark} theme={theme} label="Avg Mensile" value={`€${s.avgMonthly.toFixed(2)}`} infoDesc="Profitto medio per mese" infoFormula="Σ NetMonth_i / N_mesi" signal={s.avgMonthly > 0 ? 'good' : 'bad'} valueClass={s.avgMonthly >= 0 ? theme.success : theme.danger} />
                   </div>
 
-                  <div className="flex flex-col gap-12 mb-14">
+                  <div className="flex flex-col gap-16 mb-20">
                     <EquityChart data={s.equitySequence} isDark={isDark} title={`Equity Line (${s.name})`} theme={theme} spxData={spxData} initialCapital={s.initialCapital} />
                     <DrawdownChart data={s.equitySequence} isDark={isDark} title={`Drawdown (${s.name})`} theme={theme} />
                   </div>
 
                   <PnLBarCharts weeklyPnL={s.weeklyPnL} monthlyPnL={s.monthlyPnL} theme={theme} />
 
-                  <div className="mt-14 mb-14">
+                  <div className="mt-20 mb-20">
                     <DayStatsCharts dayStats={s.dayStats} isDark={isDark} theme={theme} />
                   </div>
 
-                  <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+                  <div className="mt-24 grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
                     <CullenFreyPlot skew={s.skew} kurt={s.kurt} name={s.name} isDark={isDark} theme={theme} />
                     <ChartDescription theme={theme} title="Cullen-Frey Plot" text="Mappa la distribuzione dei rendimenti nello spazio skewness-kurtosi. Mostra se i profitti seguono una Normale, Lognormale, Beta, Gamma o Uniforme." />
                   </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-12">
                     <DistributionChart data={s.tradeProfits} title={`Distribuzione Totale (${s.name})`} type="all" isDark={isDark} theme={theme} />
                     <DistributionChart data={s.tradeProfits} title={`Distribuzione Solo Win (${s.name})`} type="win" isDark={isDark} theme={theme} />
                     <DistributionChart data={s.tradeProfits} title={`Distribuzione Solo Loss (${s.name})`} type="loss" isDark={isDark} theme={theme} />
@@ -1484,7 +1634,7 @@ export default function App() {
               </div>
             ))}
 
-          {activeTab === 'analyzer' && analyzedTrades.length > 0 && (
+          {activeTab === 'analyzer' && analyzerView === 'global' && analyzedTrades.length > 0 && (
             <div className={`${theme.panel} rounded-lg border ${theme.border} p-10 lg:p-12 glow-panel animate-fade-in`}>
               <div className="flex items-center gap-3 mb-10">
                 <div className="w-1 h-6 bg-[#ff8c00] rounded-full" />
@@ -1502,7 +1652,7 @@ export default function App() {
             </div>
           )}
 
-          {activeTab === 'analyzer' && (monteCarloData || isMcLoading) && (
+          {activeTab === 'analyzer' && analyzerView === 'global' && (monteCarloData || isMcLoading) && (
             <div className={`${theme.panel} rounded-lg border ${theme.border} p-10 lg:p-12 glow-panel animate-fade-in`}>
               <div className="flex justify-between items-center mb-10 border-b border-[var(--c-border)] pb-6">
                 <div className="flex items-center gap-3">
@@ -1627,6 +1777,7 @@ export default function App() {
           {activeTab === 'descrizione' && <ChiSono theme={theme} />}
 
           {activeTab === 'news' && <ComeFunziona theme={theme} />}
+          </div>
         </div>
       </main>
     </div>

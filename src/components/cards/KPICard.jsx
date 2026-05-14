@@ -23,7 +23,7 @@ const KPICardComponent = ({
     <div
       className={`
         ${theme.card}
-        px-5 py-5
+        px-5 py-12
         rounded border ${borderColor}
         flex flex-col justify-center
         relative group
@@ -32,7 +32,7 @@ const KPICardComponent = ({
         transition-all duration-300
       `}
     >
-      <div className="flex justify-between items-start w-full gap-2 mb-3">
+      <div className="flex justify-between items-start w-full gap-2 mb-12">
         <div
           className={`
             ${theme.textMuted}
@@ -60,7 +60,7 @@ const KPICardComponent = ({
             <div
               className={`
                 absolute opacity-0 group-hover:opacity-100 transition-opacity
-                bottom-full right-0 mb-2
+                bottom-full right-0 mb-10
                 w-56 md:w-64 p-3
                 ${theme.panel} border ${theme.border}
                 rounded shadow-2xl z-[999]
@@ -68,7 +68,7 @@ const KPICardComponent = ({
               `}
             >
               {infoDesc && (
-                <div className={`text-[10px] ${theme.textBold} mb-2 leading-[1.4] font-sans`}>
+                <div className={`text-[10px] ${theme.textBold} mb-10 leading-[1.4] font-sans`}>
                   {infoDesc}
                 </div>
               )}
@@ -105,7 +105,7 @@ const KPICardComponent = ({
         <div
           className={`
             text-[10px] ${theme.textFaint}
-            font-mono mt-2 leading-[1.35]
+            font-mono mt-10 leading-[1.35]
             pb-[1px]
           `}
         >

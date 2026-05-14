@@ -10,7 +10,7 @@ export const FilterBadge = ({ filters, isDark, theme }) => {
   };
 
   return (
-    <div className={`flex flex-wrap items-center gap-3 mt-4 text-[10px] font-bold ${theme.textMuted} ${theme.card} p-4 rounded border ${theme.border} inline-flex`}>
+    <div className={`flex flex-wrap items-center gap-3 mt-10 text-[10px] font-bold ${theme.textMuted} ${theme.card} p-4 rounded border ${theme.border} inline-flex`}>
       <Filter className={`w-4 h-4 ${theme.accent2}`} />
       <span className="font-bold">FILTRI:</span>
       <span className={`${theme.panel} px-1.5 py-0.5 rounded border ${theme.borderLight}`}>DIR: <b className={theme.accent1}>{dir.toUpperCase()}</b></span>

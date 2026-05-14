@@ -229,7 +229,7 @@ function TopBar({ theme, isDark, setIsDark, onStart }) {
 
             <button
               onClick={onStart}
-              className={`flex items-center gap-3 px-6 py-3 rounded-lg text-sm font-bold uppercase tracking-widest border font-mono whitespace-nowrap shrink-0 h-8 transition-all ${
+              className={`flex items-center gap-3 px-6 py-12 rounded-lg text-sm font-bold uppercase tracking-widest border font-mono whitespace-nowrap shrink-0 h-8 transition-all ${
                 isDark
                   ? 'bg-[#ff8c00] hover:bg-[#ff9f1c] text-black border-[#ff8c00]/60 shadow-lg shadow-[#ff8c00]/20 hover:scale-105 hover:shadow-[#ff8c00]/40'
                   : 'bg-[#2563eb] hover:bg-[#1d4ed8] text-white border-[#2563eb] shadow-lg shadow-[#2563eb]/20 hover:scale-105'
@@ -280,7 +280,7 @@ function Hero({ theme, isDark, onStart, onScrollToDemo }) {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded font-mono text-[11px] ${theme.card} border ${theme.border}`}
+              className={`flex items-center gap-2 px-3 py-14.5 rounded font-mono text-[11px] ${theme.card} border ${theme.border}`}
             >
               <span className={theme.textMuted}>{t.sym}</span>
               <span className={theme.textBold}>{t.val}</span>
@@ -309,7 +309,7 @@ function Hero({ theme, isDark, onStart, onScrollToDemo }) {
           animate="show"
           className="w-full max-w-4xl text-center"
         >
-          <motion.div variants={fadeUp} className="flex items-center justify-center gap-2 mb-8">
+          <motion.div variants={fadeUp} className="flex items-center justify-center gap-2 mb-12">
             <Sparkles className={`w-4 h-4 ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'}`} />
 
             <span
@@ -322,7 +322,7 @@ function Hero({ theme, isDark, onStart, onScrollToDemo }) {
 
           <motion.h1
             variants={fadeUp}
-            className={`font-display text-4xl md:text-6xl lg:text-7xl font-black leading-[1.08] tracking-tight mb-8 ${theme.textBold}`}
+            className={`font-display text-4xl md:text-6xl lg:text-7xl font-black leading-[1.08] tracking-tight mb-12 ${theme.textBold}`}
           >
             Il tuo report MetaTrader.
             <br />
@@ -334,7 +334,7 @@ function Hero({ theme, isDark, onStart, onScrollToDemo }) {
 
           <motion.p
             variants={fadeUp}
-            className={`text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-12 ${theme.textMuted}`}
+            className={`text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-16 ${theme.textMuted}`}
           >
             60+ metriche, simulazioni Monte Carlo, correlazione vs S&amp;P 500,
             drawdown, distribuzioni e test di normalità — in tempo reale, dal tuo CSV.
@@ -379,8 +379,8 @@ function DemoCycle({ theme, isDark, cycleKey }) {
 
   return (
     <div key={cycleKey} className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div className={`${theme.card} border ${theme.border} rounded-lg p-6 relative overflow-hidden`}>
-        <div className="flex items-center gap-2 mb-4">
+      <div className={`${theme.card} border ${theme.border} rounded-lg p-14 relative overflow-hidden`}>
+        <div className="flex items-center gap-2 mb-10">
           <div className="flex gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#ff5f57]" />
             <span className="w-2 h-2 rounded-full bg-[#febc2e]" />
@@ -427,9 +427,9 @@ function DemoCycle({ theme, isDark, cycleKey }) {
           variants={stagger(3.0, 0.06)}
           initial="hidden"
           animate="show"
-          className="mt-5 font-mono text-[11px]"
+          className="mt-12 font-mono text-[11px]"
         >
-          <div className={`flex items-center justify-between py-1.5 border-b ${theme.borderLight} ${theme.textFaint}`}>
+          <div className={`flex items-center justify-between py-14.5 border-b ${theme.borderLight} ${theme.textFaint}`}>
             <span className="w-1/4">SYMBOL</span>
             <span className="w-1/6 text-right">TYPE</span>
             <span className="w-1/6 text-right">VOL</span>
@@ -440,7 +440,7 @@ function DemoCycle({ theme, isDark, cycleKey }) {
             <motion.div
               key={i}
               variants={fadeUp}
-              className={`flex items-center justify-between py-1.5 ${i < MOCK_TRADE_ROWS.length - 1 ? `border-b ${theme.borderLight}` : ''
+              className={`flex items-center justify-between py-14.5 ${i < MOCK_TRADE_ROWS.length - 1 ? `border-b ${theme.borderLight}` : ''
                 }`}
             >
               <span className={`w-1/4 ${theme.textBold}`}>{r.sym}</span>
@@ -465,8 +465,8 @@ function DemoCycle({ theme, isDark, cycleKey }) {
         </motion.div>
       </div>
 
-      <div className={`${theme.card} border ${theme.border} rounded-lg p-6 relative overflow-hidden`}>
-        <div className="flex items-center justify-between mb-4">
+      <div className={`${theme.card} border ${theme.border} rounded-lg p-14 relative overflow-hidden`}>
+        <div className="flex items-center justify-between mb-10">
           <span className={`text-[10px] uppercase tracking-widest font-mono ${theme.textMuted}`}>
             OUTPUT · dashboard
           </span>
@@ -477,7 +477,7 @@ function DemoCycle({ theme, isDark, cycleKey }) {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="grid grid-cols-2 gap-3 mb-12">
           {MOCK_KPIS.map((k, i) => (
             <motion.div
               key={k.label}
@@ -504,8 +504,8 @@ function DemoCycle({ theme, isDark, cycleKey }) {
           ))}
         </div>
 
-        <div className={`${theme.panel} border ${theme.borderLight} rounded p-3 mb-4`}>
-          <div className="flex items-center justify-between mb-2">
+        <div className={`${theme.panel} border ${theme.borderLight} rounded p-3 mb-10`}>
+          <div className="flex items-center justify-between mb-10">
             <span className={`text-[9px] uppercase tracking-widest font-mono ${theme.textFaint}`}>
               EQUITY CURVE
             </span>
@@ -531,7 +531,7 @@ function DemoCycle({ theme, isDark, cycleKey }) {
         </div>
 
         <div className={`${theme.panel} border ${theme.borderLight} rounded p-3`}>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-10">
             <span className={`text-[9px] uppercase tracking-widest font-mono ${theme.textFaint}`}>
               CORRELATION · SPX500
             </span>
@@ -592,7 +592,7 @@ function DemoSection({ theme, isDark, anchorRef }) {
 
   return (
     <section ref={anchorRef} className={`w-full border-t ${theme.border}`}>
-      <div className="w-full py-20 md:py-28">
+      <div className="w-full py-24 md:py-32">
         <div className="w-full flex justify-center mb-16">
           <div className="text-center max-w-3xl">
           <span
@@ -602,11 +602,11 @@ function DemoSection({ theme, isDark, anchorRef }) {
             La demo, in tempo reale
           </span>
 
-          <h2 className={`mt-4 font-display text-3xl md:text-5xl font-black tracking-tight ${theme.textBold}`}>
+          <h2 className={`mt-10 font-display text-3xl md:text-5xl font-black tracking-tight ${theme.textBold}`}>
             Carichi il file. Compaiono i numeri.
           </h2>
 
-          <p className={`mt-6 ${theme.textMuted}`}>
+          <p className={`mt-10 ${theme.textMuted}`}>
             Niente configurazione, niente mappatura colonne. Il parser legge la sezione
             "Deals" del report MT5, ricostruisce le posizioni e calcola tutto da solo.
           </p>
@@ -632,7 +632,7 @@ function DemoSection({ theme, isDark, anchorRef }) {
 function FeatureGrid({ theme, isDark }) {
   return (
     <section className={`w-full border-t ${theme.border}`}>
-      <div className="w-full py-20 md:py-28">
+      <div className="w-full py-24 md:py-32">
         <div className="w-full flex justify-center mb-16">
           <div className="text-center max-w-3xl">
           <span
@@ -642,7 +642,7 @@ function FeatureGrid({ theme, isDark }) {
             Cosa trovi dentro
           </span>
 
-          <h2 className={`mt-4 font-display text-3xl md:text-4xl font-black tracking-tight ${theme.textBold}`}>
+          <h2 className={`mt-10 font-display text-3xl md:text-4xl font-black tracking-tight ${theme.textBold}`}>
             Sei strumenti, una sola schermata.
           </h2>
           </div>
@@ -662,11 +662,11 @@ function FeatureGrid({ theme, isDark }) {
               <motion.div
                 key={f.title}
                 variants={fadeUp}
-                className={`${theme.card} border ${theme.border} rounded-lg p-6 transition-colors ${theme.cardHover}`}
+                className={`${theme.card} border ${theme.border} rounded-lg p-14 transition-colors ${theme.cardHover}`}
               >
-                <FeatureIcon className={`w-6 h-6 mb-4 ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'}`} />
+                <FeatureIcon className={`w-6 h-6 mb-10 ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'}`} />
 
-                <h3 className={`font-display text-lg font-bold mb-2 ${theme.textBold}`}>
+                <h3 className={`font-display text-lg font-bold mb-10 ${theme.textBold}`}>
                   {f.title}
                 </h3>
 
@@ -689,7 +689,7 @@ function FeatureGrid({ theme, isDark }) {
 function StepsSection({ theme, isDark }) {
   return (
     <section className={`w-full border-t ${theme.border}`}>
-      <div className="w-full py-20 md:py-28">
+      <div className="w-full py-24 md:py-32">
         <div className="w-full flex justify-center mb-16">
           <div className="text-center max-w-3xl">
           <span
@@ -699,7 +699,7 @@ function StepsSection({ theme, isDark }) {
             In tre passi
           </span>
 
-          <h2 className={`mt-4 font-display text-3xl md:text-4xl font-black tracking-tight ${theme.textBold}`}>
+          <h2 className={`mt-10 font-display text-3xl md:text-4xl font-black tracking-tight ${theme.textBold}`}>
             Da export a insight in meno di un minuto.
           </h2>
           </div>
@@ -716,16 +716,16 @@ function StepsSection({ theme, isDark }) {
             <motion.div
               key={s.n}
               variants={fadeUp}
-              className={`${theme.card} border ${theme.border} rounded-lg p-6 relative`}
+              className={`${theme.card} border ${theme.border} rounded-lg p-14 relative`}
             >
               <div
-                className={`font-display text-5xl font-black mb-3 leading-none ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'
+                className={`font-display text-5xl font-black mb-12 leading-none ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'
                   }`}
               >
                 {s.n}
               </div>
 
-              <h3 className={`font-display text-xl font-bold mb-2 ${theme.textBold}`}>
+              <h3 className={`font-display text-xl font-bold mb-10 ${theme.textBold}`}>
                 {s.title}
               </h3>
 
@@ -757,7 +757,7 @@ function FinalCTA({ theme, isDark, onStart }) {
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="w-full max-w-4xl text-center"
         >
-          <h2 className={`font-display text-3xl md:text-5xl font-black tracking-tight mb-5 ${theme.textBold}`}>
+          <h2 className={`font-display text-3xl md:text-5xl font-black tracking-tight mb-12 ${theme.textBold}`}>
             Carica il primo report.
             <br />
             <span className={isDark ? 'text-[#ff8c00] glow-orange' : 'text-[#2563eb]'}>
@@ -780,7 +780,7 @@ function FinalCTA({ theme, isDark, onStart }) {
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1.5" />
           </button>
 
-          <div className={`mt-6 flex flex-wrap items-center justify-center gap-6 text-[11px] font-mono ${theme.textFaint}`}>
+          <div className={`mt-10 flex flex-wrap items-center justify-center gap-6 text-[11px] font-mono ${theme.textFaint}`}>
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Gratis
@@ -859,10 +859,10 @@ function RegimeShowcase({ theme, isDark }) {
 
   return (
     <section className={`w-full border-t ${theme.border}`}>
-      <div className="w-full py-20 md:py-28">
-        <div className="w-full flex justify-center mb-12">
+      <div className="w-full py-24 md:py-32">
+        <div className="w-full flex justify-center mb-16">
           <div className="text-center max-w-3xl">
-            <div className="flex items-center justify-center gap-2 mb-3">
+            <div className="flex items-center justify-center gap-2 mb-12">
               <Activity className={`w-4 h-4 ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'}`} />
               <span className={`text-[10px] uppercase tracking-[0.3em] font-mono font-bold ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'}`}>
                 Market Regime · Live
@@ -875,7 +875,7 @@ function RegimeShowcase({ theme, isDark }) {
                 Scegli lo strumento giusto.
               </span>
             </h2>
-            <p className={`mt-5 ${theme.textMuted}`}>
+            <p className={`mt-12 ${theme.textMuted}`}>
               Pannello live con indicatori macro (VIX, VVIX, SPY/RSP, Value/Growth, Cicliche/Difensive),
               identificazione automatica del regime (Espansione, Stagflazione, Recessione...) e screener su 70+ strumenti
               con score 0-100, livelli opzioni, stagionalità e forecast.
@@ -887,14 +887,14 @@ function RegimeShowcase({ theme, isDark }) {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-5">
 
           {/* LEFT — Regime banner + indicators + table */}
-          <div className="space-y-4">
+          <div className="space-y-8">
             {/* Regime banner */}
             <motion.div
               key={`banner-${regimeIdx}`}
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}
+              className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}
               style={{ borderColor: `${regime.color}55` }}
             >
               <div className="flex items-center gap-4 flex-wrap">
@@ -924,7 +924,7 @@ function RegimeShowcase({ theme, isDark }) {
                     transition={{ duration: 0.4, delay: i * 0.08 }}
                     className={`${theme.panel} border ${theme.border} rounded-lg p-4`}
                   >
-                    <div className="flex items-baseline justify-between mb-2">
+                    <div className="flex items-baseline justify-between mb-10">
                       <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00]">{ind.name}</span>
                       <span className="text-[9px] font-mono uppercase font-bold" style={{ color: c }}>
                         {inRange ? 'SANA' : 'ALERT'}
@@ -935,7 +935,7 @@ function RegimeShowcase({ theme, isDark }) {
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5 }}
-                      className="text-2xl font-black font-mono mb-2"
+                      className="text-2xl font-black font-mono mb-10"
                       style={{ color: c }}
                     >
                       {value.toFixed(2)}
@@ -950,7 +950,7 @@ function RegimeShowcase({ theme, isDark }) {
                         style={{ background: c }}
                       />
                     </div>
-                    <p className={`mt-2 text-[10px] font-mono ${theme.textMuted}`}>{ind.label}</p>
+                    <p className={`mt-10 text-[10px] font-mono ${theme.textMuted}`}>{ind.label}</p>
                   </motion.div>
                 );
               })}
@@ -958,7 +958,7 @@ function RegimeShowcase({ theme, isDark }) {
 
             {/* Mock screener table */}
             <div className={`${theme.panel} border ${theme.border} rounded-lg overflow-hidden`}>
-              <div className="px-5 py-3 border-b border-[var(--c-border)] flex items-center gap-2">
+              <div className="px-5 py-12 border-b border-[var(--c-border)] flex items-center gap-2">
                 <Target className="w-4 h-4 text-[#ff8c00]" />
                 <span className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00]">
                   Screener · Indici USA
@@ -967,12 +967,12 @@ function RegimeShowcase({ theme, isDark }) {
               <table className="w-full">
                 <thead>
                   <tr className={`text-[9px] font-mono uppercase tracking-widest ${theme.textMuted}`}>
-                    <th className="px-4 py-2 text-left">Strumento</th>
-                    <th className="px-4 py-2 text-center">Posiz.</th>
-                    <th className="px-4 py-2 text-center">Score</th>
-                    <th className="px-4 py-2 text-right">1D %</th>
-                    <th className="px-4 py-2 text-right">1M %</th>
-                    <th className="px-4 py-2 text-right">Trend</th>
+                    <th className="px-4 py-14 text-left">Strumento</th>
+                    <th className="px-4 py-14 text-center">Posiz.</th>
+                    <th className="px-4 py-14 text-center">Score</th>
+                    <th className="px-4 py-14 text-right">1D %</th>
+                    <th className="px-4 py-14 text-right">1M %</th>
+                    <th className="px-4 py-14 text-right">Trend</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -987,33 +987,33 @@ function RegimeShowcase({ theme, isDark }) {
                         transition={{ duration: 0.35, delay: i * 0.08 }}
                         className={`border-t ${theme.borderLight}`}
                       >
-                        <td className="px-4 py-3 font-mono">
+                        <td className="px-4 py-12 font-mono">
                           <div className="flex flex-col">
                             <span className={`font-bold ${theme.textBold} text-sm`}>{r.sym}</span>
                             <span className={`text-[10px] ${theme.textMuted}`}>{r.name}</span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          <span className="inline-block px-3 py-1 rounded text-[10px] font-mono font-black uppercase tracking-widest"
+                        <td className="px-4 py-12 text-center">
+                          <span className="inline-block px-3 py-14 rounded text-[10px] font-mono font-black uppercase tracking-widest"
                             style={{ background: r.color, color: '#000' }}>
                             {r.action}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          <span className="inline-block min-w-[42px] px-2 py-1 rounded text-xs font-mono font-black"
+                        <td className="px-4 py-12 text-center">
+                          <span className="inline-block min-w-[42px] px-2 py-14 rounded text-xs font-mono font-black"
                             style={{ background: `${r.color}15`, color: r.color, border: `1px solid ${r.color}40` }}>
                             {r.score}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right text-xs font-mono font-bold"
+                        <td className="px-4 py-12 text-right text-xs font-mono font-bold"
                           style={{ color: r.d >= 0 ? '#00e676' : '#ff1744' }}>
                           {r.d >= 0 ? '+' : ''}{r.d.toFixed(2)}% {r.d >= 0 ? '↑' : '↓'}
                         </td>
-                        <td className="px-4 py-3 text-right text-xs font-mono font-bold"
+                        <td className="px-4 py-12 text-right text-xs font-mono font-bold"
                           style={{ color: r.m >= 0 ? '#00e676' : '#ff1744' }}>
                           {r.m >= 0 ? '+' : ''}{r.m.toFixed(2)}%
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-4 py-12 text-right">
                           <svg width="80" height="22" className="inline-block overflow-visible">
                             <path d={showcaseSparkPath(i + regimeIdx)} fill="none"
                               stroke={sparkColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
@@ -1029,24 +1029,24 @@ function RegimeShowcase({ theme, isDark }) {
           </div>
 
           {/* RIGHT — SniperScore gauge + 3 ratings */}
-          <div className="space-y-4">
+          <div className="space-y-8">
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel flex flex-col items-center`}
+              className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel flex flex-col items-center`}
             >
               <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-1 self-start`}>
                 SniperScore · IWM
               </h4>
-              <div className="h-px w-full bg-[#ff8c00]/30 mb-3" />
+              <div className="h-px w-full bg-[#ff8c00]/30 mb-12" />
               <motion.span
                 key={`act-${regimeIdx}`}
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="font-mono font-black text-2xl uppercase tracking-widest mb-3"
+                className="font-mono font-black text-2xl uppercase tracking-widest mb-12"
                 style={{ color: scoreVal >= 75 ? '#00e676' : scoreVal >= 60 ? '#66bb6a' : scoreVal >= 45 ? '#ffa726' : '#ef5350' }}
               >
                 {scoreVal >= 75 ? 'STRONG BUY' : scoreVal >= 60 ? 'BUY' : scoreVal >= 45 ? 'HOLD' : 'SELL'}
@@ -1082,7 +1082,7 @@ function RegimeShowcase({ theme, isDark }) {
               </div>
 
               {/* Color scale */}
-              <div className="flex gap-0.5 mt-4">
+              <div className="flex gap-0.5 mt-10">
                 {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((v, i) => {
                   const colors = ['#ff1744','#ff5722','#ff7043','#ffa726','#ffd54f','#cddc39','#9ccc65','#66bb6a','#00e676'];
                   const active = Math.floor(scoreVal / 10) === i;
@@ -1155,7 +1155,7 @@ function VolatilityRegimeAnimated({ idx, theme, isDark }) {
   const reduce = useReducedMotion();
 
   return (
-    <div className={`${theme.panel} border ${theme.border} rounded-lg p-6 glow-panel`} style={{ borderColor: `${r.color}55` }}>
+    <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`} style={{ borderColor: `${r.color}55` }}>
       <svg viewBox="0 0 380 320" className="w-full h-auto">
         <defs>
           <linearGradient id="volScale" x1="0" y1="0" x2="1" y2="0">
@@ -1305,11 +1305,11 @@ function VolatilityShowcase({ theme, isDark }) {
 
   return (
     <section className={`w-full border-t ${theme.border}`}>
-      <div className="w-full py-20 md:py-28">
+      <div className="w-full py-24 md:py-32">
         {/* Header */}
-        <div className="w-full flex justify-center mb-12">
+        <div className="w-full flex justify-center mb-16">
           <div className="text-center max-w-3xl">
-            <div className="flex items-center justify-center gap-2 mb-3">
+            <div className="flex items-center justify-center gap-2 mb-12">
               <Gauge className={`w-4 h-4 ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'}`} />
               <span className={`text-[10px] uppercase tracking-[0.3em] font-mono font-bold ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'}`}>
                 Volatility Regime · Position Sizing
@@ -1322,7 +1322,7 @@ function VolatilityShowcase({ theme, isDark }) {
                 la size della posizione?
               </span>
             </h2>
-            <p className={`mt-5 ${theme.textMuted}`}>
+            <p className={`mt-12 ${theme.textMuted}`}>
               La risposta non è "quanto credo nel trade", ma <span className={theme.textBold}>quanta volatilità sopporta il mercato</span>.
               La nostra dashboard misura 13 indicatori macro-finanziari (VIX, MOVE, VVIX, credit spread, correlazioni…)
               e produce uno score 0-100 che oggettivizza il regime corrente — e di conseguenza la size ottimale.
@@ -1337,9 +1337,9 @@ function VolatilityShowcase({ theme, isDark }) {
           <VolatilityRegimeAnimated idx={idx} theme={theme} isDark={isDark} />
 
           {/* RIGHT — sizing rules / problem statement */}
-          <div className="space-y-4">
+          <div className="space-y-8">
             {/* Problem callout */}
-            <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
+            <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
                   style={{ background: '#ff174415', border: '1px solid #ff174455' }}>
@@ -1349,7 +1349,7 @@ function VolatilityShowcase({ theme, isDark }) {
                   <h4 className={`text-sm font-bold font-mono uppercase tracking-widest text-[#ff1744]`}>
                     Il bias del trader
                   </h4>
-                  <p className={`mt-2 text-xs font-mono ${theme.textMuted} leading-relaxed`}>
+                  <p className={`mt-10 text-xs font-mono ${theme.textMuted} leading-relaxed`}>
                     La maggior parte degli operatori sceglie la size <span className={theme.textBold}>"a sentimento"</span>:
                     grande quando ha convinzione, piccola dopo una perdita. È esattamente l'opposto di ciò che dice la statistica:
                     in regime di stress la stessa "convinzione" comporta un drawdown atteso 5× maggiore.
@@ -1364,10 +1364,10 @@ function VolatilityShowcase({ theme, isDark }) {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}
+              className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}
               style={{ borderColor: `${r.color}55` }}
             >
-              <div className="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+              <div className="flex items-baseline justify-between mb-12 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full pulse-live" style={{ background: r.color, boxShadow: `0 0 8px ${r.color}` }} />
                   <span className={`text-[10px] font-mono uppercase tracking-widest ${theme.textMuted}`}>Regime corrente:</span>
@@ -1379,7 +1379,7 @@ function VolatilityShowcase({ theme, isDark }) {
                   Score {r.score}/100
                 </span>
               </div>
-              <p className={`text-xs font-mono ${theme.textMuted} leading-relaxed mb-3`}>{r.desc}</p>
+              <p className={`text-xs font-mono ${theme.textMuted} leading-relaxed mb-12`}>{r.desc}</p>
               <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[var(--c-border)]">
                 <div>
                   <div className={`text-[9px] font-mono uppercase tracking-widest ${theme.textMuted}`}>VIX</div>
@@ -1397,11 +1397,11 @@ function VolatilityShowcase({ theme, isDark }) {
             </motion.div>
 
             {/* Quick rules */}
-            <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
-              <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'} mb-3 flex items-center gap-2`}>
+            <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
+              <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${isDark ? 'text-[#ff8c00]' : 'text-[#2563eb]'} mb-12 flex items-center gap-2`}>
                 <Scale className="w-3.5 h-3.5" /> Regole oggettive di sizing
               </h4>
-              <ul className={`space-y-1.5 text-[11px] font-mono ${theme.textMuted} leading-relaxed`}>
+              <ul className={`space-y-6.5 text-[11px] font-mono ${theme.textMuted} leading-relaxed`}>
                 <li className="flex items-start gap-2">
                   <span className="text-[#00e676] font-bold flex-shrink-0">›</span>
                   <span><span className={theme.textBold}>Vol Targeting</span>: position size ∝ target_vol / realized_vol corrente.</span>
@@ -1438,7 +1438,7 @@ function VolatilityShowcase({ theme, isDark }) {
 function Footer({ theme }) {
   return (
     <footer className={`w-full ${theme.navBg} border-t ${theme.navBorder}`}>
-      <div className="w-full max-w-[1400px] mx-auto px-8 lg:px-16 xl:px-20 py-6 flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="w-full w-full px-8 lg:px-16 xl:px-20 py-14 flex flex-col md:flex-row items-center justify-between gap-3">
         <span className={`text-[10px] font-mono uppercase tracking-widest ${theme.textFaint}`}>
           © 2026 SNIPERFOREX · I dati restano sul tuo browser
         </span>
@@ -1469,7 +1469,7 @@ export default function Landing({ isDark, setIsDark, theme, onStart, marketQuote
     <div className={`fixed inset-0 z-[15000] overflow-y-auto overflow-x-hidden ${theme.bg} ${theme.text}`}>
       <div className="sticky top-0 z-[100]">
         <div className="w-full flex justify-center">
-          <div className="w-full max-w-[1400px] px-8 lg:px-16 xl:px-20">
+          <div className="w-full  px-8 lg:px-16 xl:px-20">
             <LandingTicker marketQuotes={marketQuotes} isDark={isDark} theme={theme} />
             <TopBar
               theme={theme}
@@ -1482,7 +1482,7 @@ export default function Landing({ isDark, setIsDark, theme, onStart, marketQuote
       </div>
 
       <main className="w-full flex justify-center">
-        <div className="w-full max-w-[1400px] px-8 lg:px-16 xl:px-20">
+        <div className="w-full  px-8 lg:px-16 xl:px-20">
           <Hero
             theme={theme}
             isDark={isDark}
@@ -1532,7 +1532,7 @@ export default function Landing({ isDark, setIsDark, theme, onStart, marketQuote
 function LandingTicker({ marketQuotes, isDark, theme }) {
   const items = marketQuotes && marketQuotes.length > 0 ? marketQuotes : null;
   return (
-    <div className={`w-full ${theme.navBg} border-b ${theme.navBorder}/60 overflow-hidden py-2 relative z-50 transition-colors`}>
+    <div className={`w-full ${theme.navBg} border-b ${theme.navBorder}/60 overflow-hidden py-14 relative z-50 transition-colors`}>
       <div className="w-full">
         {items ? (
           <div className="animate-marquee whitespace-nowrap flex items-center gap-12 font-mono text-xs">

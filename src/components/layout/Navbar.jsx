@@ -50,7 +50,7 @@ export const Navbar = ({
             </button>
 
             <label
-  className={`flex items-center gap-3 px-6 py-3 rounded-lg text-sm font-bold uppercase tracking-widest cursor-pointer transition-all border select-none font-mono whitespace-nowrap shrink-0 h-8 ${
+  className={`flex items-center gap-3 px-6 py-12 rounded-lg text-sm font-bold uppercase tracking-widest cursor-pointer transition-all border select-none font-mono whitespace-nowrap shrink-0 h-8 ${
     isLoading
       ? `${theme.navBtnBg} ${theme.navText} cursor-wait`
       : isDark

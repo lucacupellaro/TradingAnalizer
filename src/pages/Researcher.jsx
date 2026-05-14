@@ -279,8 +279,8 @@ const PaperCard = ({ paper, theme, onSelect, categoryColor }) => {
       style={{ borderColor: isFresh ? `${categoryColor}55` : undefined }}
     >
       <div className="h-1" style={{ background: `linear-gradient(90deg, ${categoryColor}, ${categoryColor}66)` }} />
-      <div className="p-5 flex-1 flex flex-col">
-        <div className="flex items-start justify-between gap-2 mb-3">
+      <div className="p-14 flex-1 flex flex-col">
+        <div className="flex items-start justify-between gap-2 mb-12">
           <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-widest"
             style={{ background: `${categoryColor}15`, color: categoryColor, border: `1px solid ${categoryColor}55` }}>
             {paper.primaryCategory}
@@ -292,11 +292,11 @@ const PaperCard = ({ paper, theme, onSelect, categoryColor }) => {
           )}
         </div>
 
-        <h3 className={`font-mono font-bold text-sm leading-snug mb-3 ${theme.textBold} group-hover:text-[#ff8c00] transition-colors line-clamp-3`}>
+        <h3 className={`font-mono font-bold text-sm leading-snug mb-12 ${theme.textBold} group-hover:text-[#ff8c00] transition-colors line-clamp-3`}>
           {paper.title}
         </h3>
 
-        <p className={`text-[11px] font-mono ${theme.textMuted} leading-relaxed line-clamp-3 mb-4 flex-1`}>
+        <p className={`text-[11px] font-mono ${theme.textMuted} leading-relaxed line-clamp-3 mb-10 flex-1`}>
           {paper.summary}
         </p>
 
@@ -313,7 +313,7 @@ const PaperCard = ({ paper, theme, onSelect, categoryColor }) => {
           </span>
         </div>
 
-        <div className="mt-3 flex items-center justify-between text-[10px] font-mono">
+        <div className="mt-12 flex items-center justify-between text-[10px] font-mono">
           <span className={`${theme.textMuted}`}>arXiv: <span className={theme.textBold}>{paper.id}</span></span>
           <ArrowUpRight className="w-3.5 h-3.5 text-[#ff8c00] opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
@@ -356,11 +356,11 @@ const PaperDetail = ({ paper, theme, onClose, categoryInfo }) => {
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.25 }}
         onClick={e => e.stopPropagation()}
-        className={`${theme.panel} border ${theme.border} rounded-lg max-w-7xl w-full max-h-[95vh] overflow-y-auto shadow-2xl my-4`}
+        className={`${theme.panel} border ${theme.border} rounded-lg max-w-7xl w-full max-h-[95vh] overflow-y-auto shadow-2xl my-6`}
         style={{ borderColor: `${c}55` }}
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[var(--c-border)] sticky top-0 z-10" style={{ background: 'var(--c-panel)' }}>
+        <div className="px-6 py-14 border-b border-[var(--c-border)] sticky top-0 z-10" style={{ background: 'var(--c-panel)' }}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3 min-w-0">
               <div className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
@@ -391,7 +391,7 @@ const PaperDetail = ({ paper, theme, onClose, categoryInfo }) => {
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-0">
 
           {/* LEFT — metadata & abstract */}
-          <div className="p-6 space-y-5 lg:border-r lg:border-[var(--c-border)]">
+          <div className="p-14 space-y-10 lg:border-r lg:border-[var(--c-border)]">
             {/* Authors */}
             <div className="flex items-start gap-2 flex-wrap">
               <Users className={`w-4 h-4 ${theme.textMuted} mt-1 flex-shrink-0`} />
@@ -417,10 +417,10 @@ const PaperDetail = ({ paper, theme, onClose, categoryInfo }) => {
 
             {/* Abstract / Summary */}
             <div>
-              <h3 className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00] mb-3 flex items-center gap-2">
+              <h3 className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00] mb-12 flex items-center gap-2">
                 <BookOpen className="w-3.5 h-3.5" /> Abstract / Sintesi
               </h3>
-              <div className="space-y-3 max-h-[450px] overflow-y-auto pr-2">
+              <div className="space-y-6 max-h-[450px] overflow-y-auto pr-2">
                 {paragraphs.map((p, i) => (
                   <p key={i} className={`text-sm leading-relaxed font-mono ${theme.textMuted}`}>{p}</p>
                 ))}
@@ -430,12 +430,12 @@ const PaperDetail = ({ paper, theme, onClose, categoryInfo }) => {
             {/* Action buttons */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t border-[var(--c-border)]">
               <a href={paper.pdfLink} target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded font-mono text-xs font-bold uppercase tracking-widest
+                className="flex items-center justify-center gap-2 px-4 py-14.5 rounded font-mono text-xs font-bold uppercase tracking-widest
                   bg-[#ff8c00] text-black hover:bg-[#ff9f1c] transition-all shadow-lg shadow-[#ff8c00]/30">
                 <FileText className="w-4 h-4" /> Apri PDF
               </a>
               <a href={paper.htmlLink} target="_blank" rel="noopener noreferrer"
-                className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded font-mono text-xs font-bold uppercase tracking-widest
+                className={`flex items-center justify-center gap-2 px-4 py-14.5 rounded font-mono text-xs font-bold uppercase tracking-widest
                   border ${theme.border} ${theme.textBold} ${theme.cardHover} transition-all`}>
                 <ExternalLink className="w-4 h-4" /> Pagina arXiv
               </a>
@@ -448,15 +448,15 @@ const PaperDetail = ({ paper, theme, onClose, categoryInfo }) => {
           </div>
 
           {/* RIGHT — PDF preview */}
-          <div className="p-6 flex flex-col">
-            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div className="p-14 flex flex-col">
+            <div className="flex items-center justify-between mb-12 flex-wrap gap-2">
               <h3 className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00] flex items-center gap-2">
                 <FileText className="w-3.5 h-3.5" /> Preview PDF
               </h3>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => { setPdfMode('native'); setPdfFailed(false); }}
-                  className={`px-2.5 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-widest border transition-all ${
+                  className={`px-2.5 py-14 rounded text-[9px] font-mono font-bold uppercase tracking-widest border transition-all ${
                     pdfMode === 'native'
                       ? 'bg-[#ff8c00]/15 text-[#ff8c00] border-[#ff8c00]/55'
                       : `${theme.card} ${theme.textMuted} border-[var(--c-border)] hover:text-[#e0e0e0]`
@@ -465,7 +465,7 @@ const PaperDetail = ({ paper, theme, onClose, categoryInfo }) => {
                 </button>
                 <button
                   onClick={() => { setPdfMode('gdocs'); setPdfFailed(false); }}
-                  className={`px-2.5 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-widest border transition-all ${
+                  className={`px-2.5 py-14 rounded text-[9px] font-mono font-bold uppercase tracking-widest border transition-all ${
                     pdfMode === 'gdocs'
                       ? 'bg-[#ff8c00]/15 text-[#ff8c00] border-[#ff8c00]/55'
                       : `${theme.card} ${theme.textMuted} border-[var(--c-border)] hover:text-[#e0e0e0]`
@@ -474,7 +474,7 @@ const PaperDetail = ({ paper, theme, onClose, categoryInfo }) => {
                 </button>
                 <button
                   onClick={() => setPdfMode('hidden')}
-                  className={`px-2.5 py-1 rounded text-[9px] font-mono font-bold uppercase tracking-widest border transition-all ${
+                  className={`px-2.5 py-14 rounded text-[9px] font-mono font-bold uppercase tracking-widest border transition-all ${
                     pdfMode === 'hidden'
                       ? 'bg-[#ff8c00]/15 text-[#ff8c00] border-[#ff8c00]/55'
                       : `${theme.card} ${theme.textMuted} border-[var(--c-border)] hover:text-[#e0e0e0]`
@@ -498,7 +498,7 @@ const PaperDetail = ({ paper, theme, onClose, categoryInfo }) => {
                   Prova la modalità "Google Docs" oppure apri direttamente il PDF.
                 </p>
                 <a href={paper.pdfLink} target="_blank" rel="noopener noreferrer"
-                  className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded font-mono text-xs font-bold bg-[#ff8c00] text-black hover:bg-[#ff9f1c] transition-all">
+                  className="mt-10 inline-flex items-center gap-2 px-3 py-14 rounded font-mono text-xs font-bold bg-[#ff8c00] text-black hover:bg-[#ff9f1c] transition-all">
                   <ExternalLink className="w-3.5 h-3.5" /> Apri PDF in nuova scheda
                 </a>
               </div>
@@ -516,7 +516,7 @@ const PaperDetail = ({ paper, theme, onClose, categoryInfo }) => {
               </div>
             )}
 
-            <p className={`mt-2 text-[10px] font-mono italic ${theme.textMuted}`}>
+            <p className={`mt-10 text-[10px] font-mono italic ${theme.textMuted}`}>
               {pdfMode === 'gdocs'
                 ? 'Renderizzato via Google Docs Viewer (caricamento più lento ma compatibile).'
                 : 'Renderizzato dal browser (richiede plugin PDF integrato).'}
@@ -579,14 +579,14 @@ export default function Researcher({ isDark, theme }) {
   const showCategories = currentSource?.hasCategories;
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-14 animate-fade-in">
       {/* HEADER */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className={`text-3xl md:text-4xl font-black font-mono uppercase tracking-tight ${theme.textBold}`}>
             <span className="text-[#ff8c00] glow-orange">Researcher</span> · Paper Quantitativi
           </h1>
-          <p className={`mt-2 text-sm font-mono ${theme.textMuted}`}>
+          <p className={`mt-10 text-sm font-mono ${theme.textMuted}`}>
             Aggregatore live dai principali archivi accademici · arXiv · NBER · Federal Reserve · BIS · SSRN
           </p>
         </div>
@@ -596,7 +596,7 @@ export default function Researcher({ isDark, theme }) {
             <input
               type="text" placeholder="Cerca titolo, autore..."
               value={search} onChange={e => setSearch(e.target.value)}
-              className={`pl-9 pr-3 py-2 rounded text-xs font-mono border ${theme.border} bg-[#000000] text-[#e0e0e0] placeholder:text-[#555] focus:border-[#ff8c00]/50 focus:outline-none w-56`}
+              className={`pl-9 pr-3 py-14 rounded text-xs font-mono border ${theme.border} bg-[#000000] text-[#e0e0e0] placeholder:text-[#555] focus:border-[#ff8c00]/50 focus:outline-none w-56`}
             />
           </div>
           <button onClick={() => loadPapers(activeSource, activeCategory)} disabled={loading}
@@ -609,7 +609,7 @@ export default function Researcher({ isDark, theme }) {
 
       {/* Source selector */}
       <div>
-        <div className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-2`}>
+        <div className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-10`}>
           Sorgente
         </div>
         <div className="flex flex-wrap gap-2">
@@ -619,7 +619,7 @@ export default function Researcher({ isDark, theme }) {
               <button
                 key={s.id}
                 onClick={() => setActiveSource(s.id)}
-                className={`px-4 py-2 rounded text-xs font-mono font-bold uppercase tracking-wider border transition-all flex items-center gap-2 ${
+                className={`px-4 py-14 rounded text-xs font-mono font-bold uppercase tracking-wider border transition-all flex items-center gap-2 ${
                   active ? 'text-white shadow-md' : `${theme.card} ${theme.textMuted} border-[var(--c-border)] hover:text-[#e0e0e0]`
                 }`}
                 style={active ? { background: s.color, borderColor: s.color } : undefined}
@@ -650,7 +650,7 @@ export default function Researcher({ isDark, theme }) {
               </div>
             </div>
             <a href={currentSource.homepage} target="_blank" rel="noopener noreferrer"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-mono font-bold uppercase tracking-widest border transition-all flex-shrink-0
+              className={`flex items-center gap-1.5 px-3 py-14.5 rounded text-[10px] font-mono font-bold uppercase tracking-widest border transition-all flex-shrink-0
                 ${theme.card} ${theme.textBold} hover:text-[#ff8c00]`}
               style={{ borderColor: `${sourceColor}55` }}>
               <ExternalLink className="w-3 h-3" /> Sito ufficiale
@@ -662,7 +662,7 @@ export default function Researcher({ isDark, theme }) {
       {/* Category tabs (only for arXiv) */}
       {showCategories && (
         <div>
-          <div className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-2`}>
+          <div className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-10`}>
             Categoria q-fin
           </div>
           <div className="flex flex-wrap gap-2">
@@ -673,7 +673,7 @@ export default function Researcher({ isDark, theme }) {
                 <button
                   key={c.id}
                   onClick={() => setActiveCategory(c.id)}
-                  className={`px-3 py-2 rounded text-[11px] font-mono font-bold uppercase tracking-wider border transition-all flex items-center gap-2 ${
+                  className={`px-3 py-14 rounded text-[11px] font-mono font-bold uppercase tracking-wider border transition-all flex items-center gap-2 ${
                     active ? 'text-black shadow-md' : `${theme.card} ${theme.textMuted} border-[var(--c-border)] hover:text-[#e0e0e0] hover:border-[#ff8c00]/20`
                   }`}
                   style={active ? { background: c.color, borderColor: c.color } : undefined}
@@ -707,17 +707,17 @@ export default function Researcher({ isDark, theme }) {
 
       {/* External-only source: show message + link */}
       {currentSource?.externalOnly && (
-        <div className={`${theme.panel} border ${theme.border} rounded-lg p-12 glow-panel text-center`}>
-          <ExternalLink className="w-10 h-10 text-[#ff8c00] mx-auto mb-4 opacity-60" />
-          <h3 className={`font-mono font-bold uppercase tracking-widest text-base ${theme.textBold} mb-2`}>
+        <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel text-center`}>
+          <ExternalLink className="w-10 h-10 text-[#ff8c00] mx-auto mb-10 opacity-60" />
+          <h3 className={`font-mono font-bold uppercase tracking-widest text-base ${theme.textBold} mb-10`}>
             Sorgente non incorporabile
           </h3>
-          <p className={`text-sm font-mono ${theme.textMuted} max-w-lg mx-auto mb-6`}>
+          <p className={`text-sm font-mono ${theme.textMuted} max-w-lg mx-auto mb-10`}>
             <span className={theme.textBold}>SSRN</span> blocca le richieste cross-origin via Cloudflare e non espone feed pubblici stabili.
             Visita il sito direttamente per consultare i paper di finance research.
           </p>
           <a href={currentSource.homepage} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded font-mono text-xs font-bold uppercase tracking-widest
+            className="inline-flex items-center gap-2 px-5 py-14.5 rounded font-mono text-xs font-bold uppercase tracking-widest
               bg-[#ff8c00] hover:bg-[#ff9f1c] text-black shadow-lg shadow-[#ff8c00]/30 transition-all hover:scale-105">
             <ExternalLink className="w-4 h-4" /> Apri SSRN — Financial Economics Network
           </a>
@@ -734,13 +734,13 @@ export default function Researcher({ isDark, theme }) {
             </span>
           </div>
         ) : error ? (
-          <div className="p-6 rounded border border-[#ff1744]/40 bg-[#ff1744]/10 text-[#ff1744] text-sm font-mono">
+          <div className="p-14 rounded border border-[#ff1744]/40 bg-[#ff1744]/10 text-[#ff1744] text-sm font-mono">
             <AlertTriangle className="w-4 h-4 inline mr-2" />
             {error}
           </div>
         ) : filtered.length === 0 ? (
-          <div className={`${theme.panel} border ${theme.border} rounded-lg p-12 glow-panel text-center`}>
-            <BookOpen className="w-10 h-10 mx-auto mb-4 opacity-60" style={{ color: sourceColor }} />
+          <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel text-center`}>
+            <BookOpen className="w-10 h-10 mx-auto mb-10 opacity-60" style={{ color: sourceColor }} />
             <p className={`text-sm font-mono ${theme.textMuted}`}>
               {search ? `Nessun paper corrisponde a "${search}"` : 'Nessun paper disponibile per questa selezione.'}
             </p>
@@ -766,11 +766,11 @@ export default function Researcher({ isDark, theme }) {
       )}
 
       {/* About */}
-      <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
-        <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-3 flex items-center gap-2">
+      <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
+        <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-12 flex items-center gap-2">
           <BookOpen className="w-3.5 h-3.5" /> Fonti & Metodologia
         </h4>
-        <ul className={`space-y-2 text-xs font-mono ${theme.textMuted} leading-relaxed`}>
+        <ul className={`space-y-10 text-xs font-mono ${theme.textMuted} leading-relaxed`}>
           <li>· <span className={theme.textBold}>arXiv (q-fin)</span>: archivio open-access Cornell · 9 sub-categorie quantitative · API XML Atom.</li>
           <li>· <span className={theme.textBold}>NBER</span>: National Bureau of Economic Research · working papers economisti accademici USA · feed RSS.</li>
           <li>· <span className={theme.textBold}>Federal Reserve FEDS / IFDP</span>: Finance and Economics Discussion Series + International Finance Discussion Papers · feed RSS Fed Board.</li>

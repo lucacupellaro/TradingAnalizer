@@ -256,11 +256,11 @@ function AnalystDetail({ stock, quote, detail, loading, onClose, theme }) {
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className={`${theme.panel} border ${theme.border} rounded-lg p-6 glow-panel mb-6`}
+      className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel mb-10`}
       style={{ borderColor: `${rating.color}55` }}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-12">
         <div>
           <div className="flex items-baseline gap-3 flex-wrap">
             <span className="text-2xl font-black font-mono text-[#ff8c00]">{stock.sym}</span>
@@ -287,7 +287,7 @@ function AnalystDetail({ stock, quote, detail, loading, onClose, theme }) {
       </div>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-10">
         <KPI label="Target Medio"   value={fmtUSD(quote?.targetMean ?? detail?.targetMean)} color="#ff8c00" theme={theme} />
         <KPI label="Target Massimo" value={fmtUSD(quote?.targetHigh ?? detail?.targetHigh)} color="#00e676" theme={theme} />
         <KPI label="Target Minimo"  value={fmtUSD(quote?.targetLow  ?? detail?.targetLow )} color="#ef5350" theme={theme} />
@@ -297,8 +297,8 @@ function AnalystDetail({ stock, quote, detail, loading, onClose, theme }) {
 
       {/* Target Range visualization */}
       {range && quote.targetHigh && quote.targetLow && quote.targetMean && (
-        <div className={`${theme.panel} border ${theme.borderLight} rounded p-4 mb-6`}>
-          <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-3`}>
+        <div className={`${theme.panel} border ${theme.borderLight} rounded p-4 mb-10`}>
+          <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-12`}>
             Range Target Analisti vs Prezzo Attuale
           </h4>
           <div className="relative h-12">
@@ -326,14 +326,14 @@ function AnalystDetail({ stock, quote, detail, loading, onClose, theme }) {
       )}
 
       {/* Distribution bar + trend chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-10">
         {detail?.trend && detail.trend.length > 0 && (
           <div className={`${theme.panel} border ${theme.borderLight} rounded p-4`}>
-            <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-3`}>
+            <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-12`}>
               Breakdown Rating Corrente
             </h4>
             <RatingBar trend={detail.trend} theme={theme} />
-            <p className={`mt-3 text-[11px] font-mono ${theme.textMuted}`}>
+            <p className={`mt-12 text-[11px] font-mono ${theme.textMuted}`}>
               Su {(detail.trend[0].strongBuy + detail.trend[0].buy + detail.trend[0].hold + detail.trend[0].sell + detail.trend[0].strongSell)} analisti
               {' '}coperti dalla testata: <span className="text-[#00e676] font-bold">{detail.trend[0].strongBuy + detail.trend[0].buy} buy</span>
               {' / '}<span className="text-[#ffa726] font-bold">{detail.trend[0].hold} hold</span>
@@ -344,7 +344,7 @@ function AnalystDetail({ stock, quote, detail, loading, onClose, theme }) {
 
         {trendChart.length > 0 && (
           <div className={`${theme.panel} border ${theme.borderLight} rounded p-4`}>
-            <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-3`}>
+            <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-12`}>
               Evoluzione Rating (4 mesi)
             </h4>
             <div className="h-[140px]">
@@ -372,7 +372,7 @@ function AnalystDetail({ stock, quote, detail, loading, onClose, theme }) {
 
       {/* Recent upgrades/downgrades from individual banks */}
       <div className={`${theme.panel} border ${theme.borderLight} rounded overflow-hidden`}>
-        <div className="px-4 py-3 border-b border-[var(--c-border)] flex items-center gap-2">
+        <div className="px-4 py-12 border-b border-[var(--c-border)] flex items-center gap-2">
           <Building2 className="w-4 h-4 text-[#ff8c00]" />
           <h4 className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00]">
             Revisioni Recenti delle Banche
@@ -380,18 +380,18 @@ function AnalystDetail({ stock, quote, detail, loading, onClose, theme }) {
           {loading && <RefreshCw className="w-3 h-3 animate-spin text-[#ff8c00] ml-2" />}
         </div>
         {(!detail || detail.upgrades.length === 0) ? (
-          <p className={`px-4 py-6 text-xs font-mono italic ${theme.textMuted} text-center`}>
+          <p className={`px-4 py-14 text-xs font-mono italic ${theme.textMuted} text-center`}>
             {loading ? 'Caricamento delle revisioni bank-by-bank...' : 'Nessuna revisione recente disponibile (Yahoo upgradeDowngradeHistory).'}
           </p>
         ) : (
           <table className="w-full">
             <thead>
               <tr className={`text-[9px] font-mono uppercase tracking-widest ${theme.textMuted}`}>
-                <th className="px-4 py-2 text-left">Data</th>
-                <th className="px-4 py-2 text-left">Banca</th>
-                <th className="px-4 py-2 text-left">Azione</th>
-                <th className="px-4 py-2 text-left">Da</th>
-                <th className="px-4 py-2 text-left">A</th>
+                <th className="px-4 py-14 text-left">Data</th>
+                <th className="px-4 py-14 text-left">Banca</th>
+                <th className="px-4 py-14 text-left">Azione</th>
+                <th className="px-4 py-14 text-left">Da</th>
+                <th className="px-4 py-14 text-left">A</th>
               </tr>
             </thead>
             <tbody>
@@ -400,19 +400,19 @@ function AnalystDetail({ stock, quote, detail, loading, onClose, theme }) {
                 const ActionIcon = ai.icon;
                 return (
                   <tr key={i} className={`border-t ${theme.borderLight}`}>
-                    <td className={`px-4 py-2 font-mono text-[10px] ${theme.textMuted}`}>
+                    <td className={`px-4 py-14 font-mono text-[10px] ${theme.textMuted}`}>
                       {u.date ? u.date.toLocaleDateString('it-IT') : '—'}
                     </td>
-                    <td className={`px-4 py-2 font-mono text-xs font-bold ${theme.textBold}`}>{u.firm || '—'}</td>
-                    <td className="px-4 py-2 font-mono text-[10px]">
+                    <td className={`px-4 py-14 font-mono text-xs font-bold ${theme.textBold}`}>{u.firm || '—'}</td>
+                    <td className="px-4 py-14 font-mono text-[10px]">
                       <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded font-bold uppercase"
                         style={{ background: `${ai.color}15`, color: ai.color, border: `1px solid ${ai.color}55` }}>
                         <ActionIcon className="w-3 h-3" />
                         {ai.label}
                       </span>
                     </td>
-                    <td className={`px-4 py-2 font-mono text-[11px] ${theme.textMuted}`}>{u.fromGrade || '—'}</td>
-                    <td className={`px-4 py-2 font-mono text-[11px] ${theme.textBold}`}>{u.toGrade || '—'}</td>
+                    <td className={`px-4 py-14 font-mono text-[11px] ${theme.textMuted}`}>{u.fromGrade || '—'}</td>
+                    <td className={`px-4 py-14 font-mono text-[11px] ${theme.textBold}`}>{u.toGrade || '—'}</td>
                   </tr>
                 );
               })}
@@ -421,7 +421,7 @@ function AnalystDetail({ stock, quote, detail, loading, onClose, theme }) {
         )}
       </div>
 
-      <p className={`mt-4 text-[10px] font-mono italic ${theme.textMuted} flex items-start gap-2`}>
+      <p className={`mt-10 text-[10px] font-mono italic ${theme.textMuted} flex items-start gap-2`}>
         <AlertCircle className="w-3 h-3 flex-shrink-0 mt-0.5" />
         <span>
           I price target individuali per banca (es. "JP Morgan: $250") richiedono accesso a feed istituzionali (Bloomberg, FactSet).
@@ -560,14 +560,14 @@ export default function AnalystEstimates({ isDark, theme }) {
   }, [rows]);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-14 animate-fade-in">
       {/* HEADER */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className={`text-3xl md:text-4xl font-black font-mono uppercase tracking-tight ${theme.textBold}`}>
             Analyst <span className="text-[#ff8c00] glow-orange">Estimates</span>
           </h1>
-          <p className={`mt-2 text-sm font-mono ${theme.textMuted}`}>
+          <p className={`mt-10 text-sm font-mono ${theme.textMuted}`}>
             Consensus aggregato · Target prices · Bank-by-bank · Azioni + Indici + Commodity + Bond + Forex + Crypto
           </p>
         </div>
@@ -579,7 +579,7 @@ export default function AnalystEstimates({ isDark, theme }) {
               placeholder="Cerca..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className={`pl-9 pr-3 py-2 rounded text-xs font-mono border ${theme.border} bg-[#000000] text-[#e0e0e0] placeholder:text-[#555] focus:border-[#ff8c00]/50 focus:outline-none w-56`}
+              className={`pl-9 pr-3 py-14 rounded text-xs font-mono border ${theme.border} bg-[#000000] text-[#e0e0e0] placeholder:text-[#555] focus:border-[#ff8c00]/50 focus:outline-none w-56`}
             />
           </div>
           <button onClick={() => { loadAll(); loadMacroPrices(); }} disabled={isLoading}
@@ -602,7 +602,7 @@ export default function AnalystEstimates({ isDark, theme }) {
             <button
               key={t.id}
               onClick={() => { setActiveTab(t.id); setSelected(null); setSelectedMacro(null); setSearch(''); }}
-              className={`px-3 py-2 rounded text-[11px] font-mono font-bold uppercase tracking-wider border transition-all flex items-center gap-2 ${
+              className={`px-3 py-14 rounded text-[11px] font-mono font-bold uppercase tracking-wider border transition-all flex items-center gap-2 ${
                 active
                   ? 'bg-[#ff8c00]/15 text-[#ff8c00] border-[#ff8c00]/40'
                   : `${theme.card} ${theme.textMuted} border-[var(--c-border)] hover:text-[#e0e0e0] hover:border-[#ff8c00]/20`
@@ -618,7 +618,7 @@ export default function AnalystEstimates({ isDark, theme }) {
       {/* Loading progress */}
       {isLoading && (
         <div className={`${theme.panel} border ${theme.border} rounded-lg p-4 glow-panel`}>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-10">
             <span className={`text-[10px] font-mono uppercase tracking-widest ${theme.textMuted}`}>
               Caricamento consensus · {progress.done}/{progress.total}
             </span>
@@ -633,8 +633,8 @@ export default function AnalystEstimates({ isDark, theme }) {
 
       {/* Portfolio-level summary (only for stocks tab) */}
       {portfolio && activeTab === 'stocks' && (
-        <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
-          <h3 className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00] mb-3 flex items-center gap-2">
+        <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
+          <h3 className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00] mb-12 flex items-center gap-2">
             <Users className="w-3.5 h-3.5" /> Sintesi Universo Coperto
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -705,16 +705,16 @@ export default function AnalystEstimates({ isDark, theme }) {
                     return (
                       <tr key={row.sym} onClick={() => setSelected(row)}
                         className={`border-t ${theme.borderLight} cursor-pointer transition-colors ${active ? 'bg-[#ff8c00]/10' : theme.cardHover}`}>
-                        <td className="px-4 py-3 font-mono">
+                        <td className="px-4 py-12 font-mono">
                           <div className="flex flex-col">
                             <span className={`font-bold ${theme.textBold}`}>{row.sym}</span>
                             <span className={`text-[10px] ${theme.textMuted}`}>{row.name}</span>
                           </div>
                         </td>
-                        <td className={`px-4 py-3 text-[10px] font-mono ${theme.textMuted}`}>{row.sector}</td>
-                        <td className={`px-4 py-3 text-right font-mono text-sm ${theme.textBold}`}>{fmtUSD(q?.price)}</td>
-                        <td className="px-4 py-3 text-right font-mono text-sm font-bold text-[#ff8c00]">{fmtUSD(q?.targetMean)}</td>
-                        <td className="px-4 py-3 text-right">
+                        <td className={`px-4 py-12 text-[10px] font-mono ${theme.textMuted}`}>{row.sector}</td>
+                        <td className={`px-4 py-12 text-right font-mono text-sm ${theme.textBold}`}>{fmtUSD(q?.price)}</td>
+                        <td className="px-4 py-12 text-right font-mono text-sm font-bold text-[#ff8c00]">{fmtUSD(q?.targetMean)}</td>
+                        <td className="px-4 py-12 text-right">
                           {q?.targetLow && q?.targetHigh ? (
                             <div className="inline-flex flex-col items-end">
                               <span className={`text-[10px] font-mono ${theme.textMuted}`}>
@@ -725,17 +725,17 @@ export default function AnalystEstimates({ isDark, theme }) {
                             </div>
                           ) : <span className="text-[10px] text-[#555] font-mono">—</span>}
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-4 py-12 text-right">
                           {row.upside != null ? (
-                            <span className="inline-block px-2 py-1 rounded font-mono text-xs font-bold"
+                            <span className="inline-block px-2 py-14 rounded font-mono text-xs font-bold"
                               style={{ background: `${upsideColor(row.upside)}15`, color: upsideColor(row.upside), border: `1px solid ${upsideColor(row.upside)}40` }}>
                               {fmtPct(row.upside)}
                             </span>
                           ) : <span className="text-[10px] text-[#555] font-mono">—</span>}
                         </td>
-                        <td className={`px-4 py-3 text-right font-mono text-xs ${theme.textBold}`}>{q?.numAnalysts ?? '—'}</td>
-                        <td className="px-4 py-3 text-center">
-                          <span className="inline-block px-2.5 py-1 rounded text-[10px] font-mono font-black uppercase tracking-widest"
+                        <td className={`px-4 py-12 text-right font-mono text-xs ${theme.textBold}`}>{q?.numAnalysts ?? '—'}</td>
+                        <td className="px-4 py-12 text-center">
+                          <span className="inline-block px-2.5 py-14 rounded text-[10px] font-mono font-black uppercase tracking-widest"
                             style={{ background: r.color, color: '#000' }}>
                             {r.label}
                           </span>
@@ -744,7 +744,7 @@ export default function AnalystEstimates({ isDark, theme }) {
                     );
                   })}
                   {visible.length === 0 && (
-                    <tr><td colSpan={8} className={`px-4 py-12 text-center text-xs font-mono ${theme.textMuted}`}>
+                    <tr><td colSpan={8} className={`px-4 py-16 text-center text-xs font-mono ${theme.textMuted}`}>
                       Nessun risultato per "{search}"
                     </td></tr>
                   )}
@@ -774,15 +774,15 @@ export default function AnalystEstimates({ isDark, theme }) {
               <table className="w-full">
                 <thead>
                   <tr className={`text-[9px] font-mono uppercase tracking-widest ${theme.textMuted}`}>
-                    <th className="px-4 py-3 text-left">Asset</th>
-                    <th className="px-4 py-3 text-left">Horizon</th>
-                    <th className="px-4 py-3 text-right">Prezzo Spot</th>
-                    <th className="px-4 py-3 text-right">Consensus Medio</th>
-                    <th className="px-4 py-3 text-right">Range</th>
-                    <th className="px-4 py-3 text-right">Upside</th>
-                    <th className="px-4 py-3 text-right">Top Bull</th>
-                    <th className="px-4 py-3 text-right">Top Bear</th>
-                    <th className="px-4 py-3 text-right">#Banche</th>
+                    <th className="px-4 py-12 text-left">Asset</th>
+                    <th className="px-4 py-12 text-left">Horizon</th>
+                    <th className="px-4 py-12 text-right">Prezzo Spot</th>
+                    <th className="px-4 py-12 text-right">Consensus Medio</th>
+                    <th className="px-4 py-12 text-right">Range</th>
+                    <th className="px-4 py-12 text-right">Upside</th>
+                    <th className="px-4 py-12 text-right">Top Bull</th>
+                    <th className="px-4 py-12 text-right">Top Bear</th>
+                    <th className="px-4 py-12 text-right">#Banche</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -809,43 +809,43 @@ export default function AnalystEstimates({ isDark, theme }) {
                       return (
                         <tr key={sym} onClick={() => setSelectedMacro(sym)}
                           className={`border-t ${theme.borderLight} cursor-pointer transition-colors ${active ? 'bg-[#ff8c00]/10' : theme.cardHover}`}>
-                          <td className="px-4 py-3 font-mono">
+                          <td className="px-4 py-12 font-mono">
                             <div className="flex flex-col">
                               <span className={`font-bold ${theme.textBold}`}>{fc.name}</span>
                               <span className={`text-[10px] ${theme.textMuted}`}>{sym} · {fc.unit}</span>
                             </div>
                           </td>
-                          <td className={`px-4 py-3 text-[10px] font-mono ${theme.textMuted}`}>{fc.horizon}</td>
-                          <td className={`px-4 py-3 text-right font-mono text-sm ${theme.textBold}`}>{fmt(spot)}</td>
-                          <td className="px-4 py-3 text-right font-mono text-sm font-bold text-[#ff8c00]">{fmt(meanT)}</td>
-                          <td className="px-4 py-3 text-right">
+                          <td className={`px-4 py-12 text-[10px] font-mono ${theme.textMuted}`}>{fc.horizon}</td>
+                          <td className={`px-4 py-12 text-right font-mono text-sm ${theme.textBold}`}>{fmt(spot)}</td>
+                          <td className="px-4 py-12 text-right font-mono text-sm font-bold text-[#ff8c00]">{fmt(meanT)}</td>
+                          <td className="px-4 py-12 text-right">
                             <span className="text-[10px] font-mono">
                               <span className="text-[#ef5350]">{fmt(minT)}</span>
                               {' – '}
                               <span className="text-[#00e676]">{fmt(maxT)}</span>
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          <td className="px-4 py-12 text-right">
                             {upside != null ? (
-                              <span className="inline-block px-2 py-1 rounded font-mono text-xs font-bold"
+                              <span className="inline-block px-2 py-14 rounded font-mono text-xs font-bold"
                                 style={{ background: `${upsideColor(upside)}15`, color: upsideColor(upside), border: `1px solid ${upsideColor(upside)}40` }}>
                                 {upside >= 0 ? '+' : ''}{upside.toFixed(1)}%
                               </span>
                             ) : <span className="text-[10px] text-[#555] font-mono">—</span>}
                           </td>
-                          <td className="px-4 py-3 text-right font-mono">
+                          <td className="px-4 py-12 text-right font-mono">
                             <div className="flex flex-col items-end">
                               <span className="text-[10px] text-[#00e676] font-bold">{topBull.bank}</span>
                               <span className={`text-[10px] ${theme.textMuted}`}>{fmt(topBull.target)}</span>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-right font-mono">
+                          <td className="px-4 py-12 text-right font-mono">
                             <div className="flex flex-col items-end">
                               <span className="text-[10px] text-[#ff1744] font-bold">{topBear.bank}</span>
                               <span className={`text-[10px] ${theme.textMuted}`}>{fmt(topBear.target)}</span>
                             </div>
                           </td>
-                          <td className={`px-4 py-3 text-right font-mono text-xs ${theme.textBold}`}>{fc.forecasts.length}</td>
+                          <td className={`px-4 py-12 text-right font-mono text-xs ${theme.textBold}`}>{fc.forecasts.length}</td>
                         </tr>
                       );
                     })}
@@ -857,11 +857,11 @@ export default function AnalystEstimates({ isDark, theme }) {
       )}
 
       {/* Methodology */}
-      <div className={`${theme.panel} border ${theme.border} rounded-lg p-5 glow-panel`}>
-        <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-3 flex items-center gap-2">
+      <div className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel`}>
+        <h4 className="text-[10px] font-mono uppercase tracking-widest text-[#ff8c00] font-bold mb-12 flex items-center gap-2">
           <AlertCircle className="w-3.5 h-3.5" /> Note Metodologiche
         </h4>
-        <ul className={`space-y-2 text-xs font-mono ${theme.textMuted} leading-relaxed`}>
+        <ul className={`space-y-10 text-xs font-mono ${theme.textMuted} leading-relaxed`}>
           <li>· <span className={theme.textBold}>Target Medio / High / Low</span>: aggregato del consensus di tutti gli analisti coperti, da Yahoo Finance v7/quote.</li>
           <li>· <span className={theme.textBold}>Upside</span> = (Target Medio − Prezzo Attuale) / Prezzo Attuale × 100.</li>
           <li>· <span className={theme.textBold}>Rating</span>: convertito da `averageAnalystRating` (1.0 = Strong Buy, 5.0 = Strong Sell).</li>
@@ -903,10 +903,10 @@ function MacroForecastDetail({ symbol, currentPrice, onClose, theme }) {
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className={`${theme.panel} border ${theme.border} rounded-lg p-6 glow-panel mb-6`}
+      className={`${theme.panel} border ${theme.border} rounded-lg p-14 glow-panel mb-10`}
       style={{ borderColor: '#ff8c0055' }}
     >
-      <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-12">
         <div>
           <div className="flex items-baseline gap-3 flex-wrap">
             <span className="text-2xl font-black font-mono text-[#ff8c00]">{fc.name}</span>
@@ -941,7 +941,7 @@ function MacroForecastDetail({ symbol, currentPrice, onClose, theme }) {
       </div>
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
         <KPI label="Consensus Medio" value={meanTarget != null ? meanTarget.toFixed(2) : '—'} color="#ff8c00" theme={theme} />
         <KPI label="Target Massimo"  value={maxTarget != null ? maxTarget.toFixed(2) : '—'}  color="#00e676" theme={theme} />
         <KPI label="Target Minimo"   value={minTarget != null ? minTarget.toFixed(2) : '—'}  color="#ef5350" theme={theme} />
@@ -949,8 +949,8 @@ function MacroForecastDetail({ symbol, currentPrice, onClose, theme }) {
       </div>
 
       {/* Distribution chart: bank-by-bank targets */}
-      <div className={`${theme.panel} border ${theme.borderLight} rounded p-4 mb-6`}>
-        <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-3`}>
+      <div className={`${theme.panel} border ${theme.borderLight} rounded p-4 mb-10`}>
+        <h4 className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-12`}>
           Distribuzione Target per Banca · {fc.unit || 'unit'}
         </h4>
         <div className="h-[280px]">
@@ -985,8 +985,8 @@ function MacroForecastDetail({ symbol, currentPrice, onClose, theme }) {
       </div>
 
       {/* Bank-by-bank table */}
-      <div className={`${theme.panel} border ${theme.borderLight} rounded overflow-hidden mb-4`}>
-        <div className="px-4 py-3 border-b border-[var(--c-border)] flex items-center gap-2">
+      <div className={`${theme.panel} border ${theme.borderLight} rounded overflow-hidden mb-10`}>
+        <div className="px-4 py-12 border-b border-[var(--c-border)] flex items-center gap-2">
           <Building2 className="w-4 h-4 text-[#ff8c00]" />
           <h4 className="text-[10px] font-mono uppercase tracking-widest font-bold text-[#ff8c00]">
             Forecast Bank-by-Bank · {fc.horizon}
@@ -995,12 +995,12 @@ function MacroForecastDetail({ symbol, currentPrice, onClose, theme }) {
         <table className="w-full">
           <thead>
             <tr className={`text-[9px] font-mono uppercase tracking-widest ${theme.textMuted}`}>
-              <th className="px-4 py-2 text-left">Banca</th>
-              <th className="px-4 py-2 text-right">Target</th>
-              <th className="px-4 py-2 text-right">vs Spot</th>
-              <th className="px-4 py-2 text-center">Outlook</th>
-              <th className="px-4 py-2 text-left">Note</th>
-              <th className="px-4 py-2 text-right">Data</th>
+              <th className="px-4 py-14 text-left">Banca</th>
+              <th className="px-4 py-14 text-right">Target</th>
+              <th className="px-4 py-14 text-right">vs Spot</th>
+              <th className="px-4 py-14 text-center">Outlook</th>
+              <th className="px-4 py-14 text-left">Note</th>
+              <th className="px-4 py-14 text-right">Data</th>
             </tr>
           </thead>
           <tbody>
@@ -1009,15 +1009,15 @@ function MacroForecastDetail({ symbol, currentPrice, onClose, theme }) {
               const upsideF = currentPrice ? ((f.target - currentPrice) / currentPrice) * 100 : null;
               return (
                 <tr key={i} className={`border-t ${theme.borderLight}`}>
-                  <td className={`px-4 py-2 font-mono text-xs font-bold ${theme.textBold}`}>{f.bank}</td>
-                  <td className="px-4 py-2 text-right font-mono text-sm font-black" style={{ color: c }}>
+                  <td className={`px-4 py-14 font-mono text-xs font-bold ${theme.textBold}`}>{f.bank}</td>
+                  <td className="px-4 py-14 text-right font-mono text-sm font-black" style={{ color: c }}>
                     {f.target.toFixed(2)}
                   </td>
-                  <td className="px-4 py-2 text-right font-mono text-xs font-bold"
+                  <td className="px-4 py-14 text-right font-mono text-xs font-bold"
                     style={{ color: upsideF != null ? (upsideF >= 0 ? '#00e676' : '#ff1744') : '#555' }}>
                     {upsideF != null ? `${upsideF >= 0 ? '+' : ''}${upsideF.toFixed(1)}%` : '—'}
                   </td>
-                  <td className="px-4 py-2 text-center">
+                  <td className="px-4 py-14 text-center">
                     {f.rating && (
                       <span className="inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-widest"
                         style={{ background: `${c}15`, color: c, border: `1px solid ${c}55` }}>
@@ -1025,8 +1025,8 @@ function MacroForecastDetail({ symbol, currentPrice, onClose, theme }) {
                       </span>
                     )}
                   </td>
-                  <td className={`px-4 py-2 font-mono text-[11px] ${theme.textMuted}`}>{f.note || '—'}</td>
-                  <td className={`px-4 py-2 text-right font-mono text-[10px] ${theme.textMuted}`}>
+                  <td className={`px-4 py-14 font-mono text-[11px] ${theme.textMuted}`}>{f.note || '—'}</td>
+                  <td className={`px-4 py-14 text-right font-mono text-[10px] ${theme.textMuted}`}>
                     {f.date ? new Date(f.date).toLocaleDateString('it-IT', { month: 'short', year: 'numeric' }) : '—'}
                   </td>
                 </tr>
@@ -1048,7 +1048,7 @@ function MacroForecastDetail({ symbol, currentPrice, onClose, theme }) {
 }
 
 const Th = ({ label, sortKey, curr, dir, onClick, align = 'left', disabled = false }) => (
-  <th className={`px-4 py-3 ${align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left'} ${disabled ? '' : 'cursor-pointer hover:text-[#ff8c00]'} transition-colors select-none`}
+  <th className={`px-4 py-12 ${align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left'} ${disabled ? '' : 'cursor-pointer hover:text-[#ff8c00]'} transition-colors select-none`}
     onClick={disabled ? undefined : () => onClick(sortKey)}>
     {label}
     {!disabled && curr === sortKey && <span className="ml-1 text-[#ff8c00]">{dir === 'asc' ? '↑' : '↓'}</span>}

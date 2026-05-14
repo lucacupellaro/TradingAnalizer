@@ -173,7 +173,7 @@ const metrics = [
 export default function ComeFunziona({ theme }) {
   return (
     <motion.div
-      className="space-y-8"
+      className="space-y-12"
       initial="hidden"
       animate="show"
       variants={stagger}
@@ -181,7 +181,7 @@ export default function ComeFunziona({ theme }) {
       {/* HERO */}
       <motion.section
         variants={fadeUp}
-        className={`${theme.panel} rounded-2xl border ${theme.border} p-8 lg:p-12 shadow-2xl relative overflow-hidden`}
+        className={`${theme.panel} rounded-2xl border ${theme.border} p-14 lg:p-14 shadow-2xl relative overflow-hidden`}
       >
         <motion.div
           className="absolute inset-0 pointer-events-none opacity-[0.08]"
@@ -201,7 +201,7 @@ export default function ComeFunziona({ theme }) {
         </motion.div>
 
         <div className="relative z-10">
-          <motion.div variants={fadeUp} className="flex items-center gap-3 mb-6">
+          <motion.div variants={fadeUp} className="flex items-center gap-3 mb-10">
             <motion.div
               className="p-3 rounded-2xl bg-[#ff8c00]/10 border border-[#ff8c00]/20"
               whileHover={{ scale: 1.06, rotate: 2 }}
@@ -219,7 +219,7 @@ export default function ComeFunziona({ theme }) {
             </div>
           </motion.div>
 
-          <motion.div variants={fadeUp} className="max-w-4xl space-y-5">
+          <motion.div variants={fadeUp} className="max-w-4xl space-y-10">
             <p className={`${theme.text} text-base lg:text-lg leading-8`}>
               <span className="font-bold text-[#ff8c00]">SniperForex Terminal</span> e il tuo terminale di analisi quantitativa
               per il trading. Importa il report di MetaTrader 5 e ottieni{' '}
@@ -237,7 +237,7 @@ export default function ComeFunziona({ theme }) {
                   key={tag}
                   variants={cardAnim}
                   whileHover={{ y: -2, scale: 1.03 }}
-                  className="px-3 py-2 rounded-full text-xs font-bold bg-[#ff8c00]/10 text-[#ff8c00] border border-[#ff8c00]/20"
+                  className="px-3 py-14 rounded-full text-xs font-bold bg-[#ff8c00]/10 text-[#ff8c00] border border-[#ff8c00]/20"
                 >
                   {tag}
                 </motion.span>
@@ -250,9 +250,9 @@ export default function ComeFunziona({ theme }) {
       {/* APP PREVIEW / VISUAL */}
       <motion.section
         variants={fadeUp}
-        className={`${theme.panel} rounded-2xl border ${theme.border} p-8 lg:p-10 shadow-xl`}
+        className={`${theme.panel} rounded-2xl border ${theme.border} p-14 lg:p-14 shadow-xl`}
       >
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-12">
           <motion.div className="p-2.5 rounded-xl bg-[#ff8c00]/10 border border-[#ff8c00]/20" whileHover={{ scale: 1.06 }}>
             <Sparkles className="w-5 h-5 text-[#ff8c00]" />
           </motion.div>
@@ -268,7 +268,7 @@ export default function ComeFunziona({ theme }) {
           className="rounded-xl border border-[#1a2332] bg-[#060a10] p-1 shadow-2xl"
         >
           {/* Title bar */}
-          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[#1a2332]">
+          <div className="flex items-center gap-2 px-4 py-14.5 border-b border-[#1a2332]">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-[#ff1744]/60" />
               <div className="w-3 h-3 rounded-full bg-[#ffd740]/60" />
@@ -278,7 +278,7 @@ export default function ComeFunziona({ theme }) {
           </div>
 
           {/* Simulated dashboard */}
-          <div className="p-6 space-y-4">
+          <div className="p-14 space-y-8">
             {/* KPI Row */}
             <div className="grid grid-cols-4 lg:grid-cols-8 gap-2">
               {[
@@ -305,7 +305,7 @@ export default function ComeFunziona({ theme }) {
             {/* Simulated Charts Row */}
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-lg border border-[#1a2332] bg-[#0a0f18] p-3 h-28">
-                <div className="text-[8px] text-[#00e676] uppercase tracking-wider font-mono mb-2 flex items-center gap-1">
+                <div className="text-[8px] text-[#00e676] uppercase tracking-wider font-mono mb-10 flex items-center gap-1">
                   <TrendingUp className="w-3 h-3" /> Equity Line
                 </div>
                 <div className="flex items-end gap-[2px] h-16">
@@ -315,7 +315,7 @@ export default function ComeFunziona({ theme }) {
                 </div>
               </div>
               <div className="rounded-lg border border-[#1a2332] bg-[#0a0f18] p-3 h-28">
-                <div className="text-[8px] text-[#ff1744] uppercase tracking-wider font-mono mb-2 flex items-center gap-1">
+                <div className="text-[8px] text-[#ff1744] uppercase tracking-wider font-mono mb-10 flex items-center gap-1">
                   <TrendingDown className="w-3 h-3" /> Drawdown
                 </div>
                 <div className="flex items-start gap-[2px] h-16">
@@ -328,16 +328,16 @@ export default function ComeFunziona({ theme }) {
 
             {/* Simulated ranking row */}
             <div className="rounded-lg border border-[#1a2332] bg-[#0a0f18] p-3">
-              <div className="text-[8px] text-[#ffd740] uppercase tracking-wider font-mono mb-2 flex items-center gap-1">
+              <div className="text-[8px] text-[#ffd740] uppercase tracking-wider font-mono mb-10 flex items-center gap-1">
                 <Trophy className="w-3 h-3" /> Classifica Performance
               </div>
-              <div className="space-y-1">
+              <div className="space-y-6">
                 {[
                   { rank: '#1', name: 'EURUSD', pnl: '+€580.20', sr: '2.14', bg: 'bg-[#ffd740]/10' },
                   { rank: '#2', name: 'GBPUSD', pnl: '+€340.10', sr: '1.65', bg: 'bg-[#c0c0c0]/5' },
                   { rank: '#3', name: 'XAUUSD', pnl: '+€210.80', sr: '1.22', bg: 'bg-[#cd7f32]/5' },
                 ].map((r) => (
-                  <div key={r.name} className={`flex items-center justify-between px-2 py-1.5 rounded ${r.bg}`}>
+                  <div key={r.name} className={`flex items-center justify-between px-2 py-14.5 rounded ${r.bg}`}>
                     <div className="flex items-center gap-2">
                       <span className="text-[9px] font-black font-mono text-[#ffd740]">{r.rank}</span>
                       <span className="text-[9px] font-bold font-mono text-[#e2e8f0]">{r.name}</span>
@@ -357,9 +357,9 @@ export default function ComeFunziona({ theme }) {
       {/* COME INIZIARE - STEPS */}
       <motion.section
         variants={fadeUp}
-        className={`${theme.panel} rounded-2xl border ${theme.border} p-8 lg:p-10 shadow-xl`}
+        className={`${theme.panel} rounded-2xl border ${theme.border} p-14 lg:p-14 shadow-xl`}
       >
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-12">
           <motion.div className="p-2.5 rounded-xl bg-[#00e676]/10 border border-[#00e676]/20" whileHover={{ scale: 1.06 }}>
             <Target className="w-5 h-5 text-[#00e676]" />
           </motion.div>
@@ -378,24 +378,24 @@ export default function ComeFunziona({ theme }) {
                 variants={cardAnim}
                 whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-                className={`${theme.card} border ${theme.borderLight} rounded-2xl p-6 relative`}
+                className={`${theme.card} border ${theme.borderLight} rounded-2xl p-14 relative`}
               >
                 {idx < steps.length - 1 && (
                   <div className="hidden lg:block absolute top-1/2 -right-3 z-10">
                     <ArrowRight className="w-5 h-5 text-[#4a5568]" />
                   </div>
                 )}
-                <div className="p-3 rounded-xl border mb-4 inline-block" style={{ backgroundColor: `${step.color}10`, borderColor: `${step.color}30` }}>
+                <div className="p-3 rounded-xl border mb-10 inline-block" style={{ backgroundColor: `${step.color}10`, borderColor: `${step.color}30` }}>
                   <Icon className="w-5 h-5" style={{ color: step.color }} />
                 </div>
-                <h3 className={`font-bold ${theme.textBold} text-base mb-2`}>{step.title}</h3>
+                <h3 className={`font-bold ${theme.textBold} text-base mb-10`}>{step.title}</h3>
                 <p className={`${theme.textMuted} text-sm leading-7`}>{step.desc}</p>
               </motion.div>
             );
           })}
         </motion.div>
 
-        <motion.div variants={fadeUp} className="mt-6 p-4 rounded-xl bg-[#ff8c00]/5 border border-[#ff8c00]/15">
+        <motion.div variants={fadeUp} className="mt-10 p-4 rounded-xl bg-[#ff8c00]/5 border border-[#ff8c00]/15">
           <p className={`${theme.textMuted} text-sm leading-7`}>
             <span className="text-[#ff8c00] font-bold">Formati supportati:</span> .xlsx, .xls, .html, .csv — esportati direttamente da MetaTrader 5.
             L'app riconosce automaticamente le colonne e calcola tutto il resto.
@@ -406,9 +406,9 @@ export default function ComeFunziona({ theme }) {
       {/* FUNZIONALITA */}
       <motion.section
         variants={fadeUp}
-        className={`${theme.panel} rounded-2xl border ${theme.border} p-8 lg:p-10 shadow-xl`}
+        className={`${theme.panel} rounded-2xl border ${theme.border} p-14 lg:p-14 shadow-xl`}
       >
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-12">
           <motion.div className="p-2.5 rounded-xl bg-[#64b5f6]/10 border border-[#64b5f6]/20" whileHover={{ scale: 1.06 }}>
             <Layers className="w-5 h-5 text-[#64b5f6]" />
           </motion.div>
@@ -427,9 +427,9 @@ export default function ComeFunziona({ theme }) {
                 variants={cardAnim}
                 whileHover={{ y: -4, scale: 1.01 }}
                 transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-                className={`${theme.card} border ${theme.borderLight} rounded-2xl p-5 lg:p-6`}
+                className={`${theme.card} border ${theme.borderLight} rounded-2xl p-14 lg:p-14`}
               >
-                <div className="flex items-start gap-4 mb-4">
+                <div className="flex items-start gap-4 mb-10">
                   <div className="p-3 rounded-xl bg-[#ff8c00]/10 border border-[#ff8c00]/20 shrink-0">
                     <Icon className="w-4 h-4 text-[#ff8c00]" />
                   </div>
@@ -437,7 +437,7 @@ export default function ComeFunziona({ theme }) {
                     <h3 className={`font-bold ${theme.textBold} text-base leading-6`}>{feat.title}</h3>
                   </div>
                 </div>
-                <ul className="space-y-2">
+                <ul className="space-y-10">
                   {feat.items.map((item, i) => (
                     <li key={i} className={`${theme.textMuted} text-sm leading-6 flex items-start gap-2`}>
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#00e676] shrink-0 mt-0.5" />
@@ -454,9 +454,9 @@ export default function ComeFunziona({ theme }) {
       {/* METRICHE PRINCIPALI */}
       <motion.section
         variants={fadeUp}
-        className={`${theme.panel} rounded-2xl border ${theme.border} p-8 lg:p-10 shadow-xl`}
+        className={`${theme.panel} rounded-2xl border ${theme.border} p-14 lg:p-14 shadow-xl`}
       >
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-12">
           <motion.div className="p-2.5 rounded-xl bg-[#ce93d8]/10 border border-[#ce93d8]/20" whileHover={{ scale: 1.06 }}>
             <BarChart3 className="w-5 h-5 text-[#ce93d8]" />
           </motion.div>
@@ -490,9 +490,9 @@ export default function ComeFunziona({ theme }) {
       {/* TIPS */}
       <motion.section
         variants={fadeUp}
-        className={`${theme.panel} rounded-2xl border ${theme.border} p-8 lg:p-10 shadow-xl`}
+        className={`${theme.panel} rounded-2xl border ${theme.border} p-14 lg:p-14 shadow-xl`}
       >
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-12">
           <motion.div className="p-2.5 rounded-xl bg-[#ffd740]/10 border border-[#ffd740]/20" whileHover={{ scale: 1.06 }}>
             <Sparkles className="w-5 h-5 text-[#ffd740]" />
           </motion.div>
@@ -529,9 +529,9 @@ export default function ComeFunziona({ theme }) {
                 key={tip.title}
                 variants={cardAnim}
                 whileHover={{ y: -4 }}
-                className={`${theme.card} border ${theme.borderLight} rounded-2xl p-6`}
+                className={`${theme.card} border ${theme.borderLight} rounded-2xl p-14`}
               >
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-10">
                   <div className="p-2 rounded-lg border" style={{ backgroundColor: `${tip.color}10`, borderColor: `${tip.color}30` }}>
                     <Icon className="w-4 h-4" style={{ color: tip.color }} />
                   </div>
@@ -547,14 +547,14 @@ export default function ComeFunziona({ theme }) {
       {/* FOOTER CTA */}
       <motion.section
         variants={fadeUp}
-        className="rounded-2xl border border-[#ff8c00]/20 bg-[#ff8c00]/5 p-8 lg:p-10 text-center"
+        className="rounded-2xl border border-[#ff8c00]/20 bg-[#ff8c00]/5 p-14 lg:p-14 text-center"
       >
         <motion.div
           whileHover={{ scale: 1.02 }}
           transition={{ type: 'spring', stiffness: 200 }}
         >
-          <Zap className="w-8 h-8 text-[#ff8c00] mx-auto mb-4" />
-          <h3 className={`text-xl font-black ${theme.textBold} mb-3`}>Pronto per Analizzare?</h3>
+          <Zap className="w-8 h-8 text-[#ff8c00] mx-auto mb-10" />
+          <h3 className={`text-xl font-black ${theme.textBold} mb-12`}>Pronto per Analizzare?</h3>
           <p className={`${theme.textMuted} text-sm max-w-lg mx-auto leading-7`}>
             Torna all'<span className="text-[#ff8c00] font-bold">Analyzer</span>, importa il tuo report e scopri
             ogni dettaglio delle tue performance di trading.

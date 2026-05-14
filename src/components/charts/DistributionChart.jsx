@@ -41,7 +41,7 @@ const DistributionChartComponent = ({ data, title, isDark, type, theme }) => {
 
   return (
     <div className={`${theme.panel} border ${theme.borderLight} rounded p-4 h-[300px]`}>
-      <h4 className={`text-center font-bold ${theme.textMuted} mb-2 text-[10px] uppercase tracking-wider`}>{title}</h4>
+      <h4 className={`text-center font-bold ${theme.textMuted} mb-10 text-[10px] uppercase tracking-wider`}>{title}</h4>
       <ResponsiveContainer width="100%" height="90%">
         <BarChart data={bins} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chart.grid} />

@@ -138,7 +138,7 @@ const cardAnim = {
 export default function ChiSono({ theme }) {
   return (
     <motion.div
-      className="space-y-8"
+      className="space-y-12"
       initial="hidden"
       animate="show"
       variants={stagger}
@@ -146,7 +146,7 @@ export default function ChiSono({ theme }) {
       {/* HERO */}
       <motion.section
         variants={fadeUp}
-        className={`${theme.panel} rounded-2xl border ${theme.border} p-8 lg:p-12 shadow-2xl relative overflow-hidden`}
+        className={`${theme.panel} rounded-2xl border ${theme.border} p-14 lg:p-14 shadow-2xl relative overflow-hidden`}
       >
         <motion.div
           className="absolute inset-0 pointer-events-none opacity-[0.08]"
@@ -166,7 +166,7 @@ export default function ChiSono({ theme }) {
         </motion.div>
 
         <div className="relative z-10">
-          <motion.div variants={fadeUp} className="flex items-center gap-3 mb-6">
+          <motion.div variants={fadeUp} className="flex items-center gap-3 mb-10">
             <motion.div
               className="p-3 rounded-2xl bg-[#ff8c00]/10 border border-[#ff8c00]/20"
               whileHover={{ scale: 1.06, rotate: 2 }}
@@ -184,7 +184,7 @@ export default function ChiSono({ theme }) {
             </div>
           </motion.div>
 
-          <motion.div variants={fadeUp} className="max-w-4xl space-y-5">
+          <motion.div variants={fadeUp} className="max-w-4xl space-y-10">
             <p className={`${theme.text} text-base lg:text-lg leading-8`}>
               Mi chiamo <span className="font-bold text-[#ff8c00]">Luca</span> e sono un{' '}
               <span className="font-semibold">Software Engineer</span> con background in Ingegneria
@@ -213,7 +213,7 @@ export default function ChiSono({ theme }) {
                   key={tag}
                   variants={cardAnim}
                   whileHover={{ y: -2, scale: 1.03 }}
-                  className="px-3 py-2 rounded-full text-xs font-bold bg-[#ff8c00]/10 text-[#ff8c00] border border-[#ff8c00]/20"
+                  className="px-3 py-14 rounded-full text-xs font-bold bg-[#ff8c00]/10 text-[#ff8c00] border border-[#ff8c00]/20"
                 >
                   {tag}
                 </motion.span>
@@ -226,9 +226,9 @@ export default function ChiSono({ theme }) {
       {/* SKILLS */}
       <motion.section
         variants={fadeUp}
-        className={`${theme.panel} rounded-2xl border ${theme.border} p-8 lg:p-10 shadow-xl`}
+        className={`${theme.panel} rounded-2xl border ${theme.border} p-14 lg:p-14 shadow-xl`}
       >
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-12">
           <motion.div
             className="p-2.5 rounded-xl bg-[#ff8c00]/10 border border-[#ff8c00]/20"
             whileHover={{ scale: 1.06 }}
@@ -255,9 +255,9 @@ export default function ChiSono({ theme }) {
                 variants={cardAnim}
                 whileHover={{ y: -4, scale: 1.01 }}
                 transition={{ type: 'spring', stiffness: 240, damping: 18 }}
-                className={`${theme.card} border ${theme.borderLight} rounded-2xl p-5 lg:p-6 transition-all`}
+                className={`${theme.card} border ${theme.borderLight} rounded-2xl p-14 lg:p-14 transition-all`}
               >
-                <div className="flex items-start gap-4 mb-4">
+                <div className="flex items-start gap-4 mb-10">
                   <div className="p-3 rounded-xl bg-[#ff8c00]/10 border border-[#ff8c00]/20 shrink-0">
                     <Icon className="w-4 h-4 text-[#ff8c00]" />
                   </div>
@@ -272,7 +272,7 @@ export default function ChiSono({ theme }) {
                   </div>
                 </div>
 
-                <ul className="space-y-2.5">
+                <ul className="space-y-10.5">
                   {skill.items.map((item, i) => (
                     <li key={i} className={`${theme.textMuted} text-sm leading-6`}>
                       • {item}
@@ -288,9 +288,9 @@ export default function ChiSono({ theme }) {
       {/* GOALS */}
       <motion.section
         variants={fadeUp}
-        className={`${theme.panel} rounded-2xl border ${theme.border} p-8 lg:p-10 shadow-xl`}
+        className={`${theme.panel} rounded-2xl border ${theme.border} p-14 lg:p-14 shadow-xl`}
       >
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-12">
           <motion.div
             className="p-2.5 rounded-xl bg-[#ff8c00]/10 border border-[#ff8c00]/20"
             whileHover={{ scale: 1.06 }}
@@ -324,9 +324,9 @@ export default function ChiSono({ theme }) {
               key={goal.title}
               variants={cardAnim}
               whileHover={{ y: -4 }}
-              className={`${theme.card} border ${theme.borderLight} rounded-2xl p-6`}
+              className={`${theme.card} border ${theme.borderLight} rounded-2xl p-14`}
             >
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3 mb-10">
                 <Sparkles className="w-4 h-4 text-[#ff8c00]" />
                 <h3 className={`font-bold ${theme.textBold}`}>{goal.title}</h3>
               </div>
@@ -339,7 +339,7 @@ export default function ChiSono({ theme }) {
 
         <motion.div
           variants={fadeUp}
-          className="mt-8 pt-6 border-t border-[#1f2937]"
+          className="mt-12 pt-6 border-t border-[#1f2937]"
         >
           <p className={`${theme.textMuted} text-sm lg:text-base leading-7`}>
             Credo fortemente che il valore stia nel trasformare la complessità in
@@ -351,9 +351,9 @@ export default function ChiSono({ theme }) {
       {/* WHAT I DO */}
       <motion.section
         variants={fadeUp}
-        className={`${theme.panel} rounded-2xl border ${theme.border} p-8 lg:p-10 shadow-xl`}
+        className={`${theme.panel} rounded-2xl border ${theme.border} p-14 lg:p-14 shadow-xl`}
       >
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-12">
           <motion.div
             className="p-2.5 rounded-xl bg-[#ff8c00]/10 border border-[#ff8c00]/20"
             whileHover={{ scale: 1.06 }}
@@ -369,7 +369,7 @@ export default function ChiSono({ theme }) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          <motion.div variants={stagger} className="space-y-4">
+          <motion.div variants={stagger} className="space-y-8">
             {[
               'Sviluppo strumenti per l’analisi dei dati di trading',
               'Progetto e testo strategie, sia manuali che automatiche',
@@ -380,7 +380,7 @@ export default function ChiSono({ theme }) {
                 key={item}
                 variants={cardAnim}
                 whileHover={{ x: 4 }}
-                className={`${theme.card} border ${theme.borderLight} rounded-2xl p-5`}
+                className={`${theme.card} border ${theme.borderLight} rounded-2xl p-14`}
               >
                 <p className={`${theme.text} text-sm lg:text-base leading-7`}>• {item}</p>
               </motion.div>
@@ -392,8 +392,8 @@ export default function ChiSono({ theme }) {
             whileHover={{ y: -3, scale: 1.01 }}
             className="h-full"
           >
-            <div className="rounded-2xl border border-[#ff8c00]/20 bg-[#ff8c00]/5 p-6 lg:p-8 h-full">
-              <div className="text-[11px] uppercase tracking-[0.22em] text-[#ff8c00] font-bold mb-3">
+            <div className="rounded-2xl border border-[#ff8c00]/20 bg-[#ff8c00]/5 p-14 lg:p-14 h-full">
+              <div className="text-[11px] uppercase tracking-[0.22em] text-[#ff8c00] font-bold mb-12">
                 Mission
               </div>
               <p className={`${theme.text} text-base lg:text-lg leading-8`}>
@@ -408,9 +408,9 @@ export default function ChiSono({ theme }) {
       {/* LINKS */}
       <motion.section
         variants={fadeUp}
-        className={`${theme.panel} rounded-2xl border ${theme.border} p-8 lg:p-10 shadow-xl`}
+        className={`${theme.panel} rounded-2xl border ${theme.border} p-14 lg:p-14 shadow-xl`}
       >
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-12">
           <motion.div
             className="p-2.5 rounded-xl bg-[#ff8c00]/10 border border-[#ff8c00]/20"
             whileHover={{ scale: 1.06 }}
@@ -436,7 +436,7 @@ export default function ChiSono({ theme }) {
                 rel="noreferrer"
                 variants={cardAnim}
                 whileHover={{ y: -4, scale: 1.01 }}
-                className={`${theme.card} border ${theme.borderLight} rounded-2xl p-5 hover:border-[#ff8c00]/30 transition-all group`}
+                className={`${theme.card} border ${theme.borderLight} rounded-2xl p-14 hover:border-[#ff8c00]/30 transition-all group`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
