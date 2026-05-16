@@ -9,7 +9,7 @@ import {
 // =====================================================================
 // arXiv categories (q-fin) — all finance-related sub-fields
 // =====================================================================
-const RESEARCH_CATEGORIES = [
+export const RESEARCH_CATEGORIES = [
   { id: 'q-fin.PM', label: 'Portfolio Management',     short: 'Portfolio',     icon: Briefcase,    color: '#ff8c00',
     desc: 'Costruzione portafoglio, asset allocation, ottimizzazione media-varianza, risk parity.' },
   { id: 'q-fin.RM', label: 'Risk Management',          short: 'Rischio',       icon: Shield,       color: '#ff1744',
@@ -33,7 +33,7 @@ const RESEARCH_CATEGORIES = [
 // =====================================================================
 // Sources — academic + central banks publishing research
 // =====================================================================
-const SOURCES = {
+export const SOURCES = {
   arxiv: {
     id: 'arxiv',
     label: 'arXiv',
@@ -51,7 +51,7 @@ const SOURCES = {
     homepage: 'https://www.nber.org/papers',
     feedUrl: 'https://www.nber.org/rss/new.xml',
     desc: 'Working papers degli economisti accademici USA · macroeconomia, asset pricing, behavioral finance.',
-    hasCategories: false,
+    hasCategories: true,
   },
   fed: {
     id: 'fed',
@@ -61,7 +61,7 @@ const SOURCES = {
     homepage: 'https://www.federalreserve.gov/econres/feds/index.htm',
     feedUrl: 'https://www.federalreserve.gov/feeds/feds.xml',
     desc: 'Finance and Economics Discussion Series del Federal Reserve Board · politica monetaria, mercati finanziari.',
-    hasCategories: false,
+    hasCategories: true,
   },
   ifdp: {
     id: 'ifdp',
@@ -71,7 +71,7 @@ const SOURCES = {
     homepage: 'https://www.federalreserve.gov/econres/ifdp/index.htm',
     feedUrl: 'https://www.federalreserve.gov/feeds/ifdp.xml',
     desc: 'International Finance Discussion Papers · capitale internazionale, FX, EM economies.',
-    hasCategories: false,
+    hasCategories: true,
   },
   bis: {
     id: 'bis',
@@ -81,7 +81,7 @@ const SOURCES = {
     homepage: 'https://www.bis.org/list/wpapers/index.htm',
     feedUrl: 'https://www.bis.org/list/wpapers/index.rss',
     desc: 'Working Papers BIS · stabilità finanziaria globale, banche centrali, regolamentazione macroprudenziale.',
-    hasCategories: false,
+    hasCategories: true,
   },
   ssrn: {
     id: 'ssrn',
@@ -90,9 +90,67 @@ const SOURCES = {
     color: '#5d3a1a',
     homepage: 'https://papers.ssrn.com/sol3/JELJOUR_Results.cfm?form_name=journalBrowse&journal_id=203513',
     desc: 'Largest finance pre-print archive · NON disponibile direttamente per restrizioni Cloudflare/CORS · usa il link esterno.',
-    hasCategories: false,
+    hasCategories: true,
     externalOnly: true,
   },
+};
+
+const CATEGORY_KEYWORDS = {
+  'q-fin.PM': [
+    'portfolio', 'asset allocation', 'allocation', 'diversification', 'investment strategy',
+    'factor investing', 'risk parity', 'fund', 'mutual fund', 'etf', 'institutional investor'
+  ],
+  'q-fin.RM': [
+    'risk', 'var', 'expected shortfall', 'stress test', 'credit risk', 'default', 'liquidity risk',
+    'systemic risk', 'financial stability', 'macroprudential', 'capital requirement', 'contagion'
+  ],
+  'q-fin.TR': [
+    'trading', 'market microstructure', 'order book', 'market making', 'liquidity', 'execution',
+    'high frequency', 'hft', 'bid ask', 'dealer', 'transaction cost', 'exchange'
+  ],
+  'q-fin.ST': [
+    'statistical', 'time series', 'forecast', 'forecasting', 'predict', 'machine learning',
+    'regression', 'volatility', 'estimation', 'empirical', 'bayesian', 'data'
+  ],
+  'q-fin.MF': [
+    'stochastic', 'martingale', 'levy', 'brownian', 'optimal stopping', 'differential equation',
+    'calculus', 'probability', 'equilibrium model', 'mathematical'
+  ],
+  'q-fin.CP': [
+    'computational', 'simulation', 'monte carlo', 'algorithm', 'numerical', 'neural network',
+    'deep learning', 'reinforcement learning', 'optimization', 'agent based'
+  ],
+  'q-fin.PR': [
+    'pricing', 'option', 'derivative', 'securities', 'bond pricing', 'yield curve', 'term structure',
+    'swap', 'futures', 'volatility smile', 'structured product', 'valuation'
+  ],
+  'q-fin.EC': [
+    'economics', 'monetary policy', 'inflation', 'interest rate', 'central bank', 'labor',
+    'growth', 'macro', 'exchange rate', 'international finance', 'trade', 'consumption'
+  ],
+  'q-fin.GN': [
+    'finance', 'financial markets', 'banking', 'regulation', 'corporate finance',
+    'governance', 'disclosure', 'accounting', 'climate', 'household finance'
+  ],
+};
+
+const classifyPaperCategory = (title, summary) => {
+  const text = `${title || ''} ${summary || ''}`.toLowerCase();
+  let bestId = 'q-fin.GN';
+  let bestScore = 0;
+
+  Object.entries(CATEGORY_KEYWORDS).forEach(([categoryId, keywords]) => {
+    const score = keywords.reduce((sum, keyword) => (
+      text.includes(keyword) ? sum + keyword.split(' ').length : sum
+    ), 0);
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestId = categoryId;
+    }
+  });
+
+  return bestId;
 };
 
 // =====================================================================
@@ -213,17 +271,20 @@ const parseRSS = (text, sourceId) => {
       }
     }
 
+    const summary = stripHtml(description);
+    const primaryCategory = classifyPaperCategory(title, summary);
+
     return {
       source: sourceId,
       id: paperId,
       title,
-      summary: stripHtml(description),
+      summary,
       authors,
       published: pubDate ? new Date(pubDate).toISOString() : '',
       pdfLink,
       htmlLink,
-      primaryCategory: SOURCES[sourceId]?.short || sourceId.toUpperCase(),
-      categories: [SOURCES[sourceId]?.short || sourceId.toUpperCase()],
+      primaryCategory,
+      categories: [primaryCategory, SOURCES[sourceId]?.short || sourceId.toUpperCase()],
     };
   });
 };
@@ -235,14 +296,17 @@ const fetchPapers = async ({ source, category }) => {
   if (src.externalOnly) throw new Error(`${src.label} non è raggiungibile dal browser. Apri il sito esterno.`);
 
   if (source === 'arxiv') {
-    const targetUrl = `https://export.arxiv.org/api/query?search_query=cat:${encodeURIComponent(category)}&start=0&max_results=30&sortBy=submittedDate&sortOrder=descending`;
+    const searchQuery = category && category !== 'all'
+      ? `cat:${category}`
+      : RESEARCH_CATEGORIES.map(c => `cat:${c.id}`).join(' OR ');
+    const targetUrl = `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(searchQuery)}&start=0&max_results=30&sortBy=submittedDate&sortOrder=descending`;
     const text = await fetchWithProxies(targetUrl, t => t.includes('<entry'));
     return parseArxiv(text);
   }
 
-  // Generic RSS sources
+  // Generic RSS sources: classify each paper into the same q-fin catalog used by arXiv.
   const text = await fetchWithProxies(src.feedUrl, t => t.includes('<item'));
-  return parseRSS(text, source);
+  return parseRSS(text, source).filter(p => !category || category === 'all' || p.categories.includes(category));
 };
 
 // Pretty date
@@ -314,7 +378,7 @@ const PaperCard = ({ paper, theme, onSelect, categoryColor }) => {
         </div>
 
         <div className="mt-12 flex items-center justify-between text-[10px] font-mono">
-          <span className={`${theme.textMuted}`}>arXiv: <span className={theme.textBold}>{paper.id}</span></span>
+          <span className={`${theme.textMuted}`}>{SOURCES[paper.source]?.short || paper.source}: <span className={theme.textBold}>{paper.id}</span></span>
           <ArrowUpRight className="w-3.5 h-3.5 text-[#ff8c00] opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </div>
@@ -374,7 +438,7 @@ const PaperDetail = ({ paper, theme, onClose, categoryInfo }) => {
                     {paper.primaryCategory}
                   </span>
                   <span className={`text-[10px] font-mono ${theme.textMuted}`}>
-                    arXiv:{paper.id} · pubblicato {fmtDate(paper.published)}
+                    {SOURCES[paper.source]?.short || paper.source}:{paper.id} · pubblicato {fmtDate(paper.published)}
                   </span>
                 </div>
                 <h2 className={`font-display text-lg md:text-xl font-bold leading-tight ${theme.textBold}`}>{paper.title}</h2>
@@ -437,7 +501,7 @@ const PaperDetail = ({ paper, theme, onClose, categoryInfo }) => {
               <a href={paper.htmlLink} target="_blank" rel="noopener noreferrer"
                 className={`flex items-center justify-center gap-2 px-4 py-14.5 rounded font-mono text-xs font-bold uppercase tracking-widest
                   border ${theme.border} ${theme.textBold} ${theme.cardHover} transition-all`}>
-                <ExternalLink className="w-4 h-4" /> Pagina arXiv
+                <ExternalLink className="w-4 h-4" /> Pagina fonte
               </a>
             </div>
 
@@ -533,12 +597,28 @@ const PaperDetail = ({ paper, theme, onClose, categoryInfo }) => {
 // =====================================================================
 export default function Researcher({ isDark, theme }) {
   const [activeSource, setActiveSource] = useState('arxiv');
-  const [activeCategory, setActiveCategory] = useState('q-fin.PM');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    const handleSidebarSelect = (event) => {
+      const { type, value } = event.detail || {};
+      if (type === 'source' && SOURCES[value]) {
+        setActiveSource(value);
+        return;
+      }
+      if (type === 'category' && (value === 'all' || RESEARCH_CATEGORIES.some(c => c.id === value))) {
+        setActiveCategory(value);
+      }
+    };
+
+    window.addEventListener('researcher:select', handleSidebarSelect);
+    return () => window.removeEventListener('researcher:select', handleSidebarSelect);
+  }, []);
 
   const loadPapers = useCallback(async (source, category) => {
     setLoading(true);
@@ -576,7 +656,7 @@ export default function Researcher({ isDark, theme }) {
   const currentCat = RESEARCH_CATEGORIES.find(c => c.id === activeCategory);
   const currentSource = SOURCES[activeSource];
   const sourceColor = currentSource?.color || '#ff8c00';
-  const showCategories = currentSource?.hasCategories;
+  const showCategories = currentSource?.hasCategories && currentCat;
 
   return (
     <div className="space-y-14 animate-fade-in">
@@ -607,31 +687,6 @@ export default function Researcher({ isDark, theme }) {
         </div>
       </div>
 
-      {/* Source selector */}
-      <div>
-        <div className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-10`}>
-          Sorgente
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {Object.values(SOURCES).map(s => {
-            const active = activeSource === s.id;
-            return (
-              <button
-                key={s.id}
-                onClick={() => setActiveSource(s.id)}
-                className={`px-4 py-14 rounded text-xs font-mono font-bold uppercase tracking-wider border transition-all flex items-center gap-2 ${
-                  active ? 'text-white shadow-md' : `${theme.card} ${theme.textMuted} border-[var(--c-border)] hover:text-[#e0e0e0]`
-                }`}
-                style={active ? { background: s.color, borderColor: s.color } : undefined}
-              >
-                {s.short}
-                {s.externalOnly && <ExternalLink className="w-3 h-3 opacity-60" />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Source description card */}
       {currentSource && (
         <div className={`${theme.panel} border ${theme.border} rounded-lg p-4 glow-panel`}
@@ -659,35 +714,7 @@ export default function Researcher({ isDark, theme }) {
         </div>
       )}
 
-      {/* Category tabs (only for arXiv) */}
-      {showCategories && (
-        <div>
-          <div className={`text-[10px] font-mono uppercase tracking-widest font-bold ${theme.textMuted} mb-10`}>
-            Categoria q-fin
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {RESEARCH_CATEGORIES.map(c => {
-              const Icon = c.icon;
-              const active = activeCategory === c.id;
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => setActiveCategory(c.id)}
-                  className={`px-3 py-14 rounded text-[11px] font-mono font-bold uppercase tracking-wider border transition-all flex items-center gap-2 ${
-                    active ? 'text-black shadow-md' : `${theme.card} ${theme.textMuted} border-[var(--c-border)] hover:text-[#e0e0e0] hover:border-[#ff8c00]/20`
-                  }`}
-                  style={active ? { background: c.color, borderColor: c.color } : undefined}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {c.short}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Category description (arXiv only) */}
+      {/* Category description */}
       {showCategories && currentCat && (
         <div className={`${theme.panel} border ${theme.border} rounded-lg p-4 glow-panel`}>
           <div className="flex items-start gap-3">
@@ -749,6 +776,7 @@ export default function Researcher({ isDark, theme }) {
           <>
             <div className={`text-[10px] font-mono uppercase tracking-widest ${theme.textMuted}`}>
               {filtered.length} paper · {currentSource?.short} · ordinati per data
+              {currentCat ? ` · categoria ${currentCat.short}` : ''}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filtered.map(p => (
@@ -757,7 +785,7 @@ export default function Researcher({ isDark, theme }) {
                   paper={p}
                   theme={theme}
                   onSelect={setSelected}
-                  categoryColor={showCategories ? (currentCat?.color || sourceColor) : sourceColor}
+                  categoryColor={(RESEARCH_CATEGORIES.find(c => p.primaryCategory === c.id)?.color) || sourceColor}
                 />
               ))}
             </div>
@@ -772,9 +800,9 @@ export default function Researcher({ isDark, theme }) {
         </h4>
         <ul className={`space-y-10 text-xs font-mono ${theme.textMuted} leading-relaxed`}>
           <li>· <span className={theme.textBold}>arXiv (q-fin)</span>: archivio open-access Cornell · 9 sub-categorie quantitative · API XML Atom.</li>
-          <li>· <span className={theme.textBold}>NBER</span>: National Bureau of Economic Research · working papers economisti accademici USA · feed RSS.</li>
-          <li>· <span className={theme.textBold}>Federal Reserve FEDS / IFDP</span>: Finance and Economics Discussion Series + International Finance Discussion Papers · feed RSS Fed Board.</li>
-          <li>· <span className={theme.textBold}>BIS</span>: Bank for International Settlements · working papers su stabilità finanziaria globale e regolamentazione · feed RSS.</li>
+          <li>· <span className={theme.textBold}>NBER</span>: National Bureau of Economic Research · working papers economisti accademici USA · feed RSS · catalogati per categoria q-fin via parole chiave.</li>
+          <li>· <span className={theme.textBold}>Federal Reserve FEDS / IFDP</span>: Finance and Economics Discussion Series + International Finance Discussion Papers · feed RSS Fed Board · catalogati per categoria q-fin via parole chiave.</li>
+          <li>· <span className={theme.textBold}>BIS</span>: Bank for International Settlements · working papers su stabilità finanziaria globale e regolamentazione · feed RSS · catalogati per categoria q-fin via parole chiave.</li>
           <li>· <span className={theme.textBold}>SSRN</span>: bloccato da Cloudflare/CORS · solo link esterno al sito ufficiale.</li>
           <li>· I paper sono ordinati per <span className={theme.textBold}>data di pubblicazione</span> (più recenti prima); badge <span className="text-[#00e676]">NEW</span> per paper ≤14 giorni.</li>
           <li>· La sintesi mostrata è l&apos;<span className={theme.textBold}>abstract ufficiale</span> fornito dagli autori (no LLM rephrasing).</li>

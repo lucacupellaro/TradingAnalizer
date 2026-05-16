@@ -5,7 +5,7 @@ import { Activity } from 'lucide-react';
 export const CullenFreyPlot = ({ skew, kurt, name, isDark, theme }) => {
   return (
     <div className={`${theme.panel} border ${theme.borderLight} rounded p-4 h-[300px] relative`}>
-      <h4 className={`text-center font-bold ${theme.textMuted} mb-10 text-[10px] uppercase tracking-wider flex items-center justify-center gap-2`}><Activity className={`w-4 h-4 ${theme.accent1}`} /> Cullen & Frey Plot ({name})</h4>
+      <h4 className={`text-center font-bold ${theme.textMuted} mb-2 text-[10px] uppercase tracking-wider flex items-center justify-center gap-2`}><Activity className={`w-4 h-4 ${theme.accent1}`} /> Cullen & Frey Plot ({name})</h4>
       <ResponsiveContainer width="100%" height="90%">
         <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: 10 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chart.grid} />

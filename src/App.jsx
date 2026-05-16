@@ -40,8 +40,43 @@ import MarketThemes from './pages/MarketThemes';
 import VolatilityRegime from './pages/VolatilityRegime';
 import AnalystEstimates from './pages/AnalystEstimates';
 import TradingAccounts from './pages/TradingAccounts';
-import Researcher from './pages/Researcher';
+import Researcher, { RESEARCH_CATEGORIES, SOURCES as RESEARCH_SOURCES } from './pages/Researcher';
 import Landing from './pages/Landing';
+
+const PAGE_SUBMENUS = {
+  accounts: {
+    title: 'I Miei Conti',
+    items: ['Panoramica', 'Conti', 'Dettagli']
+  },
+  regime: {
+    title: 'Market Regime',
+    items: ['Panoramica', 'Regime', 'Indicatori', 'Scanner']
+  },
+  volatility: {
+    title: 'Volatility Regime',
+    items: ['Panoramica', 'Volatilita', 'Storico', 'Indicatori']
+  },
+  themes: {
+    title: 'Market Themes',
+    items: ['Panoramica', 'Temi', 'Strumenti', 'Dettagli']
+  },
+  analysts: {
+    title: 'Analyst Estimates',
+    items: ['Panoramica', 'Consensus', 'Target', 'Dettagli']
+  },
+  researcher: {
+    title: 'Researcher',
+    items: ['Panoramica']
+  },
+  descrizione: {
+    title: 'Chi Sono',
+    items: ['Panoramica', 'Metodo', 'Profilo']
+  },
+  news: {
+    title: 'Come Funziona',
+    items: ['Panoramica', 'Passaggi', 'Funzioni', 'FAQ']
+  }
+};
 
 // Tooltip Monte Carlo: mostra SOLO la linea attualmente hover-ata (non tutte le 50)
 const MonteCarloTooltip = ({ active, payload, label, theme, hoveredKey }) => {
@@ -191,6 +226,8 @@ export default function App() {
   // Analyzer compact navigation: 'global' | 'asset:<sym>' | 'strategy:<id>'
   const [analyzerView, setAnalyzerView] = useState('global');
   const [analyzerMenuOpen, setAnalyzerMenuOpen] = useState({ asset: false, strategy: false });
+  const [pageSubmenuView, setPageSubmenuView] = useState('Panoramica');
+  const [researcherMenuOpen, setResearcherMenuOpen] = useState({ sources: true, categories: true });
 
   const theme = useMemo(() => getTheme(isDark), [isDark]);
 
@@ -200,6 +237,10 @@ export default function App() {
   useEffect(() => {
     if (rawRows.length > 0) setPendingRows(rawRows);
   }, [rawRows]);
+
+  useEffect(() => {
+    setPageSubmenuView(activeTab === 'researcher' ? 'category:all' : 'Panoramica');
+  }, [activeTab]);
 
   const {
     parsedTrades,
@@ -824,6 +865,27 @@ export default function App() {
   ];
 
   const dynLineColors = getLineColors(isDark);
+  const pageSubmenu = PAGE_SUBMENUS[activeTab];
+
+  const handlePageSubmenuClick = (label, index) => {
+    setPageSubmenuView(label);
+
+    requestAnimationFrame(() => {
+      const root = document.getElementById(`page-content-${activeTab}`);
+      if (!root) return;
+
+      const sections = Array.from(root.querySelectorAll('section, h2, h3, [data-page-section]'));
+      const target = index === 0 ? root : sections[index - 1] || root;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
+  const handleResearcherSubmenuClick = (type, value, label) => {
+    setPageSubmenuView(`${type}:${value}`);
+    window.dispatchEvent(new CustomEvent('researcher:select', {
+      detail: { type, value, label }
+    }));
+  };
 
   return (
     <div className={`w-full min-h-screen ${theme.bg} ${theme.text} font-sans bloomberg-scanline`}
@@ -1057,8 +1119,153 @@ export default function App() {
             </aside>
           )}
 
+          {activeTab === 'researcher' && (
+            <aside className="hidden lg:block w-72 flex-shrink-0 sticky top-32 self-start max-h-[calc(100vh-10rem)] overflow-y-auto bg-[var(--c-panel)] border border-[var(--c-border)] rounded-lg">
+              <div className="px-6 py-5 border-b border-[var(--c-border)]">
+                <div className="text-[9px] font-mono uppercase tracking-[0.2em] text-[var(--c-muted)]">
+                  Navigazione
+                </div>
+                <div className="mt-2 text-sm font-mono font-bold text-[var(--c-text)] tracking-wide">
+                  Researcher
+                </div>
+              </div>
+
+              <div className="px-3 py-5">
+                <button
+                  onClick={() => setResearcherMenuOpen((s) => ({ ...s, sources: !s.sources }))}
+                  className="w-full flex items-center justify-between px-4 h-11 rounded-md font-mono text-[13px] tracking-wide text-[var(--c-text)] hover:bg-[#ff8c00]/10 hover:text-[#ff8c00] transition-all"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--c-muted)]" />
+                    <span className="font-semibold">Sorgente</span>
+                    <span className="text-[10px] font-mono text-[var(--c-muted)]">
+                      {Object.keys(RESEARCH_SOURCES).length}
+                    </span>
+                  </span>
+                  {researcherMenuOpen.sources ? <ChevronUp className="w-3.5 h-3.5 opacity-60" /> : <ChevronDown className="w-3.5 h-3.5 opacity-60" />}
+                </button>
+
+                {researcherMenuOpen.sources && (
+                  <div className="mt-3 ml-5 pl-5 border-l border-[var(--c-border)] space-y-1.5 py-2">
+                    {Object.values(RESEARCH_SOURCES).map((source) => {
+                      const selected = pageSubmenuView === `source:${source.id}`;
+                      return (
+                        <button
+                          key={source.id}
+                          onClick={() => handleResearcherSubmenuClick('source', source.id, source.short)}
+                          className={`w-full text-left px-3 h-9 flex items-center justify-between gap-2 rounded font-mono text-xs tracking-wide transition-all ${
+                            selected
+                              ? 'bg-[#ff8c00]/15 text-[#ff8c00]'
+                              : 'text-[var(--c-muted)] hover:text-[var(--c-text)] hover:bg-[#ff8c00]/5'
+                          }`}
+                          title={source.label}
+                        >
+                          <span className="truncate">{source.short}</span>
+                          <span
+                            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                            style={{ background: source.color }}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="h-px bg-[var(--c-border)]" />
+
+              <div className="px-3 py-5">
+                <button
+                  onClick={() => setResearcherMenuOpen((s) => ({ ...s, categories: !s.categories }))}
+                  className="w-full flex items-center justify-between px-4 h-11 rounded-md font-mono text-[13px] tracking-wide text-[var(--c-text)] hover:bg-[#ff8c00]/10 hover:text-[#ff8c00] transition-all"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--c-muted)]" />
+                    <span className="font-semibold">Categorie</span>
+                    <span className="text-[10px] font-mono text-[var(--c-muted)]">
+                      {RESEARCH_CATEGORIES.length + 1}
+                    </span>
+                  </span>
+                  {researcherMenuOpen.categories ? <ChevronUp className="w-3.5 h-3.5 opacity-60" /> : <ChevronDown className="w-3.5 h-3.5 opacity-60" />}
+                </button>
+
+                {researcherMenuOpen.categories && (
+                  <div className="mt-3 ml-5 pl-5 border-l border-[var(--c-border)] space-y-1.5 py-2">
+                    <button
+                      onClick={() => handleResearcherSubmenuClick('category', 'all', 'Tutte')}
+                      className={`w-full text-left px-3 h-9 flex items-center justify-between gap-2 rounded font-mono text-xs tracking-wide transition-all ${
+                        pageSubmenuView === 'category:all'
+                          ? 'bg-[#ff8c00]/15 text-[#ff8c00]'
+                          : 'text-[var(--c-muted)] hover:text-[var(--c-text)] hover:bg-[#ff8c00]/5'
+                      }`}
+                    >
+                      <span className="truncate">Tutte</span>
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#ff8c00]" />
+                    </button>
+                    {RESEARCH_CATEGORIES.map((category) => {
+                      const selected = pageSubmenuView === `category:${category.id}`;
+                      return (
+                        <button
+                          key={category.id}
+                          onClick={() => handleResearcherSubmenuClick('category', category.id, category.short)}
+                          className={`w-full text-left px-3 h-9 flex items-center justify-between gap-2 rounded font-mono text-xs tracking-wide transition-all ${
+                            selected
+                              ? 'bg-[#ff8c00]/15 text-[#ff8c00]'
+                              : 'text-[var(--c-muted)] hover:text-[var(--c-text)] hover:bg-[#ff8c00]/5'
+                          }`}
+                          title={`${category.label} · ${category.id}`}
+                        >
+                          <span className="truncate">{category.short}</span>
+                          <span
+                            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                            style={{ background: category.color }}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </aside>
+          )}
+
+          {activeTab !== 'analyzer' && activeTab !== 'researcher' && pageSubmenu && (
+            <aside className="hidden lg:block w-72 flex-shrink-0 sticky top-32 self-start max-h-[calc(100vh-10rem)] overflow-y-auto bg-[var(--c-panel)] border border-[var(--c-border)] rounded-lg">
+              <div className="px-6 py-5 border-b border-[var(--c-border)]">
+                <div className="text-[9px] font-mono uppercase tracking-[0.2em] text-[var(--c-muted)]">
+                  Navigazione
+                </div>
+                <div className="mt-2 text-sm font-mono font-bold text-[var(--c-text)] tracking-wide">
+                  {pageSubmenu.title}
+                </div>
+              </div>
+
+              <div className="px-3 py-5 space-y-2">
+                {pageSubmenu.items.map((label, index) => {
+                  const selected = pageSubmenuView === label;
+                  return (
+                    <button
+                      key={label}
+                      onClick={() => handlePageSubmenuClick(label, index)}
+                      className={`w-full flex items-center gap-3 px-4 h-11 rounded-md font-mono text-[13px] tracking-wide transition-all ${
+                        selected
+                          ? 'bg-[#ff8c00] text-black shadow-sm'
+                          : 'text-[var(--c-text)] hover:bg-[#ff8c00]/10 hover:text-[#ff8c00]'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        selected ? 'bg-black' : 'bg-[var(--c-muted)]'
+                      }`} />
+                      <span className="font-semibold truncate">{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </aside>
+          )}
+
           {/* Contenuto principale (preserva lo space-y-32 di prima) */}
-          <div className="flex-1 min-w-0 space-y-32">
+          <div id={`page-content-${activeTab}`} className="flex-1 min-w-0 space-y-32 scroll-mt-32">
           {parsedTrades.length === 0 && confirmedRows.length === 0 && activeTab === 'analyzer' && (
             <div className="flex flex-col items-center justify-center min-h-[62vh] text-center gap-8 animate-fade-in">
               <img src="/Logo.jpg" alt="SniperForex" className="w-20 h-20 opacity-30 rounded-lg" />

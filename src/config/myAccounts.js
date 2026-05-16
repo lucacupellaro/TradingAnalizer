@@ -23,4 +23,11 @@ export const MY_ACCOUNTS = [
     note: 'Secondo track record live',
     embed: '<a href="https://www.myfxbook.com/members/lucaupellaro/sniperportfolio2/12036559"><img alt="widget" src="https://widget.myfxbook.com/widget/widget.png?accountOid=12036559&type=6"/></a>',
   },
+  {
+    id: 'axisniperforex',
+    name: 'Axis Sniper Forex',
+    broker: 'MyFxBook',
+    note: 'Track record live · strategia forex specializzata',
+    embed: '<a href="https://www.myfxbook.com/members/lucaupellaro/axisniperforex/11040214"><img alt="widget" src="https://widget.myfxbook.com/widget/widget.png?accountOid=11040214&type=6"/></a>',
+  },
 ];
