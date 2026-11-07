@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 // CORS proxy chain — same pattern used elsewhere in the app
 const PROXIES = [
+  (url) => `/api/proxy?url=${encodeURIComponent(url)}`, // proxy proprio (Vercel function)
   (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
   (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
   (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,

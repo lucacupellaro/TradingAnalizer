@@ -79,7 +79,7 @@ export const SOURCES = {
     short: 'BIS',
     color: '#7d1d3f',
     homepage: 'https://www.bis.org/list/wpapers/index.htm',
-    feedUrl: 'https://www.bis.org/list/wpapers/index.rss',
+    feedUrl: 'https://www.bis.org/doclist/wppubls.rss',
     desc: 'Working Papers BIS · stabilità finanziaria globale, banche centrali, regolamentazione macroprudenziale.',
     hasCategories: true,
   },
@@ -158,6 +158,7 @@ const classifyPaperCategory = (title, summary) => {
 // =====================================================================
 const PROXIES = [
   (url) => url, // direct first
+  (url) => `/api/proxy?url=${encodeURIComponent(url)}`, // proxy proprio (Vercel function)
   (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
   (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
   (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
@@ -263,12 +264,14 @@ const parseRSS = (text, sourceId) => {
       // Most Fed RSS items already link to PDF
       if (link.endsWith('.pdf')) pdfLink = link;
     } else if (sourceId === 'bis') {
-      // BIS: https://www.bis.org/publ/work1234.htm — PDF: https://www.bis.org/publ/work1234.pdf
-      const idMatch = link.match(/work(\d+)/);
-      if (idMatch) {
-        paperId = `bis-${idMatch[1]}`;
-        pdfLink = link.replace(/\.htm$/, '.pdf');
-      }
+      // BIS (RSS 1.0): link = https://www.bis.org/publications/working-paper-1392-<slug>
+      // PDF in <cb:resource><cb:link>…pdf</cb:link></cb:resource>
+      const idMatch = link.match(/working-paper-(\d+)/) || link.match(/work(\d+)/);
+      paperId = idMatch ? `bis-${idMatch[1]}` : `bis-${link.split('/').pop() || idx}`;
+      const cbPdf = Array.from(item.getElementsByTagName('cb:link'))
+        .map(n => n.textContent.trim())
+        .find(h => h.endsWith('.pdf'));
+      pdfLink = cbPdf || (link.endsWith('.htm') ? link.replace(/\.htm$/, '.pdf') : `${link}.pdf`);
     }
 
     const summary = stripHtml(description);

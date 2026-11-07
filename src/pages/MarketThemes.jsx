@@ -137,6 +137,7 @@ const THEMES = [
 
 // Reuse the same proxy/fetch pattern as StockAnalyzer
 const PROXIES = [
+  (url) => `/api/proxy?url=${encodeURIComponent(url)}`, // proxy proprio (Vercel function)
   (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
   (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
   (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
